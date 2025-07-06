@@ -27,7 +27,7 @@ const validationSchema = Yup.object().shape({
     .matches(/^\d{14}$/, "يجب أن يتكون الرقم القومي من 14 رقمًا بالضبط"),
   governorate: Yup.string().required("المحافظة مطلوبة"),
   ministry: Yup.string().required("الوزارة مطلوبة"),
-  description: Yup.string().required("الوصف مطلوب"),
+  description: Yup.string().required("ادخال الوصف مطلوب"),
 });
 
 function ComplaintForm() {
@@ -102,7 +102,8 @@ function ComplaintForm() {
             <div>
               <label
                 htmlFor="name"
-                className="block text-blue font-medium mb-1">
+                className="block text-blue font-medium mb-1"
+              >
                 الاسم
               </label>
               <input
@@ -124,7 +125,8 @@ function ComplaintForm() {
             <div>
               <label
                 htmlFor="nationalId"
-                className="block text-blue font-medium mb-1">
+                className="block text-blue font-medium mb-1"
+              >
                 الرقم القومي
               </label>
               <input
@@ -155,7 +157,8 @@ function ComplaintForm() {
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 value={formik.values.governorate}
-                className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue">
+                className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue"
+              >
                 <option disabled value="">
                   اختر المحافظة
                 </option>
@@ -209,7 +212,8 @@ function ComplaintForm() {
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 value={formik.values.ministry}
-                className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue">
+                className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue"
+              >
                 <option disabled value="">
                   اختر الوزارة
                 </option>
@@ -244,7 +248,8 @@ function ComplaintForm() {
             <div>
               <label
                 htmlFor="description"
-                className="block text-blue font-medium mb-1">
+                className="block text-blue font-medium mb-1"
+              >
                 وصف الشكوى
               </label>
               <textarea
@@ -268,7 +273,8 @@ function ComplaintForm() {
             <div>
               <label
                 htmlFor="image"
-                className="block text-blue font-medium mb-2">
+                className="block text-blue font-medium mb-2"
+              >
                 (اختياري) ارفق صورة الشكوى
               </label>
               <input
@@ -285,7 +291,8 @@ function ComplaintForm() {
             <button
               type="submit"
               className="w-full py-3 px-6 bg-blue text-white font-semibold rounded-lg hover:bg-blue/90 transition duration-300"
-              disabled={formik.isSubmitting}>
+              disabled={formik.isSubmitting}
+            >
               {formik.isSubmitting ? "جارٍ الإرسال..." : "إرسال الشكوى"}
             </button>
           </form>
@@ -295,7 +302,8 @@ function ComplaintForm() {
             هل قدمت شكوى بالفعل؟
             <Link
               to="/traceComplaint"
-              className="inline-block ml-2 ms-2 text-blue font-semibold hover:underline">
+              className="inline-block ml-2 ms-2 text-blue font-semibold hover:underline"
+            >
               اضغط هنا لمتابعة الشكوى
             </Link>
           </p>
