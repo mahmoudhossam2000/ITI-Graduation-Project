@@ -2,30 +2,28 @@ import React from "react";
 import Footer from "../Components/Footer";
 import Navbar from "../Components/Navbar";
 import heroImg from "../assets/hero_img.gif";
-import department1 from '../assets/images/education.jpeg';
-import department2 from '../assets/images/electricity.jpeg';
-import department3 from '../assets/images/health.jpeg';
-import department4 from '../assets/images/higher_education.jpeg';
-import department5 from '../assets/images/housing.jpeg';
-import department6 from '../assets/images/Interior.jpeg';
-import department7 from '../assets/images/justice.jpeg';
-import department8 from '../assets/images/supply.jpeg';
-import department9 from '../assets/images/transport.jpeg';
-import department10 from '../assets/images/water.png';
+import department1 from "../assets/images/education.jpeg";
+import department2 from "../assets/images/electricity.jpeg";
+import department3 from "../assets/images/health.jpeg";
+import department4 from "../assets/images/higher_education.jpeg";
+import department5 from "../assets/images/housing.jpeg";
+import department6 from "../assets/images/Interior.jpeg";
+import department7 from "../assets/images/justice.jpeg";
+import department8 from "../assets/images/supply.jpeg";
+import department9 from "../assets/images/transport.jpeg";
+import department10 from "../assets/images/water.png";
 import { Link } from "react-router-dom";
 
-
 export default function LandingPage() {
-
   return (
     <>
       {/* navbar */}
       <Navbar />
-      
+
       {/* hero section */}
-      <div className="card hero-content h-screen lg:h-auto lg:flex-row-reverse pt-40">
+      <div className="card hero-content h-screen lg:h-auto lg:flex-row-reverse pt-40 m-auto">
         <figure>
-          <img src={heroImg} alt="hero image" className="hidden lg:flex "/>
+          <img src={heroImg} alt="hero image" className="hidden lg:flex " />
         </figure>
         <div className="line">
           <h3 className="text-3xl font-bold mb-4"> مرحباً بك في</h3>
@@ -38,7 +36,7 @@ export default function LandingPage() {
             بلحظة من أي مكان.
           </p>
           <button className="btn button text-white px-6 py-5 text-base">
-            <Link to='/submitComplaint'>تقديم شكوي</Link>
+            <Link to="/submitComplaint">تقديم شكوي</Link>
           </button>
         </div>
       </div>
@@ -46,7 +44,9 @@ export default function LandingPage() {
       {/* section two */}
       <section className="py-16 bg-white">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-darkTeal mb-4">مميزات منصتنا</h2>
+          <h2 className="text-4xl font-bold text-darkTeal mb-4">
+            مميزات منصتنا
+          </h2>
           <p className="text-darkTeal text-lg">
             كل ما تحتاجه لتقديم شكوى فعّالة وسريعة
           </p>
@@ -59,15 +59,15 @@ export default function LandingPage() {
             <p className="text-darkTeal">واجهة بسيطة وسلسة لأي مستخدم</p>
           </div>
           <div className="card bg-background shadow-md p-5">
-            <h3 className="font-bold text-lg text-blue mb-2">إرفق مستنداتك بسهولة</h3>
+            <h3 className="font-bold text-lg text-blue mb-2">
+              إرفق مستنداتك بسهولة
+            </h3>
             <p className="text-darkTeal">
               أضف صور أو ملفات داعمة مع الشكوى لتوضيح المشكلة بشكل أفضل.
             </p>
           </div>
           <div className="card bg-background shadow-md p-5">
-            <h3 className="font-bold text-lg text-blue mb-2">
-              متابعة الشكوى
-            </h3>
+            <h3 className="font-bold text-lg text-blue mb-2">متابعة الشكوى</h3>
             <p className="text-darkTeal">
               تابع حالة الشكوى خطوة بخطوة حتى يتم حلها
             </p>
@@ -95,8 +95,9 @@ export default function LandingPage() {
 
       {/*section four */}
       <section
-        className="py-16 bg-blue-50 text-gray-800 px-6 md:px-20 bg-cream"
-        id="idea">
+        className="py-16 bg-blue-50 text-gray-800 px-6 md:px-20 bg-customBg"
+        id="idea"
+      >
         <div className="max-w-6xl mx-auto space-y-10 animate-fade-in">
           <h2 className="text-3xl md:text-4xl font-bold text-blue-900 text-center">
             عن منصة شكوتك
@@ -162,25 +163,26 @@ export default function LandingPage() {
 
       {/*bottom five*/}
       <section className="bottom-bar-wrapper position-relative py-10">
-        <h2 className="text-4xl font-bold text-center pb-5  italic">الجهات المشاركة في المنصة</h2>
-          <div className="bottom-bar d-flex mt-5">
-              <img src={department1} alt="img" />
-              <img src={department2} alt="img" />
-              <img src={department3} alt="img" />
-              <img src={department4} alt="img" />
-              <img src={department5} alt="img" />
-              <img src={department6} alt="img" />
-              <img src={department7} alt="img" />
-              <img src={department8} alt="img" />
-              <img src={department9} alt="img" />
-              <img src={department10} alt="img" />
-              <img src={department1} alt="img" />
-              <img src={department2} alt="img" />
-              <img src={department3} alt="img" />
-              <img src={department7} alt="img" />
-              <img src={department8} alt="img" />
-              
-          </div>
+        <h2 className="text-4xl font-bold text-center pb-5  italic">
+          الجهات المشاركة في المنصة
+        </h2>
+        <div className="bottom-bar d-flex mt-5">
+          <img src={department1} alt="img" />
+          <img src={department2} alt="img" />
+          <img src={department3} alt="img" />
+          <img src={department4} alt="img" />
+          <img src={department5} alt="img" />
+          <img src={department6} alt="img" />
+          <img src={department7} alt="img" />
+          <img src={department8} alt="img" />
+          <img src={department9} alt="img" />
+          <img src={department10} alt="img" />
+          <img src={department1} alt="img" />
+          <img src={department2} alt="img" />
+          <img src={department3} alt="img" />
+          <img src={department7} alt="img" />
+          <img src={department8} alt="img" />
+        </div>
       </section>
 
       {/* Footer */}

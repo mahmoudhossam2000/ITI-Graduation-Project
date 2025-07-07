@@ -1,9 +1,8 @@
 import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { db, storage } from "../firebase/firebase";
+import { db } from "../firebase/firebase";
 import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../Components/Navbar";
@@ -38,30 +37,18 @@ function ComplaintForm() {
       governorate: "",
       ministry: "",
       description: "",
-      image: null,
       imageBase64: "",
     },
     validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
-        let imageURL = null;
-
-        if (values.image) {
-          const imageRef = ref(
-            storage,
-            `complaint_images/${Date.now()}_${values.image.name}`
-          );
-          await uploadBytes(imageRef, values.image);
-          imageURL = await getDownloadURL(imageRef);
-        }
-
         await addDoc(collection(db, "complaints"), {
           name: values.name,
           nationalId: values.nationalId,
           governorate: values.governorate,
           ministry: values.ministry,
           description: values.description,
-          image: imageURL || null,
+          imageBase64: values.imageBase64 || null,
           createdAt: new Date(),
         });
 
@@ -81,7 +68,6 @@ function ComplaintForm() {
       try {
         const base64String = await fileToBase64(file);
         formik.setFieldValue("imageBase64", base64String);
-        formik.setFieldValue("image", file);
       } catch (error) {
         console.error("Error converting file to Base64:", error);
       }
@@ -121,7 +107,7 @@ function ComplaintForm() {
               )}
             </div>
 
-            {/* national id*/}
+            {/* national id */}
             <div>
               <label
                 htmlFor="nationalId"
@@ -285,6 +271,13 @@ function ComplaintForm() {
                 onChange={handleImageChange}
                 className="file-input file-input-bordered w-full bg-background border border-gray-300"
               />
+              {formik.values.imageBase64 && (
+                <div className="mt-2">
+                  <p className="text-gray-600 text-sm">
+                    الصورة المرفقة جاهزة للإرسال
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* زر الإرسال */}
@@ -311,6 +304,7 @@ function ComplaintForm() {
       </section>
 
       <Footer />
+      <ToastContainer />
     </>
   );
 }

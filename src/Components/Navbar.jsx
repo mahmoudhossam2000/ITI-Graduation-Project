@@ -30,19 +30,22 @@ export default function Navbar() {
       <div
         className={`navbar bg-white shadow-sm fixed top-0 left-0 w-full z-50 ${
           scrolled ? "bg-white shadow" : "bg-white"
-        }`}>
+        }`}
+      >
         <div className="navbar-start">
           <div className="dropdown">
             <div
               tabIndex={0}
               role="button"
-              className="btn btn-ghost lg:hidden ">
+              className="btn btn-ghost lg:hidden "
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke="currentColor">
+                stroke="currentColor"
+              >
                 {" "}
                 <path
                   strokeLinecap="round"
@@ -54,20 +57,23 @@ export default function Navbar() {
             </div>
             <ul
               tabIndex={0}
-              className=" menu menu-sm dropdown-content bg-white rounded-box z-1 mt-3 w-52 p-2 shadow pb-3">
+              className=" menu menu-sm dropdown-content bg-white rounded-box z-1 mt-3 w-52 p-2 shadow pb-3"
+            >
               <li>
-                <Link to="/">
-                  <a className="text-base flex items-center gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium">
-                    <AiFillHome size={18} className="text-blue" />
-                    الرئيسية
-                  </a>
+                <Link
+                  to="/"
+                  className="text-base flex items-center gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium"
+                >
+                  <AiFillHome size={18} className="text-blue" />
+                  الرئيسية
                 </Link>
               </li>
               <li>
-                <Link to="/submitComplaint">
-                  <a className="text-base flex items-start gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium">
-                    <TfiWrite size={18} className="text-blue" /> الشكاوي
-                  </a>
+                <Link
+                  to="/submitComplaint"
+                  className="text-base flex items-start gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium"
+                >
+                  <TfiWrite size={18} className="text-blue" /> الشكاوي
                 </Link>
               </li>
               <li>
@@ -99,18 +105,23 @@ export default function Navbar() {
         <div className="navbar-end space-x-2 hidden lg:flex">
           <ul className="menu menu-horizontal px-1 text-sm">
             <li>
-              <Link to="/" className="text-base flex items-center gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium">
-                  <AiFillHome size={18} className="text-blue" />
-                  الرئيسية
+              <Link
+                to="/"
+                className="text-base flex items-center gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium"
+              >
+                <AiFillHome size={18} className="text-blue" />
+                الرئيسية
               </Link>
             </li>
 
             <li>
-              <Link to="/submitComplaint" className="text-base flex items-center gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium ps-4">
-                  <TfiWrite size={18} className="text-blue" /> الشكاوي
+              <Link
+                to="/submitComplaint"
+                className="text-base flex items-center gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium ps-4"
+              >
+                <TfiWrite size={18} className="text-blue" /> الشكاوي
               </Link>
             </li>
-            
           </ul>
           {/* auth buttons */}
           <a className="btn btn-sm btn-outline border-blue text-sm flex items-center gap-1 ">
