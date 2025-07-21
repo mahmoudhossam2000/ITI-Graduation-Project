@@ -4,11 +4,10 @@ import * as Yup from "yup";
 import { db, storage } from "../firebase/firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { toast, ToastContainer } from "react-toastify";
+import { toast} from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
-import ComplaintSearch from "./ComplaintSearch";
 import { Link } from "react-router-dom";
 
 function fileToBase64(file) {
@@ -22,9 +21,9 @@ function fileToBase64(file) {
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required("الاسم مطلوب"),
-  nationalId: Yup.string()
-    .required("الرقم القومي مطلوب")
-    .matches(/^\d{14}$/, "يجب أن يتكون الرقم القومي من 14 رقمًا بالضبط"),
+  email: Yup.string()
+  .required("البريد الإلكتروني مطلوب")
+  .email("من فضلك أدخل بريدًا إلكترونيًا صحيحًا"),
   governorate: Yup.string().required("المحافظة مطلوبة"),
   ministry: Yup.string().required("الوزارة مطلوبة"),
   description: Yup.string().required("الوصف مطلوب"),
@@ -34,7 +33,7 @@ function ComplaintForm() {
   const formik = useFormik({
     initialValues: {
       name: "",
-      nationalId: "",
+      email:"",
       governorate: "",
       ministry: "",
       description: "",
@@ -57,7 +56,7 @@ function ComplaintForm() {
 
         await addDoc(collection(db, "complaints"), {
           name: values.name,
-          nationalId: values.nationalId,
+          email:values.email,
           governorate: values.governorate,
           ministry: values.ministry,
           description: values.description,
@@ -65,7 +64,7 @@ function ComplaintForm() {
           createdAt: new Date(),
         });
 
-        toast.success("تم إرسال الشكوى بنجاح ✅");
+        toast.success("تم إرسال الشكوى بنجاح");
         resetForm();
       } catch (error) {
         console.error("خطأ أثناء إرسال الشكوى:", error);
@@ -93,7 +92,7 @@ function ComplaintForm() {
       <Navbar />
 
       <section className="flex items-center justify-center flex-col min-h-screen px-4 py-20 bg-background">
-        <div className="w-full max-w-2xl p-8 rounded-2xl shadow-lg bg-white">
+        <div className="w-full max-w-2xl p-8 rounded-2xl shadow-lg bg-white mt-8">
           <h1 className="text-3xl font-bold mb-6 text-darkTeal text-center">
             قدم شكوتك
           </h1>
@@ -120,26 +119,26 @@ function ComplaintForm() {
               )}
             </div>
 
-            {/* national id*/}
+            {/* email */}
             <div>
               <label
-                htmlFor="nationalId"
+                htmlFor="emailInput"
                 className="block text-blue font-medium mb-1">
-                الرقم القومي
+                الايميل
               </label>
               <input
-                id="nationalId"
-                name="nationalId"
-                type="text"
-                placeholder="من فضلك ادخل الرقم القومي"
+                id="emailInput"
+                name="email"
+                type="email"
+                placeholder="من فضلك ادخل بريدك الالكتروني"
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
-                value={formik.values.nationalId}
+                value={formik.values.email}
                 className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue"
               />
-              {formik.touched.nationalId && formik.errors.nationalId && (
+              {formik.touched.email && formik.errors.email && (
                 <div className="text-red-500 text-sm">
-                  {formik.errors.nationalId}
+                  {formik.errors.email}
                 </div>
               )}
             </div>

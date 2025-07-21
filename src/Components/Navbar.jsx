@@ -28,8 +28,8 @@ export default function Navbar() {
   return (
     <>
       <div
-        className={`navbar bg-white shadow-sm fixed top-0 left-0 w-full z-50 ${
-          scrolled ? "bg-white shadow" : "bg-white"
+        className={`navbar bg-white shadow-md fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+          scrolled ? "py-2 px-[2.5%]" : "py-0 px-3"
         }`}>
         <div className="navbar-start">
           <div className="dropdown">
@@ -56,28 +56,31 @@ export default function Navbar() {
               tabIndex={0}
               className=" menu menu-sm dropdown-content bg-white rounded-box z-1 mt-3 w-52 p-2 shadow pb-3">
               <li>
-                <Link to="/">
-                  <a className="text-base flex items-center gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium">
-                    <AiFillHome size={18} className="text-blue" />
-                    الرئيسية
-                  </a>
+                <Link
+                  to="/"
+                  className="text-base flex items-center gap-1 font-medium  text-darkTeal hover:font-semibold">
+                  <AiFillHome size={18} className="text-blue" />
+                  الرئيسية
                 </Link>
               </li>
+
               <li>
-                <Link to="/submitComplaint">
-                  <a className="text-base flex items-start gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium">
-                    <TfiWrite size={18} className="text-blue" /> الشكاوي
-                  </a>
+                <Link
+                  to="/submitComplaint"
+                  className="text-base flex items-center gap-1 font-medium ps-4 text-darkTeal hover:font-semibold">
+                  <TfiWrite size={18} className="text-blue" /> الشكاوي
                 </Link>
               </li>
+
               <li>
-                <a className="btn btn-sm btn-outline text-sm flex items-center gap-1 mb-2 ">
+                <a className="btn btn-sm text-sm flex items-center gap-1 btn-outline bg-transparent text-blue border-blue mb-1 hover:bg-blue hover:text-white">
                   <MdLogin size={18} />
                   تسجيل الدخول
                 </a>
               </li>
+
               <li>
-                <a className="btn btn-sm text-sm flex items-center gap-1 btn-outline ">
+                <a className="btn btn-sm text-sm flex items-center gap-1 btn-outline bg-blue text-white border-blue hover:bg-transparent hover:text-blue">
                   <TiUserAdd size={18} />
                   سجل الآن
                 </a>
@@ -97,30 +100,39 @@ export default function Navbar() {
 
         {/* lg screen */}
         <div className="navbar-end space-x-2 hidden lg:flex">
-          <ul className="menu menu-horizontal px-1 text-sm">
+          <ul className="menu menu-horizontal px-1 text-sm flex items-center">
             <li>
-              <Link to="/" className="text-base flex items-center gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium">
-                  <AiFillHome size={18} className="text-blue" />
-                  الرئيسية
+              <Link
+                to="/"
+                className="text-base flex items-center gap-1 font-medium  text-darkTeal hover:font-semibold">
+                <AiFillHome size={18} className="text-blue" />
+                الرئيسية
               </Link>
             </li>
 
             <li>
-              <Link to="/submitComplaint" className="text-base flex items-center gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium ps-4">
-                  <TfiWrite size={18} className="text-blue" /> الشكاوي
+              <Link
+                to="/submitComplaint"
+                className="text-base flex items-center gap-1 font-medium ps-4 text-darkTeal hover:font-semibold">
+                <TfiWrite size={18} className="text-blue" /> الشكاوي
               </Link>
             </li>
-            
+
+            {/* auth buttons */}
+            <li>
+              <a className="btn btn-sm btn-outline border-blue text-sm flex items-center gap-1 mx-2 hover:bg-blue">
+                <MdLogin size={18} />
+                تسجيل الدخول
+              </a>
+            </li>
+
+            <li>
+              <a className="btn btn-sm text-sm flex items-center gap-1 button  hover:bg-transparent hover:text-blue">
+                <TiUserAdd size={18} />
+                سجل الآن
+              </a>
+            </li>
           </ul>
-          {/* auth buttons */}
-          <a className="btn btn-sm btn-outline border-blue text-sm flex items-center gap-1 ">
-            <MdLogin size={18} />
-            تسجيل الدخول
-          </a>
-          <a className="btn btn-sm text-sm flex items-center gap-1 button">
-            <TiUserAdd size={18} />
-            سجل الآن
-          </a>
         </div>
       </div>
     </>

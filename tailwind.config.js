@@ -11,8 +11,8 @@ export default {
         blue: '#27548A',
         darkTeal: '#183B4E',
         mustard: '#DAA853',
-        background: "#F9FAFB"
-        
+        background: "#F9FAFB",
+        lightGray: '#f5f5f5',
       },
     },
   },

@@ -1,34 +1,34 @@
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --blue: #27548A;
-  --cream: #F5EEDC;
-  --darkTeal: #183B4E;
-  --mustard: #DAA853;
+  --lightGray: #f5f5f5;
+  --blue: #27548a;
+  --cream: #f5eedc;
+  --darkTeal: #183b4e;
+  --mustard: #daa853;
+  --whiteText: #ffffff;
 }
 
 body {
-  font-family: 'Tajawal', sans-serif;
+  font-family: "Tajawal", sans-serif;
   font-size: 16px;
   font-weight: 400;
   direction: rtl;
   overflow-x: hidden;
-  background-color: #ffffff;
+  background-color: var(--lightGray) !important;
   color: var(--darkTeal);
 }
-.button{
-  background-color:var(--blue) ;
+::placeholder {
+  font-size: 16px;
+}
+.button {
+  background-color: var(--blue);
   border: 1px solid var(--blue);
 }
-/* navbar */
-.navbar ul li a {
-  color: var(--blue) !important;
-}
-
 
 /* footer */
 footer {
@@ -52,7 +52,6 @@ footer ul li:hover {
   color: var(--mustard);
 }
 
-
 /* Bottom-Bar Style Animation */
 .bottom-bar {
   display: flex;
@@ -63,8 +62,11 @@ footer ul li:hover {
 .bottom-bar img {
   margin-left: 80px !important;
   border-radius: 50%;
-  width:180px;
-  height:180px;
+  width: 170px;
+  height: 170px;
+  object-fit: cover;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 @keyframes scroll-left {
@@ -75,18 +77,34 @@ footer ul li:hover {
     transform: translateX(50%);
   }
 }
-::placeholder{
-  font-size: 16px;
-}
 @media (max-width: 480px) {
   .bottom-bar img {
-  width:100px;
-  height:100px;
+    width: 100px;
+    height: 100px;
+  }
 }
+@media (max-width: 768px) {
+  .bottom-bar img {
+    width: 100px;
+    height: 100px;
+  }
 }
-@media (max-width: 768px){
-    .bottom-bar img {
-  width:100px;
-  height:100px;
+
+.dashboardDep ul li:nth-child(1)::marker {
+  content: " 🗂️ ";
 }
+.dashboardDep ul li:nth-child(2)::marker {
+  content: " 💬 ";
+}
+.dashboardDep ul li:nth-child(3)::marker {
+  content: " 🔄 ";
+}
+.dashboardDep ul li:nth-child(4)::marker {
+  content: " ⏳ ";
+}
+.dashboardDep ul li:nth-child(5)::marker {
+  content: " 🔍 ";
+}
+.dashboardDep ul li:nth-child(6)::marker {
+  content: " 📈 ";
 }
