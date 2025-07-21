@@ -1,13 +1,27 @@
 import React, { useEffect, useState } from "react";
-import { MdLogin } from "react-icons/md";
+import { MdLogin, MdLogout, MdPerson } from "react-icons/md";
 import { TiUserAdd } from "react-icons/ti";
 import { AiFillHome } from "react-icons/ai";
 import { TfiWrite } from "react-icons/tfi";
 import LogoImg from "../assets/logo.png";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { auth } from "../firebase/firebase";
+import { signOut } from "firebase/auth";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -76,18 +90,49 @@ export default function Navbar() {
                   <TfiWrite size={18} className="text-blue" /> الشكاوي
                 </Link>
               </li>
-              <li>
-                <a className="btn btn-sm btn-outline text-sm flex items-center gap-1 mb-2 ">
-                  <MdLogin size={18} />
-                  تسجيل الدخول
-                </a>
-              </li>
-              <li>
-                <a className="btn btn-sm text-sm flex items-center gap-1 btn-outline ">
-                  <TiUserAdd size={18} />
-                  سجل الآن
-                </a>
-              </li>
+              {currentUser ? (
+                <>
+                  <li>
+                    <Link
+                      to="/profile"
+                      className="btn btn-sm btn-outline text-sm flex items-center gap-1 mb-2 hover:bg-blue hover:!text-white"
+                    >
+                      <MdPerson size={18} />
+                      الملف الشخصي
+                    </Link>
+                  </li>
+                  <li>
+                    <button
+                      onClick={handleLogout}
+                      className="btn btn-sm text-sm flex items-center gap-1 btn-outline w-full hover:bg-red-500 hover:text-white"
+                    >
+                      <MdLogout size={18} />
+                      تسجيل الخروج
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    {/* <Link
+                      to="/login"
+                      className="btn btn-sm btn-outline text-sm flex items-center gap-1 mb-2"
+                    >
+                      <MdLogin size={18} />
+                      تسجيل الدخول
+                    </Link> */}
+                  </li>
+                  <li>
+                    <Link
+                      to="/signup"
+                      className="btn  text-sm flex items-center gap-1"
+                    >
+                      <TiUserAdd size={18} />
+                      سجل الآن
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 
@@ -101,7 +146,6 @@ export default function Navbar() {
           </span>
         </div>
 
-        {/* lg screen */}
         <div className="navbar-end space-x-2 hidden lg:flex">
           <ul className="menu menu-horizontal px-1 text-sm">
             <li>
@@ -123,15 +167,38 @@ export default function Navbar() {
               </Link>
             </li>
           </ul>
-          {/* auth buttons */}
-          <a className="btn btn-sm btn-outline border-blue text-sm flex items-center gap-1 ">
-            <MdLogin size={18} />
-            تسجيل الدخول
-          </a>
-          <a className="btn btn-sm text-sm flex items-center gap-1 button">
-            <TiUserAdd size={18} />
-            سجل الآن
-          </a>
+          {currentUser ? (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/profile"
+                className="btn btn-sm btn-outline border-blue text-sm flex items-center gap-1 hover:bg-blue hover:!text-white"
+              >
+                <MdPerson size={18} />
+                الملف الشخصي
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="btn btn-sm text-sm flex items-center gap-1 btn-outline hover:!bg-red-600 hover:!text-white"
+              >
+                <MdLogout size={18} />
+                تسجيل الخروج
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              {/* <Link to="/login" className="btn btn-sm btn-outline border-blue text-sm flex items-center gap-1">
+                <MdLogin size={18} />
+                تسجيل الدخول
+              </Link> */}
+              <Link
+                to="/signup"
+                className="btn btn-sm text-sm flex items-center gap-1 button"
+              >
+                <TiUserAdd size={18} />
+                سجل الآن
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </>
