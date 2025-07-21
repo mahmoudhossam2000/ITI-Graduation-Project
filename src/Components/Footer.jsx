@@ -48,7 +48,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* contact us */}
           <div>
             <h3 className="text-2xl font-bold mb-4 text-mustard">تواصل معنا</h3>
             <form className="space-y-3">
@@ -72,7 +71,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* footer-bottom*/}
         <div className="mt-10 text-center border-t border-gray-600 pt-4 text-sm text-gray-400">
           جميع الحقوق محفوظة © 2025 - شكوتك
         </div>

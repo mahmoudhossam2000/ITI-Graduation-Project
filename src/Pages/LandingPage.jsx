@@ -17,10 +17,8 @@ import { Link } from "react-router-dom";
 export default function LandingPage() {
   return (
     <>
-      {/* navbar */}
       <Navbar />
 
-      {/* hero section */}
       <div className="card hero-content h-screen lg:h-auto lg:flex-row-reverse pt-40 m-auto">
         <figure>
           <img src={heroImg} alt="hero image" className="hidden lg:flex " />
@@ -41,7 +39,6 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* section two */}
       <section className="py-16 bg-white">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-darkTeal mb-4">
@@ -75,7 +72,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/*section three */}
       <section className="bg-body py-14 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-darkTeal mb-4">
@@ -93,7 +89,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/*section four */}
       <section
         className="py-16 bg-blue-50 text-gray-800 px-6 md:px-20 bg-customBg"
         id="idea"
@@ -103,7 +98,6 @@ export default function LandingPage() {
             عن منصة شكوتك
           </h2>
 
-          {/* problem & solve */}
           <div className="grid md:grid-cols-2 gap-10">
             <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
               <h3 className="text-xl font-bold text-red-600 mb-4">
@@ -140,7 +134,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Dashboard department */}
           <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
             <h3 className="text-xl font-bold text-blue-700 mb-4 text-center">
               مميزات لوحة التحكم الخاصة بالجهة
@@ -161,7 +154,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/*bottom five*/}
       <section className="bottom-bar-wrapper position-relative py-10">
         <h2 className="text-4xl font-bold text-center pb-5  italic">
           الجهات المشاركة في المنصة
@@ -185,7 +177,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
       <Footer />
     </>
   );

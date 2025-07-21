@@ -50,6 +50,8 @@ function ComplaintForm() {
           description: values.description,
           imageBase64: values.imageBase64 || null,
           createdAt: new Date(),
+          status: "قيد المعالجة",
+          complaintId: Math.floor(Math.random() * 1000000).toString(),
         });
 
         toast.success("تم إرسال الشكوى بنجاح ✅");
