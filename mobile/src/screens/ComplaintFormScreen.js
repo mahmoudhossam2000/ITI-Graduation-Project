@@ -1,24 +1,23 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  TouchableOpacity,
-} from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  TextInput,
-  Button,
-  Card,
-  Title,
-  HelperText,
-} from 'react-native-paper';
-import { Picker } from '@react-native-picker/picker';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { Button, Card, Title } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+
+// Components
+import FormInput from '../components/forms/FormInput';
+import FormPicker from '../components/forms/FormPicker';
+import ImagePicker from '../components/forms/ImagePicker';
+
+// Utils
+import { GOVERNORATES, MINISTRIES } from '../utils/constants';
+import { 
+  validateName, 
+  validateNationalId, 
+  validateRequired 
+} from '../utils/validation';
+import { isNumericOnly } from '../utils/helpers';
+import ApiService from '../services/api';
 
 export default function ComplaintFormScreen({ navigation }) {
   const [formData, setFormData] = useState({
@@ -32,76 +31,42 @@ export default function ComplaintFormScreen({ navigation }) {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const governorates = [
-    'القاهرة', 'الجيزة', 'الإسكندرية', 'الدقهلية', 'الشرقية',
-    'القليوبية', 'الغربية', 'المنوفية', 'البحيرة', 'كفر الشيخ',
-    'دمياط', 'بورسعيد', 'الإسماعيلية', 'السويس', 'شمال سيناء',
-    'جنوب سيناء', 'بني سويف', 'الفيوم', 'المنيا', 'أسيوط',
-    'سوهاج', 'قنا', 'الأقصر', 'أسوان', 'الوادي الجديد',
-    'مطروح', 'البحر الأحمر',
-  ];
-
-  const ministries = [
-    'وزارة الصحة', 'وزارة التعليم', 'وزارة الداخلية', 'وزارة التموين',
-    'وزارة الكهرباء والطاقة', 'وزارة النقل', 'وزارة البيئة',
-    'وزارة التضامن الاجتماعي', 'وزارة الاتصالات وتكنولوجيا المعلومات',
-    'وزارة الإسكان والمرافق', 'وزارة القوى العاملة', 'وزارة الثقافة',
-    'وزارة التنمية المحلية', 'وزارة العدل', 'وزارة المالية',
-  ];
-
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'الاسم مطلوب';
-    }
-
-    if (!formData.nationalId) {
-      newErrors.nationalId = 'الرقم القومي مطلوب';
-    } else if (!/^\d{14}$/.test(formData.nationalId)) {
-      newErrors.nationalId = 'يجب أن يتكون الرقم القومي من 14 رقمًا بالضبط';
-    }
-
-    if (!formData.governorate) {
-      newErrors.governorate = 'المحافظة مطلوبة';
-    }
-
-    if (!formData.ministry) {
-      newErrors.ministry = 'الوزارة مطلوبة';
-    }
-
-    if (!formData.description.trim()) {
-      newErrors.description = 'وصف الشكوى مطلوب';
-    }
+    const nameError = validateName(formData.name);
+    if (nameError) newErrors.name = nameError;
+    
+    const nationalIdError = validateNationalId(formData.nationalId);
+    if (nationalIdError) newErrors.nationalId = nationalIdError;
+    
+    const governorateError = validateRequired(formData.governorate, 'المحافظة');
+    if (governorateError) newErrors.governorate = governorateError;
+    
+    const ministryError = validateRequired(formData.ministry, 'الوزارة');
+    if (ministryError) newErrors.ministry = ministryError;
+    
+    const descriptionError = validateRequired(formData.description, 'وصف الشكوى');
+    if (descriptionError) newErrors.description = descriptionError;
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleInputChange = (field, value) => {
+    // Only allow numbers for nationalId
+    if (field === 'nationalId' && value !== '' && !isNumericOnly(value)) {
+      return;
+    }
+
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
-  const handleImagePicker = () => {
-    const options = {
-      mediaType: 'photo',
-      includeBase64: false,
-      maxHeight: 2000,
-      maxWidth: 2000,
-    };
-
-    launchImageLibrary(options, (response) => {
-      if (response.didCancel || response.error) {
-        return;
-      }
-
-      if (response.assets && response.assets[0]) {
-        setFormData(prev => ({ ...prev, image: response.assets[0] }));
-      }
-    });
+  const handleImageSelected = (image) => {
+    setFormData(prev => ({ ...prev, image }));
   };
 
   const handleSubmit = async () => {
@@ -111,8 +76,7 @@ export default function ComplaintFormScreen({ navigation }) {
 
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await ApiService.submitComplaint(formData);
       
       Toast.show({
         type: 'success',
@@ -149,99 +113,57 @@ export default function ComplaintFormScreen({ navigation }) {
           <Card.Content>
             <Title style={styles.title}>قدم شكوتك</Title>
 
-            {/* Name Input */}
-            <TextInput
+            <FormInput
               label="الاسم"
               value={formData.name}
               onChangeText={(value) => handleInputChange('name', value)}
-              style={styles.input}
               error={!!errors.name}
-              mode="outlined"
+              placeholder="من فضلك ادخل الاسم"
             />
-            <HelperText type="error" visible={!!errors.name}>
-              {errors.name}
-            </HelperText>
 
-            {/* National ID Input */}
-            <TextInput
+            <FormInput
               label="الرقم القومي"
               value={formData.nationalId}
               onChangeText={(value) => handleInputChange('nationalId', value)}
-              style={styles.input}
               error={!!errors.nationalId}
-              mode="outlined"
+              placeholder="من فضلك ادخل الرقم القومي"
               keyboardType="numeric"
               maxLength={14}
             />
-            <HelperText type="error" visible={!!errors.nationalId}>
-              {errors.nationalId}
-            </HelperText>
 
-            {/* Governorate Picker */}
-            <View style={styles.pickerContainer}>
-              <Text style={styles.pickerLabel}>المحافظة</Text>
-              <View style={[styles.picker, errors.governorate && styles.pickerError]}>
-                <Picker
-                  selectedValue={formData.governorate}
-                  onValueChange={(value) => handleInputChange('governorate', value)}
-                  style={styles.pickerStyle}
-                >
-                  <Picker.Item label="اختر المحافظة" value="" />
-                  {governorates.map((gov) => (
-                    <Picker.Item key={gov} label={gov} value={gov} />
-                  ))}
-                </Picker>
-              </View>
-              <HelperText type="error" visible={!!errors.governorate}>
-                {errors.governorate}
-              </HelperText>
-            </View>
+            <FormPicker
+              label="المحافظة"
+              selectedValue={formData.governorate}
+              onValueChange={(value) => handleInputChange('governorate', value)}
+              items={GOVERNORATES}
+              placeholder="اختر المحافظة"
+              error={errors.governorate}
+            />
 
-            {/* Ministry Picker */}
-            <View style={styles.pickerContainer}>
-              <Text style={styles.pickerLabel}>الوزارة المختصة</Text>
-              <View style={[styles.picker, errors.ministry && styles.pickerError]}>
-                <Picker
-                  selectedValue={formData.ministry}
-                  onValueChange={(value) => handleInputChange('ministry', value)}
-                  style={styles.pickerStyle}
-                >
-                  <Picker.Item label="اختر الوزارة" value="" />
-                  {ministries.map((ministry) => (
-                    <Picker.Item key={ministry} label={ministry} value={ministry} />
-                  ))}
-                </Picker>
-              </View>
-              <HelperText type="error" visible={!!errors.ministry}>
-                {errors.ministry}
-              </HelperText>
-            </View>
+            <FormPicker
+              label="الوزارة المختصة"
+              selectedValue={formData.ministry}
+              onValueChange={(value) => handleInputChange('ministry', value)}
+              items={MINISTRIES}
+              placeholder="اختر الوزارة"
+              error={errors.ministry}
+            />
 
-            {/* Description Input */}
-            <TextInput
+            <FormInput
               label="وصف الشكوى"
               value={formData.description}
               onChangeText={(value) => handleInputChange('description', value)}
-              style={styles.input}
               error={!!errors.description}
-              mode="outlined"
+              placeholder="من فضلك ادخل تفاصيل الشكوى هنا..."
               multiline
               numberOfLines={4}
-              placeholder="من فضلك ادخل تفاصيل الشكوى هنا..."
             />
-            <HelperText type="error" visible={!!errors.description}>
-              {errors.description}
-            </HelperText>
 
-            {/* Image Picker */}
-            <TouchableOpacity style={styles.imagePicker} onPress={handleImagePicker}>
-              <Icon name="camera-alt" size={24} color="#27548A" />
-              <Text style={styles.imagePickerText}>
-                {formData.image ? 'تم اختيار الصورة' : 'إرفاق صورة (اختياري)'}
-              </Text>
-            </TouchableOpacity>
+            <ImagePicker
+              onImageSelected={handleImageSelected}
+              selectedImage={formData.image}
+            />
 
-            {/* Submit Button */}
             <Button
               mode="contained"
               onPress={handleSubmit}
@@ -273,47 +195,6 @@ const styles = StyleSheet.create({
     color: '#183B4E',
     textAlign: 'center',
     marginBottom: 20,
-  },
-  input: {
-    marginBottom: 5,
-    backgroundColor: '#FFFFFF',
-  },
-  pickerContainer: {
-    marginBottom: 10,
-  },
-  pickerLabel: {
-    fontSize: 16,
-    color: '#183B4E',
-    marginBottom: 8,
-    fontWeight: '500',
-  },
-  picker: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 4,
-    backgroundColor: '#FFFFFF',
-  },
-  pickerError: {
-    borderColor: '#EF4444',
-  },
-  pickerStyle: {
-    height: 50,
-  },
-  imagePicker: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    padding: 16,
-    marginVertical: 10,
-    backgroundColor: '#FFFFFF',
-  },
-  imagePickerText: {
-    marginLeft: 8,
-    color: '#27548A',
-    fontSize: 16,
   },
   submitButton: {
     marginTop: 20,

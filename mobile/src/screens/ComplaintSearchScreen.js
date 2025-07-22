@@ -1,138 +1,28 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  FlatList,
-} from 'react-native';
+import { View, StyleSheet, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  TextInput,
-  Button,
-  Card,
-  Title,
-  Paragraph,
-  Chip,
-} from 'react-native-paper';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { TextInput, Button, Card, Title } from 'react-native-paper';
+
+// Components
+import ComplaintCard from '../components/complaint/ComplaintCard';
+import ErrorMessage from '../components/common/ErrorMessage';
+
+// Hooks
+import { useComplaintSearch } from '../hooks/useComplaints';
 
 export default function ComplaintSearchScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [notFound, setNotFound] = useState(false);
+  const { results, loading, error, searchComplaints } = useComplaintSearch();
 
-  // Mock data for demonstration
-  const mockComplaints = [
-    {
-      id: '1',
-      name: 'أحمد محمد',
-      nationalId: '12345678901234',
-      ministry: 'وزارة الصحة',
-      governorate: 'القاهرة',
-      description: 'مشكلة في المستشفى العام',
-      status: 'قيد المعالجة',
-      createdAt: '2025-01-15',
-    },
-    {
-      id: '2',
-      name: 'فاطمة علي',
-      nationalId: '98765432109876',
-      ministry: 'وزارة التعليم',
-      governorate: 'الجيزة',
-      description: 'مشكلة في المدرسة الابتدائية',
-      status: 'تم الحل',
-      createdAt: '2025-01-10',
-    },
-  ];
-
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      alert('من فضلك ادخل رقم الشكوى أو رقمك القومي');
-      return;
-    }
-
-    setLoading(true);
-    setResults([]);
-    setNotFound(false);
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Filter mock data based on search query
-      const filteredResults = mockComplaints.filter(
-        complaint => 
-          complaint.nationalId.includes(searchQuery) ||
-          complaint.id.includes(searchQuery)
-      );
-
-      if (filteredResults.length === 0) {
-        setNotFound(true);
-      } else {
-        setResults(filteredResults);
-      }
-    } catch (error) {
-      console.error('Search error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'قيد المعالجة':
-        return '#F59E0B';
-      case 'تم الحل':
-        return '#10B981';
-      case 'مرفوضة':
-        return '#EF4444';
-      default:
-        return '#6B7280';
-    }
+  const handleSearch = () => {
+    searchComplaints(searchQuery);
   };
 
   const renderComplaintItem = ({ item }) => (
-    <Card style={styles.complaintCard}>
-      <Card.Content>
-        <View style={styles.complaintHeader}>
-          <Title style={styles.complaintName}>{item.name}</Title>
-          <Chip 
-            style={[styles.statusChip, { backgroundColor: getStatusColor(item.status) }]}
-            textStyle={styles.statusText}
-          >
-            {item.status}
-          </Chip>
-        </View>
-        
-        <View style={styles.complaintDetails}>
-          <View style={styles.detailRow}>
-            <Icon name="fingerprint" size={16} color="#6B7280" />
-            <Text style={styles.detailText}>الرقم القومي: {item.nationalId}</Text>
-          </View>
-          
-          <View style={styles.detailRow}>
-            <Icon name="business" size={16} color="#6B7280" />
-            <Text style={styles.detailText}>الوزارة: {item.ministry}</Text>
-          </View>
-          
-          <View style={styles.detailRow}>
-            <Icon name="location-on" size={16} color="#6B7280" />
-            <Text style={styles.detailText}>المحافظة: {item.governorate}</Text>
-          </View>
-          
-          <View style={styles.detailRow}>
-            <Icon name="calendar-today" size={16} color="#6B7280" />
-            <Text style={styles.detailText}>تاريخ التقديم: {item.createdAt}</Text>
-          </View>
-        </View>
-        
-        <Paragraph style={styles.description}>
-          الوصف: {item.description}
-        </Paragraph>
-      </Card.Content>
-    </Card>
+    <ComplaintCard 
+      complaint={item} 
+      showActions={false}
+    />
   );
 
   return (
@@ -163,15 +53,12 @@ export default function ComplaintSearchScreen() {
           </Card.Content>
         </Card>
 
-        {notFound && (
-          <Card style={styles.notFoundCard}>
-            <Card.Content style={styles.notFoundContent}>
-              <Icon name="search-off" size={48} color="#EF4444" />
-              <Text style={styles.notFoundText}>
-                لم يتم العثور على أي شكوى بهذا الرقم
-              </Text>
-            </Card.Content>
-          </Card>
+        {error && (
+          <ErrorMessage 
+            message={error}
+            onRetry={() => searchComplaints(searchQuery)}
+            showRetry={false}
+          />
         )}
 
         {results.length > 0 && (
@@ -216,63 +103,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#27548A',
     paddingVertical: 4,
   },
-  notFoundCard: {
-    elevation: 2,
-  },
-  notFoundContent: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  notFoundText: {
-    fontSize: 16,
-    color: '#EF4444',
-    textAlign: 'center',
-    marginTop: 8,
-  },
   resultsList: {
     flex: 1,
-  },
-  complaintCard: {
-    elevation: 2,
-    marginBottom: 12,
-  },
-  complaintHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  complaintName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#183B4E',
-    flex: 1,
-  },
-  statusChip: {
-    marginLeft: 8,
-  },
-  statusText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  complaintDetails: {
-    marginBottom: 12,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  detailText: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginLeft: 8,
-  },
-  description: {
-    fontSize: 14,
-    color: '#374151',
-    lineHeight: 20,
-    fontWeight: '500',
   },
 });
