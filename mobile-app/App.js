@@ -8,13 +8,14 @@ import Toast from 'react-native-toast-message';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 // Screens
-import HomeScreen from './src/screens/HomeScreen';
+import LandingScreen from './src/screens/LandingScreen';
 import ComplaintFormScreen from './src/screens/ComplaintFormScreen';
 import ComplaintSearchScreen from './src/screens/ComplaintSearchScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import SignupScreen from './src/screens/SignupScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
+import ComplaintsScreen from './src/screens/ComplaintsScreen';
 
 // Context
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
@@ -47,11 +48,19 @@ function MainTabs() {
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: 'gray',
         headerShown: false,
+        tabBarStyle: {
+          paddingBottom: 5,
+          height: 60,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
+        },
       })}
     >
       <Tab.Screen 
         name="Home" 
-        component={HomeScreen} 
+        component={LandingScreen} 
         options={{ tabBarLabel: 'الرئيسية' }}
       />
       <Tab.Screen 
@@ -62,7 +71,7 @@ function MainTabs() {
       <Tab.Screen 
         name="Search" 
         component={ComplaintSearchScreen} 
-        options={{ tabBarLabel: 'البحث' }}
+        options={{ tabBarLabel: 'متابعة الشكوى' }}
       />
       <Tab.Screen 
         name="Profile" 
@@ -77,7 +86,7 @@ function AppNavigator() {
   const { currentUser, loading } = useAuth();
 
   if (loading) {
-    return null; // Add loading screen here
+    return null;
   }
 
   return (
@@ -87,10 +96,11 @@ function AppNavigator() {
           <>
             <Stack.Screen name="MainTabs" component={MainTabs} />
             <Stack.Screen name="Dashboard" component={DashboardScreen} />
+            <Stack.Screen name="Complaints" component={ComplaintsScreen} />
           </>
         ) : (
           <>
-            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Landing" component={LandingScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Signup" component={SignupScreen} />
           </>

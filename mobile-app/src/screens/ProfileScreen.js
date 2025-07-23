@@ -16,7 +16,9 @@ import {
   Divider,
 } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+
 import { useAuth } from '../contexts/AuthContext';
+import { colors } from '../theme/theme';
 
 export default function ProfileScreen({ navigation }) {
   const { currentUser, logout } = useAuth();
@@ -52,7 +54,6 @@ export default function ProfileScreen({ navigation }) {
           text: 'حذف',
           style: 'destructive',
           onPress: () => {
-            // Handle account deletion
             console.log('Delete account');
           },
         },
@@ -165,7 +166,7 @@ export default function ProfileScreen({ navigation }) {
                 style={styles.menuItem}
                 onPress={item.onPress}
               >
-                <Icon name={item.icon} size={24} color="#27548A" />
+                <Icon name={item.icon} size={24} color={colors.blue} />
                 <Text style={styles.menuItemText}>{item.title}</Text>
                 <Icon name="chevron-right" size={24} color="#9CA3AF" />
               </TouchableOpacity>
@@ -203,7 +204,7 @@ export default function ProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   profileCard: {
     margin: 16,
@@ -214,13 +215,13 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   avatar: {
-    backgroundColor: '#27548A',
+    backgroundColor: colors.blue,
     marginBottom: 12,
   },
   userName: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#183B4E',
+    color: colors.darkTeal,
     marginBottom: 4,
   },
   userEmail: {
@@ -255,7 +256,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#183B4E',
+    color: colors.darkTeal,
     marginBottom: 16,
   },
   infoRow: {

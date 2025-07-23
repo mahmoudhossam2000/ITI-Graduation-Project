@@ -1,14 +1,11 @@
 import { delay } from '../utils/helpers';
-
-// Mock API service for demonstration
-// In a real app, this would connect to your backend API
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class ApiService {
   constructor() {
     this.baseUrl = 'https://your-api-url.com/api';
   }
 
-  // Simulate network delay
   async simulateDelay(ms = 1000) {
     await delay(ms);
   }
@@ -17,7 +14,6 @@ class ApiService {
   async login(email, password) {
     await this.simulateDelay();
     
-    // Mock successful login
     return {
       success: true,
       user: {
@@ -32,7 +28,6 @@ class ApiService {
   async signup(userData) {
     await this.simulateDelay();
     
-    // Mock successful signup
     return {
       success: true,
       user: {
@@ -47,98 +42,76 @@ class ApiService {
   async submitComplaint(complaintData) {
     await this.simulateDelay();
     
-    // Mock successful submission
-    return {
-      success: true,
-      complaint: {
+    // Store complaint locally for demo
+    try {
+      const existingComplaints = await AsyncStorage.getItem('complaints');
+      const complaints = existingComplaints ? JSON.parse(existingComplaints) : [];
+      
+      const newComplaint = {
         id: Date.now().toString(),
+        complaintId: Math.floor(Math.random() * 1000000).toString(),
         ...complaintData,
         status: 'قيد المعالجة',
         createdAt: new Date().toISOString(),
-      },
-    };
+      };
+      
+      complaints.push(newComplaint);
+      await AsyncStorage.setItem('complaints', JSON.stringify(complaints));
+      
+      return {
+        success: true,
+        complaint: newComplaint,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: 'فشل في حفظ الشكوى',
+      };
+    }
   }
 
   async searchComplaints(query) {
     await this.simulateDelay();
     
-    // Mock search results
-    const mockComplaints = [
-      {
-        id: '1',
-        name: 'أحمد محمد',
-        nationalId: '12345678901234',
-        ministry: 'وزارة الصحة',
-        governorate: 'القاهرة',
-        description: 'مشكلة في المستشفى العام',
-        status: 'قيد المعالجة',
-        createdAt: '2025-01-15',
-      },
-      {
-        id: '2',
-        name: 'فاطمة علي',
-        nationalId: '98765432109876',
-        ministry: 'وزارة التعليم',
-        governorate: 'الجيزة',
-        description: 'مشكلة في المدرسة الابتدائية',
-        status: 'تم الحل',
-        createdAt: '2025-01-10',
-      },
-    ];
+    try {
+      const existingComplaints = await AsyncStorage.getItem('complaints');
+      const complaints = existingComplaints ? JSON.parse(existingComplaints) : [];
+      
+      const filteredResults = complaints.filter(
+        complaint => 
+          complaint.nationalId?.includes(query) ||
+          complaint.complaintId?.includes(query)
+      );
 
-    const filteredResults = mockComplaints.filter(
-      complaint => 
-        complaint.nationalId.includes(query) ||
-        complaint.id.includes(query)
-    );
-
-    return {
-      success: true,
-      complaints: filteredResults,
-    };
+      return {
+        success: true,
+        complaints: filteredResults,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        complaints: [],
+      };
+    }
   }
 
   async getComplaints(filters = {}) {
     await this.simulateDelay();
     
-    // Mock complaints data
-    const mockComplaints = [
-      {
-        id: '1',
-        citizen: 'أحمد محمد',
-        title: 'مستشفى الأحرار التعليمي',
-        description: 'مشكلة في المستشفى',
-        status: 'قيد المراجعة',
-        priority: 'عادية',
-        date: '2025-01-15',
-        ministry: 'وزارة الصحة',
-      },
-      {
-        id: '2',
-        citizen: 'محمد علي',
-        title: 'جامعة الزقازيق',
-        description: 'انقطاع الكهرباء',
-        status: 'تم الحل',
-        priority: 'عالية',
-        date: '2025-01-14',
-        ministry: 'وزارة الكهرباء والطاقة',
-      },
-      {
-        id: '3',
-        citizen: 'سارة حسن',
-        title: 'معاشات الزقازيق',
-        description: 'تأخير صرف المعاش',
-        status: 'مرفوضة',
-        priority: 'عادية',
-        date: '2025-01-13',
-        ministry: 'وزارة التضامن الاجتماعي',
-      },
-    ];
-
-    return {
-      success: true,
-      complaints: mockComplaints,
-    };
+    try {
+      const existingComplaints = await AsyncStorage.getItem('complaints');
+      const complaints = existingComplaints ? JSON.parse(existingComplaints) : [];
+      
+      return {
+        success: true,
+        complaints: complaints,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        complaints: [],
+      };
+    }
   }
 
   async updateComplaintStatus(complaintId, status) {

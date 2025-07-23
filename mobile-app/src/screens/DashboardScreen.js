@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Title, Searchbar, Text } from 'react-native-paper';
+import { Title, Searchbar, Text, Card } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-// Components
-import StatCard from '../components/complaint/StatCard';
-import ComplaintCard from '../components/complaint/ComplaintCard';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import ErrorMessage from '../components/common/ErrorMessage';
-
-// Hooks
-import { useComplaints } from '../hooks/useComplaints';
+import { colors } from '../theme/theme';
+import ApiService from '../services/api';
 
 export default function DashboardScreen() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [complaints, setComplaints] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -21,56 +18,92 @@ export default function DashboardScreen() {
     rejected: 0,
   });
 
-  const { complaints, loading, error, refetch } = useComplaints();
-
   useEffect(() => {
-    // Calculate stats
-    const totalComplaints = complaints.length;
-    const pendingComplaints = complaints.filter(c => 
+    fetchComplaints();
+  }, []);
+
+  const fetchComplaints = async () => {
+    try {
+      const response = await ApiService.getComplaints();
+      if (response.success) {
+        setComplaints(response.complaints);
+        calculateStats(response.complaints);
+      }
+    } catch (error) {
+      console.error('Error fetching complaints:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateStats = (complaintsData) => {
+    const total = complaintsData.length;
+    const pending = complaintsData.filter(c => 
       c.status === 'قيد المراجعة' || c.status === 'قيد المعالجة'
     ).length;
-    const resolvedComplaints = complaints.filter(c => c.status === 'تم الحل').length;
-    const rejectedComplaints = complaints.filter(c => c.status === 'مرفوضة').length;
+    const resolved = complaintsData.filter(c => c.status === 'تم الحل').length;
+    const rejected = complaintsData.filter(c => c.status === 'مرفوضة').length;
     
-    setStats({
-      total: totalComplaints,
-      pending: pendingComplaints,
-      resolved: resolvedComplaints,
-      rejected: rejectedComplaints,
-    });
-  }, [complaints]);
+    setStats({ total, pending, resolved, rejected });
+  };
 
   const filteredComplaints = complaints.filter(complaint =>
     complaint.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     complaint.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleViewDetails = (complaint) => {
-    console.log('View details:', complaint);
-  };
-
-  const handleTakeAction = (complaint) => {
-    console.log('Take action:', complaint);
-  };
-
-  const renderComplaintItem = ({ item }) => (
-    <ComplaintCard 
-      complaint={item}
-      onViewDetails={handleViewDetails}
-      onTakeAction={handleTakeAction}
-    />
+  const StatCard = ({ title, value, icon, color }) => (
+    <Card style={[styles.statCard, { borderLeftColor: color }]}>
+      <Card.Content style={styles.statContent}>
+        <View style={styles.statInfo}>
+          <Text style={styles.statValue}>{value}</Text>
+          <Text style={styles.statTitle}>{title}</Text>
+        </View>
+        <Icon name={icon} size={32} color={color} />
+      </Card.Content>
+    </Card>
   );
 
-  if (loading) {
-    return <LoadingSpinner message="جاري تحميل البيانات..." />;
-  }
+  const ComplaintCard = ({ complaint }) => (
+    <Card style={styles.complaintCard}>
+      <Card.Content>
+        <View style={styles.complaintHeader}>
+          <Text style={styles.complaintName}>{complaint.name}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(complaint.status) }]}>
+            <Text style={styles.statusText}>{complaint.status}</Text>
+          </View>
+        </View>
+        
+        <View style={styles.complaintDetails}>
+          <Text style={styles.complaintText}>الوزارة: {complaint.ministry}</Text>
+          <Text style={styles.complaintText}>المحافظة: {complaint.governorate}</Text>
+          <Text style={styles.complaintDescription}>{complaint.description}</Text>
+        </View>
+      </Card.Content>
+    </Card>
+  );
 
-  if (error) {
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'قيد المعالجة':
+      case 'قيد المراجعة':
+        return '#F59E0B';
+      case 'تم الحل':
+        return '#10B981';
+      case 'مرفوضة':
+        return '#EF4444';
+      default:
+        return '#6B7280';
+    }
+  };
+
+  if (loading) {
     return (
-      <ErrorMessage 
-        message={error}
-        onRetry={refetch}
-      />
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text>جاري تحميل البيانات...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -89,7 +122,7 @@ export default function DashboardScreen() {
             title="إجمالي الشكاوى" 
             value={stats.total} 
             icon="assessment" 
-            color="#27548A" 
+            color={colors.blue} 
           />
           <StatCard 
             title="قيد المراجعة" 
@@ -124,13 +157,9 @@ export default function DashboardScreen() {
         {/* Complaints List */}
         <View style={styles.complaintsContainer}>
           <Title style={styles.sectionTitle}>الشكاوى الحديثة</Title>
-          <FlatList
-            data={filteredComplaints}
-            renderItem={renderComplaintItem}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            scrollEnabled={false}
-          />
+          {filteredComplaints.map((complaint, index) => (
+            <ComplaintCard key={index} complaint={complaint} />
+          ))}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -140,7 +169,12 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     padding: 20,
@@ -151,7 +185,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#183B4E',
+    color: colors.darkTeal,
     marginBottom: 4,
   },
   headerSubtitle: {
@@ -163,6 +197,30 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     padding: 16,
     justifyContent: 'space-between',
+  },
+  statCard: {
+    width: '48%',
+    marginBottom: 12,
+    elevation: 2,
+    borderLeftWidth: 4,
+  },
+  statContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  statInfo: {
+    flex: 1,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.darkTeal,
+    marginBottom: 4,
+  },
+  statTitle: {
+    fontSize: 12,
+    color: '#6B7280',
   },
   searchContainer: {
     paddingHorizontal: 16,
@@ -178,7 +236,48 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#183B4E',
+    color: colors.darkTeal,
     marginBottom: 12,
+  },
+  complaintCard: {
+    marginBottom: 12,
+    elevation: 2,
+  },
+  complaintHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  complaintName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.darkTeal,
+    flex: 1,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  statusText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  complaintDetails: {
+    marginTop: 8,
+  },
+  complaintText: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+  complaintDescription: {
+    fontSize: 14,
+    color: colors.darkTeal,
+    marginTop: 8,
+    fontStyle: 'italic',
   },
 });

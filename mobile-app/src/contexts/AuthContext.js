@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      // Simulate API call
+      // Simulate API call - replace with actual Firebase auth
       const userData = {
         id: '1',
         email,
@@ -60,6 +60,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      // Simulate Google sign in
+      const userData = {
+        id: Date.now().toString(),
+        email: 'user@gmail.com',
+        name: 'مستخدم جوجل',
+      };
+      
+      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+      setCurrentUser(userData);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: 'فشل تسجيل الدخول بجوجل' };
+    }
+  };
+
   const logout = async () => {
     try {
       await AsyncStorage.removeItem('userData');
@@ -74,6 +91,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     signup,
+    signInWithGoogle,
     logout,
   };
 

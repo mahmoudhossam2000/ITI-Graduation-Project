@@ -16,8 +16,10 @@ import {
   HelperText,
 } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useAuth } from '../contexts/AuthContext';
 import Toast from 'react-native-toast-message';
+
+import { useAuth } from '../contexts/AuthContext';
+import { colors } from '../theme/theme';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -26,7 +28,7 @@ export default function LoginScreen({ navigation }) {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   
-  const { login } = useAuth();
+  const { login, signInWithGoogle } = useAuth();
 
   const validateForm = () => {
     const newErrors = {};
@@ -64,7 +66,7 @@ export default function LoginScreen({ navigation }) {
       } else {
         Toast.show({
           type: 'error',
-          text1: result.error,
+          text1: result.error || 'فشل تسجيل الدخول',
           position: 'bottom',
         });
       }
@@ -79,6 +81,31 @@ export default function LoginScreen({ navigation }) {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithGoogle();
+      if (result.success) {
+        Toast.show({
+          type: 'success',
+          text1: 'تم تسجيل الدخول بنجاح',
+          position: 'bottom',
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: result.error || 'فشل تسجيل الدخول باستخدام جوجل',
+          position: 'bottom',
+        });
+      }
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'حدث خطأ أثناء تسجيل الدخول',
+        position: 'bottom',
+      });
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView 
@@ -89,7 +116,7 @@ export default function LoginScreen({ navigation }) {
           <Card style={styles.card}>
             <Card.Content>
               <View style={styles.header}>
-                <Icon name="login" size={48} color="#27548A" />
+                <Icon name="login" size={48} color={colors.blue} />
                 <Title style={styles.title}>تسجيل الدخول</Title>
               </View>
 
@@ -103,6 +130,7 @@ export default function LoginScreen({ navigation }) {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 left={<TextInput.Icon icon="email" />}
+                placeholder="البريد الإلكتروني"
               />
               <HelperText type="error" visible={!!errors.email}>
                 {errors.email}
@@ -119,10 +147,11 @@ export default function LoginScreen({ navigation }) {
                 left={<TextInput.Icon icon="lock" />}
                 right={
                   <TextInput.Icon
-                    icon={showPassword ? 'eye-off' : 'eye'}
+                    icon={showPassword ? 'visibility-off' : 'visibility'}
                     onPress={() => setShowPassword(!showPassword)}
                   />
                 }
+                placeholder="كلمة المرور"
               />
               <HelperText type="error" visible={!!errors.password}>
                 {errors.password}
@@ -150,7 +179,7 @@ export default function LoginScreen({ navigation }) {
 
               <Button
                 mode="outlined"
-                onPress={() => {/* Handle Google login */}}
+                onPress={handleGoogleSignIn}
                 style={styles.googleButton}
                 icon="google"
               >
@@ -174,7 +203,7 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   keyboardView: {
     flex: 1,
@@ -194,7 +223,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#183B4E',
+    color: colors.darkTeal,
     marginTop: 8,
   },
   input: {
@@ -206,11 +235,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   forgotPasswordText: {
-    color: '#27548A',
+    color: colors.blue,
     fontSize: 14,
   },
   loginButton: {
-    backgroundColor: '#27548A',
+    backgroundColor: colors.blue,
     paddingVertical: 8,
     marginBottom: 16,
   },
@@ -230,7 +259,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   googleButton: {
-    borderColor: '#27548A',
+    borderColor: colors.blue,
     marginBottom: 16,
   },
   footer: {
@@ -243,7 +272,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   signupLink: {
-    color: '#27548A',
+    color: colors.blue,
     fontSize: 14,
     fontWeight: 'bold',
   },

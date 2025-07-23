@@ -58,3 +58,12 @@ export const isNumericOnly = (text) => {
 export const delay = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 };
+
+// Convert file to base64 for mobile
+export const fileToBase64 = (uri) => {
+  return new Promise((resolve, reject) => {
+    // For mobile, we'll use the URI directly
+    // In a real app, you might want to convert to base64
+    resolve(uri);
+  });
+};

@@ -5,7 +5,10 @@ export const theme = {
   colors: {
     ...DefaultTheme.colors,
     primary: '#27548A',
-    accent: '#DAA853',
+    blue: '#27548A',
+    cream: '#F5EEDC',
+    darkTeal: '#183B4E',
+    mustard: '#DAA853',
     background: '#F9FAFB',
     surface: '#FFFFFF',
     text: '#183B4E',
@@ -29,4 +32,13 @@ export const theme = {
       fontWeight: 'normal',
     },
   },
+};
+
+export const colors = {
+  blue: '#27548A',
+  cream: '#F5EEDC',
+  darkTeal: '#183B4E',
+  mustard: '#DAA853',
+  background: '#F9FAFB',
+  customBg: '#F0F4F8',
 };

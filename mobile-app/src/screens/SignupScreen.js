@@ -17,8 +17,10 @@ import {
   HelperText,
 } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useAuth } from '../contexts/AuthContext';
 import Toast from 'react-native-toast-message';
+
+import { useAuth } from '../contexts/AuthContext';
+import { colors } from '../theme/theme';
 
 export default function SignupScreen({ navigation }) {
   const [formData, setFormData] = useState({
@@ -34,7 +36,7 @@ export default function SignupScreen({ navigation }) {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   
-  const { signup } = useAuth();
+  const { signup, signInWithGoogle } = useAuth();
 
   const validateForm = () => {
     const newErrors = {};
@@ -107,7 +109,7 @@ export default function SignupScreen({ navigation }) {
       } else {
         Toast.show({
           type: 'error',
-          text1: result.error,
+          text1: result.error || 'فشل إنشاء الحساب',
           position: 'bottom',
         });
       }
@@ -122,6 +124,31 @@ export default function SignupScreen({ navigation }) {
     }
   };
 
+  const handleGoogleSignUp = async () => {
+    try {
+      const result = await signInWithGoogle();
+      if (result.success) {
+        Toast.show({
+          type: 'success',
+          text1: 'تم إنشاء الحساب بنجاح',
+          position: 'bottom',
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: result.error || 'فشل إنشاء الحساب باستخدام جوجل',
+          position: 'bottom',
+        });
+      }
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'حدث خطأ أثناء إنشاء الحساب',
+        position: 'bottom',
+      });
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView 
@@ -133,7 +160,7 @@ export default function SignupScreen({ navigation }) {
             <Card style={styles.card}>
               <Card.Content>
                 <View style={styles.header}>
-                  <Icon name="person-add" size={48} color="#27548A" />
+                  <Icon name="person-add" size={48} color={colors.blue} />
                   <Title style={styles.title}>إنشاء حساب جديد</Title>
                 </View>
 
@@ -145,6 +172,7 @@ export default function SignupScreen({ navigation }) {
                   error={!!errors.name}
                   mode="outlined"
                   left={<TextInput.Icon icon="person" />}
+                  placeholder="الاسم الكامل"
                 />
                 <HelperText type="error" visible={!!errors.name}>
                   {errors.name}
@@ -160,6 +188,7 @@ export default function SignupScreen({ navigation }) {
                   keyboardType="numeric"
                   maxLength={14}
                   left={<TextInput.Icon icon="fingerprint" />}
+                  placeholder="الرقم القومي (14 رقم)"
                 />
                 <HelperText type="error" visible={!!errors.nationalId}>
                   {errors.nationalId}
@@ -175,6 +204,7 @@ export default function SignupScreen({ navigation }) {
                   keyboardType="numeric"
                   maxLength={11}
                   left={<TextInput.Icon icon="phone" />}
+                  placeholder="رقم الهاتف (11 رقم)"
                 />
                 <HelperText type="error" visible={!!errors.phone}>
                   {errors.phone}
@@ -190,6 +220,7 @@ export default function SignupScreen({ navigation }) {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   left={<TextInput.Icon icon="email" />}
+                  placeholder="البريد الإلكتروني"
                 />
                 <HelperText type="error" visible={!!errors.email}>
                   {errors.email}
@@ -206,10 +237,11 @@ export default function SignupScreen({ navigation }) {
                   left={<TextInput.Icon icon="lock" />}
                   right={
                     <TextInput.Icon
-                      icon={showPassword ? 'eye-off' : 'eye'}
+                      icon={showPassword ? 'visibility-off' : 'visibility'}
                       onPress={() => setShowPassword(!showPassword)}
                     />
                   }
+                  placeholder="كلمة المرور (6 أحرف على الأقل)"
                 />
                 <HelperText type="error" visible={!!errors.password}>
                   {errors.password}
@@ -226,10 +258,11 @@ export default function SignupScreen({ navigation }) {
                   left={<TextInput.Icon icon="lock-check" />}
                   right={
                     <TextInput.Icon
-                      icon={showConfirmPassword ? 'eye-off' : 'eye'}
+                      icon={showConfirmPassword ? 'visibility-off' : 'visibility'}
                       onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                     />
                   }
+                  placeholder="تأكيد كلمة المرور"
                 />
                 <HelperText type="error" visible={!!errors.confirmPassword}>
                   {errors.confirmPassword}
@@ -253,7 +286,7 @@ export default function SignupScreen({ navigation }) {
 
                 <Button
                   mode="outlined"
-                  onPress={() => {/* Handle Google signup */}}
+                  onPress={handleGoogleSignUp}
                   style={styles.googleButton}
                   icon="google"
                 >
@@ -278,7 +311,7 @@ export default function SignupScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   keyboardView: {
     flex: 1,
@@ -297,7 +330,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#183B4E',
+    color: colors.darkTeal,
     marginTop: 8,
   },
   input: {
@@ -305,7 +338,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   signupButton: {
-    backgroundColor: '#27548A',
+    backgroundColor: colors.blue,
     paddingVertical: 8,
     marginBottom: 16,
     marginTop: 8,
@@ -326,7 +359,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   googleButton: {
-    borderColor: '#27548A',
+    borderColor: colors.blue,
     marginBottom: 16,
   },
   footer: {
@@ -339,7 +372,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   loginLink: {
-    color: '#27548A',
+    color: colors.blue,
     fontSize: 14,
     fontWeight: 'bold',
   },
