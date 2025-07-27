@@ -14,16 +14,18 @@ export default function DepartmentsBar() {
   const departments = [
     department1, department2, department3, department4, department5,
     department6, department7, department8, department9, department10,
-    department1, department2, department3, department7, department8,
   ];
 
+  // تكرار الصور مرتين علشان الأنيميشن يبقى seamless
+  const loopedDepartments = [...departments, ...departments,...departments];
+
   return (
-    <section className="bottom-bar-wrapper position-relative py-10">
+    <section className="bottom-bar-wrapper relative py-10 overflow-hidden">
       <h2 className="text-4xl font-bold text-center pb-5 italic">
         الجهات المشاركة في المنصة
       </h2>
-      <div className="bottom-bar d-flex mt-5">
-        {departments.map((img, i) => (
+      <div className="bottom-bar">
+        {loopedDepartments.map((img, i) => (
           <img key={i} src={img} alt="department" />
         ))}
       </div>

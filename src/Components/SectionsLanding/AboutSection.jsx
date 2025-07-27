@@ -3,19 +3,44 @@ import { FaTriangleExclamation } from "react-icons/fa6";
 import { BsExclamationCircle } from "react-icons/bs";
 import { PiLightbulbFilament } from "react-icons/pi";
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
+import { motion } from "framer-motion";
 
 export default function AboutSection() {
+  // animation
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 40 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
-    <section className="py-16 bg-blue-50 text-gray-800 px-6 md:px-20 bg-cream" id="idea">
-      <div className="max-w-6xl mx-auto space-y-10 animate-fade-in">
-        <h2 className="text-3xl md:text-4xl font-bold text-blue-900 text-center">
+    <section
+      className="py-16 bg-blue-50 text-gray-800 px-6 md:px-20 bg-cream"
+      id="idea"
+    >
+      <motion.div
+        className="max-w-6xl mx-auto space-y-10"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ staggerChildren: 0.2 }}
+      >
+        {/* عنوان القسم */}
+        <motion.h2
+          className="text-3xl md:text-4xl font-bold text-blue-900 text-center"
+          variants={fadeInUp}
+          transition={{ duration: 0.6 }}
+        >
           عن منصة شكوتك
-        </h2>
+        </motion.h2>
 
         {/* Problem & Solution */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Problem Card */}
-          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-md hover:shadow-xl transition duration-300">
+          <motion.div
+            className="bg-white p-6 md:p-8 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 will-change-transform"
+            variants={fadeInUp}
+            transition={{ duration: 0.6 }}
+          >
             <h3 className="text-2xl font-bold text-red-600 mb-6 flex items-center">
               <span className="bg-red-200 rounded-full p-2 me-3">
                 <FaTriangleExclamation size={20} />
@@ -30,15 +55,22 @@ export default function AboutSection() {
                 "الجهات الحكومية لا تمتلك أدوات لتحليل البيانات وتحسين الخدمات",
               ].map((problem, index) => (
                 <li className="flex items-start" key={index}>
-                  <BsExclamationCircle size={20} className="mt-1 text-red-800 me-3" />
+                  <BsExclamationCircle
+                    size={20}
+                    className="mt-1 text-red-800 me-3"
+                  />
                   {problem}
                 </li>
               ))}
             </ul>
-          </div>
+          </motion.div>
 
           {/* Solution Card */}
-          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-md hover:shadow-xl transition duration-300">
+          <motion.div
+            className="bg-white p-6 md:p-8 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 will-change-transform"
+            variants={fadeInUp}
+            transition={{ duration: 0.6 }}
+          >
             <h3 className="text-2xl font-bold text-green-600 mb-6 flex items-center">
               <span className="bg-green-200 rounded-full p-2 me-3">
                 <PiLightbulbFilament size={22} />
@@ -53,16 +85,23 @@ export default function AboutSection() {
                 "توفير لوحة تحكم لكل من المستخدم، والجهة، والمشرف العام",
               ].map((solution, index) => (
                 <li className="flex items-start" key={index}>
-                  <IoMdCheckmarkCircleOutline size={20} className="text-green-600 me-3" />
+                  <IoMdCheckmarkCircleOutline
+                    size={20}
+                    className="text-green-600 me-3"
+                  />
                   {solution}
                 </li>
               ))}
             </ul>
-          </div>
+          </motion.div>
         </div>
 
         {/* Dashboard */}
-        <div className="dashboardDep bg-white p-6 md:p-8 lg:p-10 rounded-xl shadow-md hover:shadow-lg transition">
+        <motion.div
+          className="dashboardDep bg-white p-6 md:p-8 lg:p-10 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 will-change-transform"
+          variants={fadeInUp}
+          transition={{ duration: 0.6 }}
+        >
           <h3 className="text-2xl md:text-2xl font-bold text-blue-700 mb-6 text-center">
             مميزات لوحة التحكم الخاصة بالجهة
           </h3>
@@ -74,8 +113,8 @@ export default function AboutSection() {
             <li>بحث سريع وسهل داخل الـ DataTable</li>
             <li>تقارير وتحليلات تساعد في تحسين الأداء العام</li>
           </ul>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </section>
   );
 }

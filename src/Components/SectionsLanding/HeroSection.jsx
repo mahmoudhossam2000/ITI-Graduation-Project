@@ -20,7 +20,7 @@ export default function HeroSection() {
           </p>
           <Link
             to="/submitComplaint"
-            className="btn button text-white px-6 py-4 text-lg hover:-translate-y-1 transition-all duration-300">
+            className="btn button text-white px-6 py-4 text-lg hover:-translate-y-1 transition-all duration-300 hover:bg-darkTeal">
             تقديم شكوى
           </Link>
         </div>

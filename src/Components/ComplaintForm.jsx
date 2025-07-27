@@ -1,13 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { db, storage } from "../firebase/firebase";
+import { db } from "../firebase/firebase";
 import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { toast} from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../Components/Navbar";
-import Footer from "../Components/Footer";
 import { Link } from "react-router-dom";
 
 function fileToBase64(file) {
@@ -22,48 +20,42 @@ function fileToBase64(file) {
 const validationSchema = Yup.object().shape({
   name: Yup.string().required("الاسم مطلوب"),
   email: Yup.string()
-  .required("البريد الإلكتروني مطلوب")
-  .email("من فضلك أدخل بريدًا إلكترونيًا صحيحًا"),
+    .required("البريد الإلكتروني مطلوب")
+    .email("من فضلك أدخل بريدًا إلكترونيًا صحيحًا"),
   governorate: Yup.string().required("المحافظة مطلوبة"),
   ministry: Yup.string().required("الوزارة مطلوبة"),
-  description: Yup.string().required("الوصف مطلوب"),
+  description: Yup.string().required("ادخال الوصف مطلوب"),
 });
 
 function ComplaintForm() {
+  const [newComplaintId, setNewComplaintId] = useState(null);
+
   const formik = useFormik({
     initialValues: {
       name: "",
-      email:"",
+      email: "",
       governorate: "",
       ministry: "",
       description: "",
-      image: null,
       imageBase64: "",
     },
     validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
-        let imageURL = null;
-
-        if (values.image) {
-          const imageRef = ref(
-            storage,
-            `complaint_images/${Date.now()}_${values.image.name}`
-          );
-          await uploadBytes(imageRef, values.image);
-          imageURL = await getDownloadURL(imageRef);
-        }
-
+        const complaintId = Math.floor(Math.random() * 1000000).toString();
         await addDoc(collection(db, "complaints"), {
           name: values.name,
-          email:values.email,
+          email: values.email,
           governorate: values.governorate,
           ministry: values.ministry,
           description: values.description,
-          image: imageURL || null,
+          imageBase64: values.imageBase64 || null,
           createdAt: new Date(),
+          status: "قيد المعالجة",
+          complaintId,
         });
 
+        setNewComplaintId(complaintId);
         toast.success("تم إرسال الشكوى بنجاح");
         resetForm();
       } catch (error) {
@@ -80,7 +72,6 @@ function ComplaintForm() {
       try {
         const base64String = await fileToBase64(file);
         formik.setFieldValue("imageBase64", base64String);
-        formik.setFieldValue("image", file);
       } catch (error) {
         console.error("Error converting file to Base64:", error);
       }
@@ -124,7 +115,7 @@ function ComplaintForm() {
               <label
                 htmlFor="emailInput"
                 className="block text-blue font-medium mb-1">
-                الايميل
+                البريد الإلكتروني
               </label>
               <input
                 id="emailInput"
@@ -278,9 +269,16 @@ function ComplaintForm() {
                 onChange={handleImageChange}
                 className="file-input file-input-bordered w-full bg-background border border-gray-300"
               />
+              {formik.values.imageBase64 && (
+                <div className="mt-2">
+                  <p className="text-gray-600 text-sm">
+                    الصورة المرفقة جاهزة للإرسال
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* زر الإرسال */}
+            {/* button send complaint */}
             <button
               type="submit"
               className="w-full py-3 px-6 bg-blue text-white font-semibold rounded-lg hover:bg-blue/90 transition duration-300"
@@ -289,6 +287,8 @@ function ComplaintForm() {
             </button>
           </form>
         </div>
+
+        {/* trace complaint status */}
         <div className="mt-8 text-center">
           <p className="text-gray-700 text-md">
             هل قدمت شكوى بالفعل؟
@@ -301,7 +301,39 @@ function ComplaintForm() {
         </div>
       </section>
 
-      <Footer />
+      {/* Modal Display ComplaintId */}
+      {newComplaintId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-96 shadow-lg text-center relative">
+            <h2 className="text-2xl font-bold mb-4 text-blue">
+              تم إرسال الشكوى
+            </h2>
+            <p className="text-gray-700 mb-4">
+              رقم الشكوى الخاص بك هو:
+              <span className="block text-2xl font-bold text-darkTeal mt-2">
+                {newComplaintId}
+              </span>
+            </p>
+
+            {/* button copy */}
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(newComplaintId);
+                toast.info("تم نسخ رقم الشكوى!");
+              }}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition duration-200 mb-4 mx-3">
+              نسخ الرقم
+            </button>
+
+            {/* button close */}
+            <button
+              onClick={() => setNewComplaintId(null)}
+              className="px-4 py-2 bg-blue text-white rounded-lg hover:bg-blue/90 transition duration-300">
+              إغلاق
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -25,6 +25,15 @@ body {
 ::placeholder {
   font-size: 16px;
 }
+.custom-toast {
+  background-color: white;
+  color: var(--darkTeal) !important;
+  font-family: "Tajawal", sans-serif;
+  font-size: 17px;
+  font-weight: 600 !important;
+  padding: 25px 20px !important;
+}
+
 .button {
   background-color: var(--blue);
   border: 1px solid var(--blue);
@@ -56,7 +65,7 @@ footer ul li:hover {
 .bottom-bar {
   display: flex;
   width: max-content;
-  animation: scroll-left 20s linear infinite;
+  animation: scroll-left 40s linear infinite;
 }
 
 .bottom-bar img {
