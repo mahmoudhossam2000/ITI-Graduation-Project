@@ -3,7 +3,8 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { db } from "../firebase/firebase";
 import { collection, addDoc } from "firebase/firestore";
-import { toast } from "react-toastify";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../Components/Navbar";
 import { Link } from "react-router-dom";
@@ -42,7 +43,17 @@ function ComplaintForm() {
     validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
-        const complaintId = Math.floor(Math.random() * 1000000).toString();
+        let imageURL = null;
+
+        if (values.image) {
+          const imageRef = ref(
+            storage,
+            `complaint_images/${Date.now()}_${values.image.name}`
+          );
+          await uploadBytes(imageRef, values.image);
+          imageURL = await getDownloadURL(imageRef);
+        }
+
         await addDoc(collection(db, "complaints"), {
           name: values.name,
           email: values.email,
@@ -51,8 +62,6 @@ function ComplaintForm() {
           description: values.description,
           imageBase64: values.imageBase64 || null,
           createdAt: new Date(),
-          status: "قيد المعالجة",
-          complaintId,
         });
 
         setNewComplaintId(complaintId);
@@ -92,7 +101,8 @@ function ComplaintForm() {
             <div>
               <label
                 htmlFor="name"
-                className="block text-blue font-medium mb-1">
+                className="block text-blue font-medium mb-1"
+              >
                 الاسم
               </label>
               <input
@@ -110,12 +120,12 @@ function ComplaintForm() {
               )}
             </div>
 
-            {/* email */}
+            {/* national id*/}
             <div>
               <label
-                htmlFor="emailInput"
+                htmlFor="nationalId"
                 className="block text-blue font-medium mb-1">
-                البريد الإلكتروني
+                الرقم القومي
               </label>
               <input
                 id="emailInput"
@@ -145,7 +155,8 @@ function ComplaintForm() {
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 value={formik.values.governorate}
-                className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue">
+                className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue"
+              >
                 <option disabled value="">
                   اختر المحافظة
                 </option>
@@ -199,7 +210,8 @@ function ComplaintForm() {
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 value={formik.values.ministry}
-                className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue">
+                className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue"
+              >
                 <option disabled value="">
                   اختر الوزارة
                 </option>
@@ -234,7 +246,8 @@ function ComplaintForm() {
             <div>
               <label
                 htmlFor="description"
-                className="block text-blue font-medium mb-1">
+                className="block text-blue font-medium mb-1"
+              >
                 وصف الشكوى
               </label>
               <textarea
@@ -258,7 +271,8 @@ function ComplaintForm() {
             <div>
               <label
                 htmlFor="image"
-                className="block text-blue font-medium mb-2">
+                className="block text-blue font-medium mb-2"
+              >
                 (اختياري) ارفق صورة الشكوى
               </label>
               <input
@@ -282,7 +296,8 @@ function ComplaintForm() {
             <button
               type="submit"
               className="w-full py-3 px-6 bg-blue text-white font-semibold rounded-lg hover:bg-blue/90 transition duration-300"
-              disabled={formik.isSubmitting}>
+              disabled={formik.isSubmitting}
+            >
               {formik.isSubmitting ? "جارٍ الإرسال..." : "إرسال الشكوى"}
             </button>
           </form>
@@ -294,46 +309,15 @@ function ComplaintForm() {
             هل قدمت شكوى بالفعل؟
             <Link
               to="/traceComplaint"
-              className="inline-block ml-2 ms-2 text-blue font-semibold hover:underline">
+              className="inline-block ml-2 ms-2 text-blue font-semibold hover:underline"
+            >
               اضغط هنا لمتابعة الشكوى
             </Link>
           </p>
         </div>
       </section>
 
-      {/* Modal Display ComplaintId */}
-      {newComplaintId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-96 shadow-lg text-center relative">
-            <h2 className="text-2xl font-bold mb-4 text-blue">
-              تم إرسال الشكوى
-            </h2>
-            <p className="text-gray-700 mb-4">
-              رقم الشكوى الخاص بك هو:
-              <span className="block text-2xl font-bold text-darkTeal mt-2">
-                {newComplaintId}
-              </span>
-            </p>
-
-            {/* button copy */}
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(newComplaintId);
-                toast.info("تم نسخ رقم الشكوى!");
-              }}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition duration-200 mb-4 mx-3">
-              نسخ الرقم
-            </button>
-
-            {/* button close */}
-            <button
-              onClick={() => setNewComplaintId(null)}
-              className="px-4 py-2 bg-blue text-white rounded-lg hover:bg-blue/90 transition duration-300">
-              إغلاق
-            </button>
-          </div>
-        </div>
-      )}
+      <Footer />
     </>
   );
 }
