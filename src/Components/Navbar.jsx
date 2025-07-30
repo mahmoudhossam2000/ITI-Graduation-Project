@@ -76,18 +76,40 @@ export default function Navbar() {
                   <TfiWrite size={18} className="text-blue" /> الشكاوي
                 </Link>
               </li>
-              <li>
-                <a className="btn btn-sm btn-outline text-sm flex items-center gap-1 mb-2 ">
-                  <MdLogin size={18} />
-                  تسجيل الدخول
-                </a>
-              </li>
-              <li>
-                <a className="btn btn-sm text-sm flex items-center gap-1 btn-outline ">
-                  <TiUserAdd size={18} />
-                  سجل الآن
-                </a>
-              </li>
+              {currentUser ? (
+                <>
+                  <li>
+                    <Link
+                      to="/profile"
+                      className="btn btn-sm btn-outline text-sm flex items-center gap-1 mb-2 hover:bg-blue hover:!text-white"
+                    >
+                      <MdPerson size={18} />
+                      الملف الشخصي
+                    </Link>
+                  </li>
+                  <li>
+                    <button
+                      onClick={handleLogout}
+                      className="btn btn-sm text-sm flex items-center gap-1 btn-outline w-full hover:bg-red-500 hover:!text-white"
+                    >
+                      <MdLogout size={18} />
+                      تسجيل الخروج
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <Link
+                      to="/signup"
+                      className="btn btn-sm text-sm flex items-center gap-1 button"
+                    >
+                      <TiUserAdd size={18} />
+                      سجل الآن
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 
@@ -123,15 +145,34 @@ export default function Navbar() {
               </Link>
             </li>
           </ul>
-          {/* auth buttons */}
-          <a className="btn btn-sm btn-outline border-blue text-sm flex items-center gap-1 ">
-            <MdLogin size={18} />
-            تسجيل الدخول
-          </a>
-          <a className="btn btn-sm text-sm flex items-center gap-1 button">
-            <TiUserAdd size={18} />
-            سجل الآن
-          </a>
+          {currentUser ? (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/profile"
+                className="btn btn-sm btn-outline border-blue text-sm flex items-center gap-1 hover:bg-blue hover:!text-white"
+              >
+                <MdPerson size={18} />
+                الملف الشخصي
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="btn btn-sm text-sm flex items-center gap-1 btn-outline hover:!bg-red-600 hover:!text-white"
+              >
+                <MdLogout size={18} />
+                تسجيل الخروج
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/signup"
+                className="btn btn-sm text-sm flex items-center gap-1 button"
+              >
+                <TiUserAdd size={18} />
+                سجل الآن
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </>

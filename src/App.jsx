@@ -3,6 +3,9 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import LandingPage from "./Pages/LandingPage";
 import ComplaintForm from "./Components/ComplaintForm";
 import ComplaintSearch from "./Components/ComplaintSearch";
+import Layout from "./Components/features/authority_Dashboard/Layout";
+import Dashboard from "./Pages/Dashboard";
+import Complaints from "./Pages/Complaints";
 import Login from "./Pages/Auth/Login";
 import Signup from "./Pages/Auth/Signup";
 import Profile from "./Pages/Profile";
@@ -44,6 +47,10 @@ function AppContent() {
           </PrivateRoute>
         }
       />
+      <Route path="/dashboard" element={<Layout />}>
+        <Route index element={<Dashboard />} />
+        <Route path="complaints" element={<Complaints />} />
+      </Route>
     </Routes>
   );
 }
