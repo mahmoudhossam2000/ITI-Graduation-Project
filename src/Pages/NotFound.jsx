@@ -206,7 +206,7 @@ export default function NotFound() {
         hoverIntensity={0.6}
         enableHover={true}
         color="#27548a"
-        fontSize="clamp(2rem,10vw, 6rem)"
+        fontSize="clamp(2rem,8vw, 6rem)"
       >
         ٤٠٤
       </FuzzyText>

@@ -1,7 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import LandingPage from "./Pages/LandingPage";
 import ComplaintForm from "./Components/ComplaintForm";
 import ComplaintSearch from "./Components/ComplaintSearch";
