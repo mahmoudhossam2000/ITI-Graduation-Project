@@ -3,7 +3,6 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { db } from "../firebase/firebase";
 import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../Components/Navbar";
@@ -43,17 +42,6 @@ function ComplaintForm() {
     validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
-        let imageURL = null;
-
-        if (values.image) {
-          const imageRef = ref(
-            storage,
-            `complaint_images/${Date.now()}_${values.image.name}`
-          );
-          await uploadBytes(imageRef, values.image);
-          imageURL = await getDownloadURL(imageRef);
-        }
-
         await addDoc(collection(db, "complaints"), {
           name: values.name,
           email: values.email,
@@ -62,6 +50,8 @@ function ComplaintForm() {
           description: values.description,
           imageBase64: values.imageBase64 || null,
           createdAt: new Date(),
+          status: "قيد المعالجة",
+          complaintId: Math.floor(Math.random() * 1000000).toString(),
         });
 
         setNewComplaintId(complaintId);
@@ -120,11 +110,12 @@ function ComplaintForm() {
               )}
             </div>
 
-            {/* national id*/}
+            {/* national id */}
             <div>
               <label
                 htmlFor="nationalId"
-                className="block text-blue font-medium mb-1">
+                className="block text-blue font-medium mb-1"
+              >
                 الرقم القومي
               </label>
               <input
@@ -318,6 +309,7 @@ function ComplaintForm() {
       </section>
 
       <Footer />
+      <ToastContainer />
     </>
   );
 }

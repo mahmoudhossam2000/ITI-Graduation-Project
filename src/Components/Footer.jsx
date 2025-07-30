@@ -71,7 +71,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* footer-bottom*/}
         <div className="mt-10 text-center border-t border-gray-600 pt-4 text-sm text-gray-400">
           جميع الحقوق محفوظة © 2025 - شكوتك
         </div>

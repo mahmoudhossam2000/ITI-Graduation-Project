@@ -59,6 +59,8 @@ export default function Navbar() {
           scrolled ? "bg-white shadow" : "bg-white"
         }`}
       >
+        }`}
+      >
         <div className="navbar-start">
           <div className="dropdown">
             <div
@@ -66,11 +68,15 @@ export default function Navbar() {
               role="button"
               className="btn btn-ghost lg:hidden "
             >
+              className="btn btn-ghost lg:hidden "
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5"
                 fill="none"
                 viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 stroke="currentColor"
               >
                 {" "}
@@ -86,7 +92,15 @@ export default function Navbar() {
               tabIndex={0}
               className=" menu menu-sm dropdown-content bg-white rounded-box z-1 mt-3 w-52 p-2 shadow pb-3"
             >
+              className=" menu menu-sm dropdown-content bg-white rounded-box z-1 mt-3 w-52 p-2 shadow pb-3"
+            >
               <li>
+                <Link
+                  to="/"
+                  className="text-base flex items-center gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium"
+                >
+                  <AiFillHome size={18} className="text-blue" />
+                  الرئيسية
                 <Link
                   to="/"
                   className="text-base flex items-center gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium"
@@ -101,8 +115,47 @@ export default function Navbar() {
                   className="text-base flex items-start gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium"
                 >
                   <TfiWrite size={18} className="text-blue" /> الشكاوي
+                <Link
+                  to="/submitComplaint"
+                  className="text-base flex items-start gap-1 focus:outline-transparent focus:ring-0 active:ring-0 focus:bg-transparent active:bg-transparent font-medium"
+                >
+                  <TfiWrite size={18} className="text-blue" /> الشكاوي
                 </Link>
               </li>
+              {currentUser ? (
+                <>
+                  <li>
+                    <Link
+                      to="/profile"
+                      className="btn btn-sm btn-outline text-sm flex items-center gap-1 mb-2 hover:bg-blue hover:!text-white"
+                    >
+                      <MdPerson size={18} />
+                      الملف الشخصي
+                    </Link>
+                  </li>
+                  <li>
+                    <button
+                      onClick={handleLogout}
+                      className="btn btn-sm text-sm flex items-center gap-1 btn-outline w-full hover:bg-red-500 hover:!text-white"
+                    >
+                      <MdLogout size={18} />
+                      تسجيل الخروج
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <Link
+                      to="/signup"
+                      className="btn btn-sm text-sm flex items-center gap-1 button"
+                    >
+                      <TiUserAdd size={18} />
+                      سجل الآن
+                    </Link>
+                  </li>
+                </>
+              )}
               {currentUser ? (
                 <>
                   <li>
@@ -307,6 +360,34 @@ export default function Navbar() {
               </Link>
             </li>
           </ul>
+          {currentUser ? (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/profile"
+                className="btn btn-sm btn-outline border-blue text-sm flex items-center gap-1 hover:bg-blue hover:!text-white"
+              >
+                <MdPerson size={18} />
+                الملف الشخصي
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="btn btn-sm text-sm flex items-center gap-1 btn-outline hover:!bg-red-600 hover:!text-white"
+              >
+                <MdLogout size={18} />
+                تسجيل الخروج
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/signup"
+                className="btn btn-sm text-sm flex items-center gap-1 button"
+              >
+                <TiUserAdd size={18} />
+                سجل الآن
+              </Link>
+            </div>
+          )}
           {currentUser ? (
             <div className="flex items-center gap-2">
               <Link
