@@ -7,6 +7,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../Components/Navbar";
 import { Link } from "react-router-dom";
+import Footer from "./Footer";
 
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
