@@ -30,6 +30,7 @@ const validationSchema = Yup.object().shape({
 
 function ComplaintForm() {
   const [newComplaintId, setNewComplaintId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -42,6 +43,8 @@ function ComplaintForm() {
     },
     validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
+      const complaintId = Math.floor(Math.random() * 1000000).toString();
+
       try {
         await addDoc(collection(db, "complaints"), {
           name: values.name,
@@ -52,16 +55,18 @@ function ComplaintForm() {
           imageBase64: values.imageBase64 || null,
           createdAt: new Date(),
           status: "قيد المعالجة",
-          complaintId: Math.floor(Math.random() * 1000000).toString(),
+          complaintId: complaintId,
         });
 
         setNewComplaintId(complaintId);
+        setShowModal(true);
         toast.success("تم إرسال الشكوى بنجاح");
         resetForm();
       } catch (error) {
         console.error("خطأ أثناء إرسال الشكوى:", error);
         toast.error("حدث خطأ أثناء إرسال الشكوى.");
       }
+
       setSubmitting(false);
     },
   });
@@ -88,12 +93,9 @@ function ComplaintForm() {
             قدم شكوتك
           </h1>
           <form onSubmit={formik.handleSubmit} className="space-y-8">
-            {/* name */}
+            {/* الاسم */}
             <div>
-              <label
-                htmlFor="name"
-                className="block text-blue font-medium mb-1"
-              >
+              <label htmlFor="name" className="block text-blue font-medium mb-1">
                 الاسم
               </label>
               <input
@@ -111,16 +113,13 @@ function ComplaintForm() {
               )}
             </div>
 
-            {/* national id */}
+            {/* البريد الإلكتروني */}
             <div>
-              <label
-                htmlFor="nationalId"
-                className="block text-blue font-medium mb-1"
-              >
-                الرقم القومي
+              <label htmlFor="email" className="block text-blue font-medium mb-1">
+                البريد الإلكتروني
               </label>
               <input
-                id="emailInput"
+                id="email"
                 name="email"
                 type="email"
                 placeholder="من فضلك ادخل بريدك الالكتروني"
@@ -130,13 +129,11 @@ function ComplaintForm() {
                 className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue"
               />
               {formik.touched.email && formik.errors.email && (
-                <div className="text-red-500 text-sm">
-                  {formik.errors.email}
-                </div>
+                <div className="text-red-500 text-sm">{formik.errors.email}</div>
               )}
             </div>
 
-            {/* Governorate */}
+            {/* المحافظة */}
             <div>
               <label className="block font-medium text-blue mb-1">
                 اختر المحافظة
@@ -153,45 +150,22 @@ function ComplaintForm() {
                   اختر المحافظة
                 </option>
                 {[
-                  "القاهرة",
-                  "الجيزة",
-                  "الإسكندرية",
-                  "الدقهلية",
-                  "الشرقية",
-                  "القليوبية",
-                  "الغربية",
-                  "المنوفية",
-                  "البحيرة",
-                  "كفر الشيخ",
-                  "دمياط",
-                  "بورسعيد",
-                  "الإسماعيلية",
-                  "السويس",
-                  "شمال سيناء",
-                  "جنوب سيناء",
-                  "بني سويف",
-                  "الفيوم",
-                  "المنيا",
-                  "أسيوط",
-                  "سوهاج",
-                  "قنا",
-                  "الأقصر",
-                  "أسوان",
-                  "الوادي الجديد",
-                  "مطروح",
-                  "البحر الأحمر",
+                  "القاهرة", "الجيزة", "الإسكندرية", "الدقهلية", "الشرقية",
+                  "القليوبية", "الغربية", "المنوفية", "البحيرة", "كفر الشيخ",
+                  "دمياط", "بورسعيد", "الإسماعيلية", "السويس", "شمال سيناء",
+                  "جنوب سيناء", "بني سويف", "الفيوم", "المنيا", "أسيوط",
+                  "سوهاج", "قنا", "الأقصر", "أسوان", "الوادي الجديد",
+                  "مطروح", "البحر الأحمر"
                 ].map((gov) => (
                   <option key={gov}>{gov}</option>
                 ))}
               </select>
               {formik.touched.governorate && formik.errors.governorate && (
-                <div className="text-red-500 text-sm">
-                  {formik.errors.governorate}
-                </div>
+                <div className="text-red-500 text-sm">{formik.errors.governorate}</div>
               )}
             </div>
 
-            {/* Ministry */}
+            {/* الوزارة */}
             <div>
               <label className="block font-medium text-blue mb-1">
                 اختر الوزارة المختصة
@@ -208,63 +182,43 @@ function ComplaintForm() {
                   اختر الوزارة
                 </option>
                 {[
-                  "وزارة الصحة",
-                  "وزارة التعليم",
-                  "وزارة الداخلية",
-                  "وزارة التموين",
-                  "وزارة الكهرباء والطاقة",
-                  "وزارة النقل",
-                  "وزارة البيئة",
-                  "وزارة التضامن الاجتماعي",
-                  "وزارة الاتصالات وتكنولوجيا المعلومات",
-                  "وزارة الإسكان والمرافق",
-                  "وزارة القوى العاملة",
-                  "وزارة الثقافة",
-                  "وزارة التنمية المحلية",
-                  "وزارة العدل",
-                  "وزارة المالية",
+                  "وزارة الصحة", "وزارة التعليم", "وزارة الداخلية", "وزارة التموين",
+                  "وزارة الكهرباء والطاقة", "وزارة النقل", "وزارة البيئة",
+                  "وزارة التضامن الاجتماعي", "وزارة الاتصالات وتكنولوجيا المعلومات",
+                  "وزارة الإسكان والمرافق", "وزارة القوى العاملة", "وزارة الثقافة",
+                  "وزارة التنمية المحلية", "وزارة العدل", "وزارة المالية"
                 ].map((ministry) => (
                   <option key={ministry}>{ministry}</option>
                 ))}
               </select>
               {formik.touched.ministry && formik.errors.ministry && (
-                <div className="text-red-500 text-sm">
-                  {formik.errors.ministry}
-                </div>
+                <div className="text-red-500 text-sm">{formik.errors.ministry}</div>
               )}
             </div>
 
-            {/* الوصف */}
+            {/* وصف الشكوى */}
             <div>
-              <label
-                htmlFor="description"
-                className="block text-blue font-medium mb-1"
-              >
+              <label htmlFor="description" className="block text-blue font-medium mb-1">
                 وصف الشكوى
               </label>
               <textarea
                 id="description"
                 name="description"
                 rows="4"
-                placeholder="من فضلك ادخل تفاصيل الشكوي هنا..."
+                placeholder="من فضلك ادخل تفاصيل الشكوى هنا..."
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 value={formik.values.description}
                 className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue"
               />
               {formik.touched.description && formik.errors.description && (
-                <div className="text-red-500 text-sm">
-                  {formik.errors.description}
-                </div>
+                <div className="text-red-500 text-sm">{formik.errors.description}</div>
               )}
             </div>
 
             {/* الصورة */}
             <div>
-              <label
-                htmlFor="image"
-                className="block text-blue font-medium mb-2"
-              >
+              <label htmlFor="image" className="block text-blue font-medium mb-2">
                 (اختياري) ارفق صورة الشكوى
               </label>
               <input
@@ -295,19 +249,38 @@ function ComplaintForm() {
           </form>
         </div>
 
-        {/* trace complaint status */}
+        {/* متابعة شكوى */}
         <div className="mt-8 text-center">
           <p className="text-gray-700 text-md">
             هل قدمت شكوى بالفعل؟
             <Link
               to="/traceComplaint"
-              className="inline-block ml-2 ms-2 text-blue font-semibold hover:underline"
+              className="inline-block ml-2 text-blue font-semibold hover:underline"
             >
               اضغط هنا لمتابعة الشكوى
             </Link>
           </p>
         </div>
       </section>
+
+      {/* Modal display ComplaintId*/}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
+          <div className="bg-white p-6 rounded-xl shadow-lg max-w-sm w-full text-center">
+            <h2 className="text-xl font-semibold text-green-700 mb-4">شكراً لك!</h2>
+            <p className="text-gray-800 mb-2">تم إرسال الشكوى بنجاح.</p>
+            <p className="text-blue-600 font-bold mb-4">
+              رقم الشكوى الخاص بك: <span className="text-xl">{newComplaintId}</span>
+            </p>
+            <button
+              onClick={() => setShowModal(false)}
+              className="mt-2 px-5 py-1 bg-blue text-white rounded-md hover:bg-blue/90"
+            >
+              تم
+            </button>
+          </div>
+        </div>
+      )}
 
       <Footer />
       <ToastContainer />

@@ -160,13 +160,13 @@ function ComplaintSearch() {
                   </div>
                 </div>
 
-                {/* national id */}
+                {/* email */}
                 <div className="flex items-start gap-1">
                   <FaIdCard className="mt-1 mr-3 text-blue-600" />
                   <div>
-                    <p className="text-gray-500 text-base">الرقم القومي</p>
+                    <p className="text-gray-500 text-base"> البريد الالكتروني</p>
                     <p className="font-medium text-gray-800">
-                      {complaint.nationalId}
+                      {complaint.email}
                     </p>
                   </div>
                 </div>
