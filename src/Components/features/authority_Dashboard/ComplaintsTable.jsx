@@ -47,10 +47,22 @@ const initialData = [
   },
 ];
 
+// const statusColors = {
+//   "قيد المراجعة": "text-blue-600 bg-blue-100 px-2 py-1 rounded",
+//   "جارى الحل": "text-yellow-600 bg-yellow-100 px-2 py-1 rounded",
+//   "تم الحل": "text-green-600 bg-green-100 px-2 py-1 rounded",
+//   مرفوضة: "text-red-600 bg-red-100 px-2 py-1 rounded",
+// };
+
 const statusColors = {
-  "قيد المراجعة": "text-yellow-600 bg-yellow-100 px-2 py-1 rounded",
-  "تم الحل": "text-green-600 bg-green-100 px-2 py-1 rounded",
-  مرفوضة: "text-red-600 bg-red-100 px-2 py-1 rounded",
+  "قيد المراجعة":
+    "badge bg-gradient-to-r from-blue-400 to-blue-600 text-white px-3 py-1 rounded shadow",
+  "جارى الحل":
+    "badge bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-3 py-1 rounded shadow",
+  "تم الحل":
+    "badge bg-gradient-to-r from-green-400 to-green-600 text-white px-3 py-1 rounded shadow",
+  مرفوضة:
+    "badge bg-gradient-to-r from-red-400 to-red-600 text-white px-3 py-1 rounded shadow",
 };
 
 const PAGE_SIZE = 5;
@@ -69,7 +81,7 @@ export default function ComplaintsTable({ complaints, onDetails, onAction }) {
   );
 
   // sorting table
-  const sortedData = [...complaints].sort((a, b) => {
+  const sortedData = [...filteredData].sort((a, b) => {
     if (!sortConfig.key) return 0;
 
     const aVal = a[sortConfig.key];
@@ -152,7 +164,7 @@ export default function ComplaintsTable({ complaints, onDetails, onAction }) {
                 className="flex gap-1 items-center"
                 onClick={() => handleSort("priority")}
               >
-                الأولوية{" "}
+                رقم الشكوى
                 <IconArrow sortConfig={sortConfig} columnKey="priority" />
               </button>
             </th>
@@ -175,11 +187,16 @@ export default function ComplaintsTable({ complaints, onDetails, onAction }) {
               <td className="py-3 px-2">{complaint.name}</td>
               <td className="py-3 px-2">{complaint.governorate}</td>
               <td className="py-3 px-2">
-                <span className={statusColors[complaint.status] || ""}>
-                  قيد المراجعة
+                <span
+                  className={
+                    statusColors[complaint.status?.trim()] ||
+                    "badge bg-gray-300 text-gray-700 px-3 py-1 rounded"
+                  }
+                >
+                  {complaint.status}
                 </span>
               </td>
-              <td className="py-3 px-2">{complaint.ministry}</td>
+              <td className="py-3 px-2">{complaint.complaintId}</td>
               <td className="py-3 px-2">
                 {" "}
                 {complaint.createdAt?.toDate
@@ -202,7 +219,7 @@ export default function ComplaintsTable({ complaints, onDetails, onAction }) {
 
                 <button
                   onClick={() => onAction(complaint)}
-                  className="px-2 py-1 text-xs rounded bg-green-600 text-white hover:bg-green-700"
+                  className="btn px-2 py-1 text-xs rounded bg-green-600 text-white hover:bg-green-700"
                 >
                   إجراء
                 </button>

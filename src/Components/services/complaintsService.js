@@ -1,4 +1,11 @@
-import { collection, query, where, getDocs } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 
 export async function getComplaintsByDepartment(ministry) {
@@ -18,4 +25,12 @@ export async function getComplaintsByDepartment(ministry) {
     ...doc.data(),
   }));
   return complaints;
+}
+
+export async function updateComplaintStatus(id, newStatus) {
+  const complaintRef = doc(db, "complaints", id);
+  await updateDoc(complaintRef, {
+    status: newStatus,
+    updatedAt: new Date(),
+  });
 }

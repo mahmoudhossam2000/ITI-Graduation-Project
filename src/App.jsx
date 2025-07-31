@@ -9,6 +9,7 @@ import Complaints from "./Pages/Complaints";
 import Login from "./Pages/Auth/Login";
 import Signup from "./Pages/Auth/Signup";
 import Profile from "./Pages/Profile";
+import ComplaintReports from "./Pages/ComplaintReports";
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useAuth();
@@ -50,6 +51,7 @@ function AppContent() {
       <Route path="/dashboard" element={<Layout />}>
         <Route index element={<Dashboard />} />
         <Route path="complaints" element={<Complaints />} />
+        <Route path="complaint-reports" element={<ComplaintReports />} />
       </Route>
     </Routes>
   );

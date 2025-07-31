@@ -1,15 +1,18 @@
-import React from "react";
+import React, { useRef } from "react";
 import ComplaintsTable from "../Components/features/authority_Dashboard/ComplaintsTable";
 import { useEffect, useState } from "react";
 import { getComplaintsByDepartment } from "../Components/services/complaintsService";
-import ComplaintModal from "../Components/features/authority_Dashboard/ComplaintModal";
+import ComplaintDetails from "../Components/features/authority_Dashboard/ComplaintDetails";
+import ComplainAction from "../Components/features/authority_Dashboard/ComplainAction";
 
 function Complaints({ ministry }) {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
 
+  const detailsRef = useRef(null);
+  const actionRef = useRef(null);
   useEffect(() => {
     setLoading(true);
     getComplaintsByDepartment("وزارة الثقافة")
@@ -24,11 +27,31 @@ function Complaints({ ministry }) {
       .finally(() => setLoading(false));
   }, []);
 
+  // handlers
   const handleDetails = (complaint) => {
-    console.log(complaint);
-
+    console.log(detailsRef.current);
     setSelectedComplaint(complaint);
-    document.getElementById("my_modal_3").showModal();
+    setTimeout(() => {
+      if (detailsRef.current) {
+        detailsRef.current.showModal();
+      }
+    }, 0);
+  };
+
+  const handleAction = (complaint) => {
+    console.log(complaint);
+    setSelectedComplaint(complaint);
+    setTimeout(() => {
+      if (actionRef.current) {
+        actionRef.current?.showModal();
+      }
+    }, 0);
+  };
+
+  const updateLocalStatus = (id, newStatus) => {
+    setData((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, status: newStatus } : c))
+    );
   };
 
   if (loading) {
@@ -51,8 +74,17 @@ function Complaints({ ministry }) {
 
   return (
     <>
-      <ComplaintsTable complaints={data} onDetails={handleDetails} />
-      <ComplaintModal complaint={selectedComplaint} />
+      <ComplaintDetails ref={detailsRef} complaint={selectedComplaint} />
+      <ComplainAction
+        ref={actionRef}
+        complaint={selectedComplaint}
+        onStatusChange={updateLocalStatus}
+      />
+      <ComplaintsTable
+        complaints={data}
+        onDetails={handleDetails}
+        onAction={handleAction}
+      />
     </>
   );
 }

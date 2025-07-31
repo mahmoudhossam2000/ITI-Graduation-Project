@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 const sidebarItems = [
   { label: "الرئيسية", icon: "🏠", href: "/dashboard" },
   { label: "الشكاوى", icon: "📝", href: "complaints" },
-  { label: "التقارير", icon: "📈", href: "reports" }, 
+  { label: "التقارير", icon: "📈", href: "complaint-reports" },
 ];
 
 export default function Sidebar() {
