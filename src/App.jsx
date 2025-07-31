@@ -9,7 +9,11 @@ import Complaints from "./Pages/Complaints";
 import Login from "./Pages/Auth/Login";
 import Signup from "./Pages/Auth/Signup";
 import Profile from "./Pages/Profile";
-import ComplaintReports from "./Pages/ComplaintReports";
+import { ToastContainer } from "react-toastify";
+import ForgotPassword from "./Pages/Auth/ForgotPassword";
+import ResetPassword from "./Pages/Auth/ResetPassword";
+import ComplaintHistory from "./Components/ComplaintHistory";
+import NotFound from "./Pages/NotFound";
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useAuth();
@@ -18,42 +22,47 @@ const PrivateRoute = ({ children }) => {
 
 function AppContent() {
   return (
-    <Routes>
-      <Route index element={<LandingPage />} />
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        icon={false}
+        toastClassName="custom-toast"
+      />
 
-      <Route
-        path="/profile"
-        element={
-          <PrivateRoute>
-            <Profile />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/submitComplaint"
-        element={
-          <PrivateRoute>
-            <ComplaintForm />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/traceComplaint"
-        element={
-          <PrivateRoute>
-            <ComplaintSearch />
-          </PrivateRoute>
-        }
-      />
-      <Route path="/dashboard" element={<Layout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="complaints" element={<Complaints />} />
-        <Route path="complaint-reports" element={<ComplaintReports />} />
-      </Route>
-    </Routes>
+      <Routes>
+        <Route index element={<LandingPage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/submitComplaint" element={<ComplaintForm />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="*" element={<NotFound />} />
+        <Route path="/traceComplaint" element={<ComplaintSearch />} />
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/complaintHistory"
+          element={
+            <PrivateRoute>
+              <ComplaintHistory />
+            </PrivateRoute>
+          }
+        />
+        <Route path="/dashboard" element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="complaints" element={<Complaints />} />
+          {/* <Route path="complaint-reports" element={<ComplaintReports />} /> */}
+        </Route>
+      </Routes>
+    </>
   );
 }
 
