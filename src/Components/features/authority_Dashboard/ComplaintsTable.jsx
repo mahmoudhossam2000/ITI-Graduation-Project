@@ -56,7 +56,7 @@ const initialData = [
 
 const statusColors = {
   "قيد المراجعة":
-    "badge bg-gradient-to-r from-blue-400 to-blue-600 text-white px-3 py-1 rounded shadow",
+    "badge bg-gradient-to-r from-slate-300 to-slate-400 text-white px-5 py-1 rounded shadow",
   "جارى الحل":
     "badge bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-3 py-1 rounded shadow",
   "تم الحل":

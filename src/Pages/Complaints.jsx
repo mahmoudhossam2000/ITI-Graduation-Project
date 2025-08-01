@@ -2,8 +2,8 @@ import React, { useRef } from "react";
 import ComplaintsTable from "../Components/features/authority_Dashboard/ComplaintsTable";
 import { useEffect, useState } from "react";
 import { getComplaintsByDepartment } from "../Components/services/complaintsService";
+import ComplainAction from "../Components/features/authority_Dashboard/ComplaintAction";
 import ComplaintDetails from "../Components/features/authority_Dashboard/ComplaintDetails";
-import ComplainAction from "../Components/features/authority_Dashboard/ComplainAction";
 
 function Complaints({ ministry }) {
   const [data, setData] = useState([]);
@@ -48,6 +48,7 @@ function Complaints({ ministry }) {
     }, 0);
   };
 
+  // update status
   const updateLocalStatus = (id, newStatus) => {
     setData((prev) =>
       prev.map((c) => (c.id === id ? { ...c, status: newStatus } : c))

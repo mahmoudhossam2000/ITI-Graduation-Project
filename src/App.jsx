@@ -14,6 +14,7 @@ import ForgotPassword from "./Pages/Auth/ForgotPassword";
 import ResetPassword from "./Pages/Auth/ResetPassword";
 import ComplaintHistory from "./Components/ComplaintHistory";
 import NotFound from "./Pages/NotFound";
+import ComplaintReports from "./Pages/ComplaintReports";
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useAuth();
@@ -59,7 +60,7 @@ function AppContent() {
         <Route path="/dashboard" element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="complaints" element={<Complaints />} />
-          {/* <Route path="complaint-reports" element={<ComplaintReports />} /> */}
+          <Route path="complaint-reports" element={<ComplaintReports />} />
         </Route>
       </Routes>
     </>
