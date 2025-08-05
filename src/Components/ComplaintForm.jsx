@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { db } from "../firebase/firebase";
-import { collection, addDoc } from "firebase/firestore";
+import { auth, db } from "../firebase/firebase";
+import { collection, addDoc, query, where, getDocs, updateDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../Components/Navbar";
 import { Link } from "react-router-dom";
-import Footer from "./Footer";
+import { FaRegCheckCircle } from "react-icons/fa";
+
 
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
@@ -25,12 +27,132 @@ const validationSchema = Yup.object().shape({
     .email("من فضلك أدخل بريدًا إلكترونيًا صحيحًا"),
   governorate: Yup.string().required("المحافظة مطلوبة"),
   ministry: Yup.string().required("الوزارة مطلوبة"),
-  description: Yup.string().required("ادخال الوصف مطلوب"),
+  description: Yup.string()
+    .required("ادخال الوصف مطلوب")
+    .min(20, "الوصف يجب أن يكون على الأقل 20 حرفًا"),
 });
+
+async function checkForAbuse(text) {
+  try {
+    const response = await fetch(
+        `https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=${import.meta.env.VITE_API_KEY}`,      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          comment: { text },
+          requestedAttributes: {
+            TOXICITY: {},
+            PROFANITY: {},
+            THREAT: {},
+            INSULT: {},
+          },
+          languages: ["ar"],
+        }),
+      }
+    );
+    
+    const data = await response.json();
+    const toxicityScore = data.attributeScores.TOXICITY?.summaryScore?.value || 0;
+    const profanityScore = data.attributeScores.PROFANITY?.summaryScore?.value || 0;
+    
+    return toxicityScore > 0.7 || profanityScore > 0.7;
+  } catch (error) {
+    console.error("Error checking for abuse:", error);
+    return false;
+  }
+}
+
+async function banUserAfterAbuse(userId, email) {
+  try {
+    await addDoc(collection(db, "bannedUsers"), {
+      userId,
+      email,
+      banDate: new Date(),
+      reason: "إساءة متكررة في الشكاوى",
+    });
+
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+    
+    querySnapshot.forEach(async (doc) => {
+      await updateDoc(doc.ref, { banned: true });
+    });
+
+    toast.warning("تم حظر حسابك بسبب انتهاك شروط الاستخدام");
+  } catch (error) {
+    console.error("Error banning user:", error);
+  }
+}
+
+async function checkForAbuseAndBan(userId, email, text) {
+  const isAbusive = await checkForAbuse(text);
+  
+  if (isAbusive) {
+    await addDoc(collection(db, "abuseAttempts"), {
+      userId,
+      email,
+      content: text,
+      timestamp: new Date(),
+    });
+
+    const attemptsRef = collection(db, "abuseAttempts");
+    const q = query(attemptsRef, where("email", "==", email));
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.size >= 3) {
+      await banUserAfterAbuse(userId, email);
+      return true;
+    }
+    
+    return false;
+  }
+  
+  return false;
+}
+
+async function logUserIp(userId) {
+  try {
+    const response = await fetch('https://api.ipify.org?format=json');
+    const data = await response.json();
+    await addDoc(collection(db, "userIps"), {
+      userId,
+      ip: data.ip,
+      timestamp: new Date(),
+    });
+  } catch (error) {
+    console.error("Error logging IP:", error);
+  }
+}
 
 function ComplaintForm() {
   const [newComplaintId, setNewComplaintId] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [isBanned, setIsBanned] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        logUserIp(currentUser.uid);
+        
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("email", "==", currentUser.email));
+        const querySnapshot = await getDocs(q);
+        
+        querySnapshot.forEach((doc) => {
+          if (doc.data().banned) {
+            setIsBanned(true);
+          }
+        });
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const formik = useFormik({
     initialValues: {
@@ -43,6 +165,23 @@ function ComplaintForm() {
     },
     validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
+
+      if (user) {
+        const isBanned = await checkForAbuseAndBan(user.uid, values.email, values.description);
+        if (isBanned) {
+          setSubmitting(false);
+          setIsBanned(true);
+          return;
+        }
+      } else {
+        const isAbusive = await checkForAbuse(values.description);
+        if (isAbusive) {
+          toast.error("عذرًا، تحتوي شكواك على لغة غير لائقة. يرجى مراجعة المحتوى.");
+          setSubmitting(false);
+          return;
+        }
+      }
+
       const complaintId = Math.floor(Math.random() * 1000000).toString();
 
       try {
@@ -56,6 +195,9 @@ function ComplaintForm() {
           createdAt: new Date(),
           status: "قيد المعالجة",
           complaintId: complaintId,
+          userId: user?.uid || null,
+          isDuplicate: false,
+          reviewed: false,
         });
 
         setNewComplaintId(complaintId);
@@ -73,19 +215,45 @@ function ComplaintForm() {
 
   const handleImageChange = async (event) => {
     const file = event.currentTarget.files[0];
+    if (file && file.size > 2 * 1024 * 1024) {
+      toast.error("حجم الصورة يجب أن يكون أقل من 2MB");
+      return;
+    }
+    
     if (file) {
       try {
         const base64String = await fileToBase64(file);
         formik.setFieldValue("imageBase64", base64String);
       } catch (error) {
         console.error("Error converting file to Base64:", error);
+        toast.error("حدث خطأ أثناء تحميل الصورة");
       }
     }
   };
 
+  if (isBanned) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">حسابك محظور</h2>
+          <p className="text-gray-700 mb-6">
+            عذرًا، لا يمكنك تقديم شكاوى جديدة لأن حسابك محظور بسبب انتهاك شروط الاستخدام.
+          </p>
+          <Link 
+            to="/" 
+            className="text-blue underline hover:text-darkTeal hover:font-medium"
+          >
+            العودة الي الصفحة الرئيسية
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Navbar />
+      <ToastContainer rtl position="top-right" />
 
       <section className="flex items-center justify-center flex-col min-h-screen px-4 py-20 bg-background">
         <div className="w-full max-w-2xl p-8 rounded-2xl shadow-lg bg-white mt-8">
@@ -219,7 +387,7 @@ function ComplaintForm() {
             {/* الصورة */}
             <div>
               <label htmlFor="image" className="block text-blue font-medium mb-2">
-                (اختياري) ارفق صورة الشكوى
+                (اختياري) ارفق صورة الشكوى (بحد أقصى 2MB)
               </label>
               <input
                 id="image"
@@ -237,6 +405,7 @@ function ComplaintForm() {
                 </div>
               )}
             </div>
+
 
             {/* button send complaint */}
             <button
@@ -267,7 +436,7 @@ function ComplaintForm() {
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
           <div className="bg-white p-6 rounded-xl shadow-lg max-w-sm w-full text-center">
-            <h2 className="text-xl font-semibold text-green-700 mb-4">شكراً لك!</h2>
+            <h2 className="text-4xl font-semibold text-green-700 mb-4 flex justify-center"><FaRegCheckCircle /></h2>
             <p className="text-gray-800 mb-2">تم إرسال الشكوى بنجاح.</p>
             <p className="text-blue-600 font-bold mb-4">
               رقم الشكوى الخاص بك: <span className="text-xl">{newComplaintId}</span>
@@ -276,14 +445,11 @@ function ComplaintForm() {
               onClick={() => setShowModal(false)}
               className="mt-2 px-5 py-1 bg-blue text-white rounded-md hover:bg-blue/90"
             >
-              تم
+              إغلاق
             </button>
           </div>
         </div>
       )}
-
-      <Footer />
-      <ToastContainer />
     </>
   );
 }

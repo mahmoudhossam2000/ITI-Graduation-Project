@@ -85,7 +85,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <Link
-                  to="/signup"
+                  to="/login"
                   className="px-5 py-2 bg-blue text-white rounded-md text-sm font-medium flex items-center gap-1 hover:bg-darkTeal transition-all shadow-md hover:shadow-lg"
                 >
                   <TiUserAdd size={18} /> سجل الآن

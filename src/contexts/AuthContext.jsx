@@ -1,6 +1,12 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { auth } from '../firebase/firebase';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import {
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth";
+import { getDoc, setDoc, doc } from "firebase/firestore";
+import { auth, db } from "../firebase/firebase";
 
 const AuthContext = createContext();
 
@@ -24,7 +30,26 @@ export const AuthProvider = ({ children }) => {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // تحقق هل المستخدم موجود بالفعل في Firestore
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        // لو مش موجود، أضف بياناته
+        await setDoc(userRef, {
+          name: user.displayName || "مستخدم جوجل",
+          email: user.email,
+          phone: "",
+          complaintCount: 0,
+          banned: false,
+          createdAt: new Date(),
+        });
+      }
+
+      return user;
     } catch (error) {
       console.error("Error signing in with Google", error);
       throw error;
@@ -38,7 +63,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     currentUser,
     signInWithGoogle,
-    logout
+    logout,
   };
 
   return (

@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import Navbar from "../Components/Navbar";
-import { auth } from "../firebase/firebase";
+import { auth, db } from "../firebase/firebase";
 import {
   deleteUser,
   EmailAuthProvider,
   reauthenticateWithCredential,
   updatePassword,
 } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
@@ -19,12 +20,30 @@ const Profile = () => {
   const [isDeleteModal, setIsDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [banned, setBanned] = useState(false);
 
   const navigate = useNavigate();
 
   const isGoogleUser = currentUser?.providerData?.some(
     (provider) => provider.providerId === "google.com"
   );
+
+  // جلب حالة المستخدم من Firestore
+  useEffect(() => {
+    const fetchUserStatus = async () => {
+      if (!currentUser?.uid) return;
+      try {
+        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        if (userDoc.exists()) {
+          setBanned(userDoc.data().banned || false);
+        }
+      } catch (error) {
+        console.error("حدث خطأ أثناء جلب حالة المستخدم:", error);
+      }
+    };
+
+    fetchUserStatus();
+  }, [currentUser]);
 
   // change Password
   const handlePasswordChange = async (e) => {
@@ -50,7 +69,10 @@ const Profile = () => {
     } catch (error) {
       console.log("حدث خطأ أثناء تغيير كلمة المرور:", error);
 
-      if (error.code === "auth/wrong-password" || error.code === "auth/invalid-credential") {
+      if (
+        error.code === "auth/wrong-password" ||
+        error.code === "auth/invalid-credential"
+      ) {
         toast.error("كلمة المرور الحالية غير صحيحة");
       } else if (error.code === "auth/network-request-failed") {
         toast.error("تأكد من الاتصال بالإنترنت");
@@ -139,9 +161,15 @@ const Profile = () => {
                   <p className="text-base font-medium text-gray-600">
                     حالة الحساب
                   </p>
-                  <span className="mt-2 sm:mt-0 px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-200 text-green-700">
-                    مفعل
-                  </span>
+                  {banned ? (
+                    <span className="mt-2 sm:mt-0 px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-red-200 text-red-700">
+                      محظور
+                    </span>
+                  ) : (
+                    <span className="mt-2 sm:mt-0 px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-200 text-green-700">
+                      نشط
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
