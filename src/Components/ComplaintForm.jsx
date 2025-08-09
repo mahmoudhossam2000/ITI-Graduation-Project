@@ -501,7 +501,7 @@ function ComplaintForm() {
                     </p>
                   )}
                 </div>
-
+</div>
             {/* الإدارة المختصة */}
             <div>
               <label className="block font-medium text-blue mb-1">
