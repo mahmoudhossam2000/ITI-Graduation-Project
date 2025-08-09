@@ -121,3 +121,9 @@ footer ul li:hover {
 .dashboardDep ul li:nth-child(6)::marker {
   content: " 📈 ";
 }
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
