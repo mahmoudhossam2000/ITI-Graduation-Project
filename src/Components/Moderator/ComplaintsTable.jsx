@@ -8,7 +8,7 @@ import {
   updateDoc,
   query,
   where,
-  addDoc
+  addDoc,
 } from "firebase/firestore";
 import {
   Trash2,
@@ -21,6 +21,20 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: new URL(
+    "leaflet/dist/images/marker-icon-2x.png",
+    import.meta.url
+  ).href,
+  iconUrl: new URL("leaflet/dist/images/marker-icon.png", import.meta.url).href,
+  shadowUrl: new URL("leaflet/dist/images/marker-shadow.png", import.meta.url)
+    .href,
+});
 
 const ComplaintsTable = () => {
   const [complaints, setComplaints] = useState([]);
@@ -33,6 +47,7 @@ const ComplaintsTable = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [complaintToDelete, setComplaintToDelete] = useState(null);
+
   const itemsPerPage = 4;
 
   const fetchComplaints = async () => {
@@ -40,29 +55,34 @@ const ComplaintsTable = () => {
       setIsLoading(true);
       const snap = await getDocs(collection(db, "complaints"));
       const complaintsData = [];
-      
+
       for (const doc of snap.docs) {
         const complaint = {
           id: doc.id,
           ...doc.data(),
           createdAt: doc.data().createdAt?.toDate(),
         };
-        
+
         if (complaint.userId) {
-          const userQuery = query(collection(db, "users"), where("email", "==", complaint.email));
+          const userQuery = query(
+            collection(db, "users"),
+            where("email", "==", complaint.email)
+          );
           const userSnapshot = await getDocs(userQuery);
-          
+
           if (!userSnapshot.empty) {
             const userData = userSnapshot.docs[0].data();
-            complaint.abusiveComplaintsCount = userData.abusiveComplaintsCount || 0;
-            complaint.lastAbusiveComplaint = userData.lastAbusiveComplaint?.toDate();
+            complaint.abusiveComplaintsCount =
+              userData.abusiveComplaintsCount || 0;
+            complaint.lastAbusiveComplaint =
+              userData.lastAbusiveComplaint?.toDate();
             complaint.isBanned = userData.banned || false;
           }
         }
-        
+
         complaintsData.push(complaint);
       }
-      
+
       setComplaints(complaintsData);
     } catch (error) {
       console.error("Error fetching complaints:", error);
@@ -83,10 +103,12 @@ const ComplaintsTable = () => {
 
   const deleteComplaint = async () => {
     if (!complaintToDelete) return;
-    
+
     try {
       await deleteDoc(doc(db, "complaints", complaintToDelete.id));
-      setComplaints(prev => prev.filter((c) => c.id !== complaintToDelete.id));
+      setComplaints((prev) =>
+        prev.filter((c) => c.id !== complaintToDelete.id)
+      );
       toast.success("تم حذف الشكوى بنجاح");
     } catch (error) {
       console.error("Error deleting complaint:", error);
@@ -103,11 +125,13 @@ const ComplaintsTable = () => {
         isDuplicate: true,
         reviewed: true,
       });
-      
-      setComplaints(prev => prev.map(c => 
-        c.id === id ? { ...c, isDuplicate: true, reviewed: true } : c
-      ));
-      
+
+      setComplaints((prev) =>
+        prev.map((c) =>
+          c.id === id ? { ...c, isDuplicate: true, reviewed: true } : c
+        )
+      );
+
       toast.success("تم تحديد الشكوى كمكررة");
     } catch (error) {
       console.error("Error marking as duplicate:", error);
@@ -121,11 +145,13 @@ const ComplaintsTable = () => {
         isDuplicate: false,
         reviewed: false,
       });
-      
-      setComplaints(prev => prev.map(c => 
-        c.id === id ? { ...c, isDuplicate: false, reviewed: false } : c
-      ));
-      
+
+      setComplaints((prev) =>
+        prev.map((c) =>
+          c.id === id ? { ...c, isDuplicate: false, reviewed: false } : c
+        )
+      );
+
       toast.success("تم إلغاء تحديد الشكوى كمكررة");
     } catch (error) {
       console.error("Error unmarking as duplicate:", error);
@@ -135,39 +161,43 @@ const ComplaintsTable = () => {
 
   const markAsAbusive = async (id) => {
     try {
-      const complaint = complaints.find(c => c.id === id);
-      
+      const complaint = complaints.find((c) => c.id === id);
+
       await updateDoc(doc(db, "complaints", id), {
         isAbusive: true,
         reviewed: true,
         status: "مرفوضة",
       });
-      
-      setComplaints(prev => prev.map(c => 
-        c.id === id ? { ...c, isAbusive: true, reviewed: true, status: "مرفوضة" } : c
-      ));
-      
+
+      setComplaints((prev) =>
+        prev.map((c) =>
+          c.id === id
+            ? { ...c, isAbusive: true, reviewed: true, status: "مرفوضة" }
+            : c
+        )
+      );
+
       if (complaint?.userId) {
         const usersRef = collection(db, "users");
         const q = query(usersRef, where("email", "==", complaint.email));
         const querySnapshot = await getDocs(q);
-        
+
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0];
           const currentCount = userDoc.data().abusiveComplaintsCount || 0;
           const newCount = currentCount + 1;
-          
+
           await updateDoc(userDoc.ref, {
             abusiveComplaintsCount: newCount,
-            lastAbusiveComplaint: new Date()
+            lastAbusiveComplaint: new Date(),
           });
-          
+
           if (newCount >= 3) {
             await banUserAfterAbuse(complaint.userId, complaint.email);
           }
         }
       }
-      
+
       toast.success("تم تحديد الشكوى كمحتوى مسيء وتحديث سجل المستخدم");
       setShowModal(false);
     } catch (error) {
@@ -178,34 +208,38 @@ const ComplaintsTable = () => {
 
   const unmarkAsAbusive = async (id) => {
     try {
-      const complaint = complaints.find(c => c.id === id);
-      
+      const complaint = complaints.find((c) => c.id === id);
+
       await updateDoc(doc(db, "complaints", id), {
         isAbusive: false,
         reviewed: false,
         status: "معلقة",
       });
-      
-      setComplaints(prev => prev.map(c => 
-        c.id === id ? { ...c, isAbusive: false, reviewed: false, status: "معلقة" } : c
-      ));
-      
+
+      setComplaints((prev) =>
+        prev.map((c) =>
+          c.id === id
+            ? { ...c, isAbusive: false, reviewed: false, status: "معلقة" }
+            : c
+        )
+      );
+
       if (complaint?.userId) {
         const usersRef = collection(db, "users");
         const q = query(usersRef, where("email", "==", complaint.email));
         const querySnapshot = await getDocs(q);
-        
+
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0];
           const currentCount = userDoc.data().abusiveComplaintsCount || 0;
           const newCount = Math.max(0, currentCount - 1);
-          
+
           await updateDoc(userDoc.ref, {
-            abusiveComplaintsCount: newCount
+            abusiveComplaintsCount: newCount,
           });
         }
       }
-      
+
       toast.success("تم إلغاء تحديد الشكوى كمحتوى مسيء وتحديث سجل المستخدم");
     } catch (error) {
       console.error("Error unmarking as abusive:", error);
@@ -220,18 +254,18 @@ const ComplaintsTable = () => {
         email,
         banDate: new Date(),
         reason: "3 شكاوى مسيئة أو أكثر",
-        abusiveComplaintsCount: 3
+        abusiveComplaintsCount: 3,
       });
 
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("email", "==", email));
       const querySnapshot = await getDocs(q);
-      
+
       querySnapshot.forEach(async (doc) => {
-        await updateDoc(doc.ref, { 
+        await updateDoc(doc.ref, {
           banned: true,
           banReason: "3 شكاوى مسيئة أو أكثر",
-          banDate: new Date()
+          banDate: new Date(),
         });
       });
 
@@ -306,11 +340,14 @@ const ComplaintsTable = () => {
   );
 
   const UserAbuseBadge = ({ count }) => (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-      count >= 3 ? "bg-red-100 text-red-800" : 
-      count > 0 ? "bg-yellow-100 text-yellow-800" : 
-      "bg-gray-100 text-gray-800"
-    }`}>
+    <span
+      className={`px-2 py-1 rounded-full text-xs font-medium ${
+        count >= 3
+          ? "bg-red-100 text-red-800"
+          : count > 0
+          ? "bg-yellow-100 text-yellow-800"
+          : "bg-gray-100 text-gray-800"
+      }`}>
       {count || 0}
     </span>
   );
@@ -340,7 +377,7 @@ const ComplaintsTable = () => {
                 setFilterAbusive(false);
                 setCurrentPage(1);
               }}
-              className={`px-4 py-2.5 rounded-xl border flex items-center gap-2 transition-all ${
+              className={`px-4 py-2.5 rounded-xl border flex items-center gap-2 ${
                 filterDuplicates
                   ? "bg-purple-50 border-purple-200 text-mustard"
                   : "bg-gray-50 border-gray-200 hover:bg-gray-100"
@@ -354,7 +391,7 @@ const ComplaintsTable = () => {
                 setFilterDuplicates(false);
                 setCurrentPage(1);
               }}
-              className={`px-4 py-2.5 rounded-xl border flex items-center gap-2 transition-all ${
+              className={`px-4 py-2.5 rounded-xl border flex items-center gap-2 ${
                 filterAbusive
                   ? "bg-red-50 border-red-200 text-red-800"
                   : "bg-gray-50 border-gray-200 hover:bg-gray-100"
@@ -399,7 +436,11 @@ const ComplaintsTable = () => {
                 <tr
                   key={c.id}
                   className={`hover:bg-gray-50 transition ${
-                    c.isDuplicate ? "bg-purple-50" : c.isAbusive ? "bg-red-50" : ""
+                    c.isDuplicate
+                      ? "bg-purple-50"
+                      : c.isAbusive
+                      ? "bg-red-50"
+                      : ""
                   }`}>
                   <td className="p-4 font-medium text-gray-800">
                     {c.ministry}
@@ -412,19 +453,23 @@ const ComplaintsTable = () => {
                   <td className="p-4">
                     <div className="flex flex-col items-center gap-2">
                       <StatusBadge status={c.status} />
-                      <FlagBadge isDuplicate={c.isDuplicate} isAbusive={c.isAbusive} />
+                      <FlagBadge
+                        isDuplicate={c.isDuplicate}
+                        isAbusive={c.isAbusive}
+                      />
                     </div>
                   </td>
                   <td className="p-4 max-w-xs text-base text-gray-600">
-                    {c.description?.split(" ").slice(0, 3).join(" ")}
-                    {c.description?.split(" ").length > 3 && "..."}{'  '}
+                    {c.description?.substring(0, 10)}
+                    {c.description?.length > 10 && "..."}
+                    {"  "}
                     <button
                       onClick={() => {
                         setSelectedComplaint(c);
                         setShowModal(true);
                       }}
                       className="text-blue hover:text-darkTeal underline mt-1 text-xs gap-1 transition">
-                      عرض التفاصيل    
+                      عرض التفاصيل
                     </button>
                   </td>
                   <td className="p-4 text-sm text-gray-500">
@@ -437,23 +482,37 @@ const ComplaintsTable = () => {
                   <td className="p-4">
                     <div className="flex justify-end gap-2">
                       <button
-                        onClick={() => c.isDuplicate ? unmarkAsDuplicate(c.id) : markAsDuplicate(c.id)}
+                        onClick={() =>
+                          c.isDuplicate
+                            ? unmarkAsDuplicate(c.id)
+                            : markAsDuplicate(c.id)
+                        }
                         className={`p-2 rounded-lg transition ${
-                          c.isDuplicate 
+                          c.isDuplicate
                             ? "bg-purple-100 text-mustard hover:bg-purple-200"
                             : "bg-purple-50 hover:bg-purple-100 text-mustard"
                         }`}
-                        title={c.isDuplicate ? "إلغاء تحديد كمكررة" : "تحديد كمكررة"}>
+                        title={
+                          c.isDuplicate ? "إلغاء تحديد كمكررة" : "تحديد كمكررة"
+                        }>
                         <Copy className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => c.isAbusive ? unmarkAsAbusive(c.id) : markAsAbusive(c.id)}
+                        onClick={() =>
+                          c.isAbusive
+                            ? unmarkAsAbusive(c.id)
+                            : markAsAbusive(c.id)
+                        }
                         className={`p-2 rounded-lg transition ${
                           c.isAbusive
                             ? "bg-red-100 text-red-800 hover:bg-red-200"
                             : "bg-red-50 hover:bg-red-100 text-red-600"
                         }`}
-                        title={c.isAbusive ? "إلغاء تحديد كمحتوى مسيء" : "تحديد كمحتوى مسيء"}>
+                        title={
+                          c.isAbusive
+                            ? "إلغاء تحديد كمحتوى مسيء"
+                            : "تحديد كمحتوى مسيء"
+                        }>
                         <ShieldAlert className="w-4 h-4" />
                       </button>
                       <button
@@ -507,8 +566,7 @@ const ComplaintsTable = () => {
             <div className="flex gap-1">
               <button
                 className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue text-white"
-                disabled
-              >
+                disabled>
                 {currentPage}
               </button>
             </div>
@@ -544,40 +602,12 @@ const ComplaintsTable = () => {
               </div>
               <div className="flex gap-2 ml-12">
                 <StatusBadge status={selectedComplaint.status} />
-                <FlagBadge 
-                  isDuplicate={selectedComplaint.isDuplicate} 
-                  isAbusive={selectedComplaint.isAbusive} 
+                <FlagBadge
+                  isDuplicate={selectedComplaint.isDuplicate}
+                  isAbusive={selectedComplaint.isAbusive}
                 />
               </div>
             </div>
-
-            {selectedComplaint.userId && (
-              <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-500 mb-2">معلومات المستخدم</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl">
-                  <div>
-                    <p className="text-xs text-gray-500">عدد الشكاوى المسيئة</p>
-                    <p className="text-gray-800 font-medium">
-                      {selectedComplaint.abusiveComplaintsCount || 0}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">آخر شكوى مسيئة</p>
-                    <p className="text-gray-800">
-                      {selectedComplaint.lastAbusiveComplaint?.toLocaleDateString("ar-EG") || "لا يوجد"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">حالة الحظر</p>
-                    <p className={`font-medium ${
-                      selectedComplaint.isBanned ? "text-red-600" : "text-green-600"
-                    }`}>
-                      {selectedComplaint.isBanned ? "محظور" : "نشط"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
@@ -629,6 +659,32 @@ const ComplaintsTable = () => {
                 )}
             </div>
 
+            {selectedComplaint.location && (
+              <div className="mb-6">
+                <h4 className="text-sm font-medium text-gray-500 mb-2">
+                  موقع الشكوى
+                </h4>
+                <div className="h-64 rounded-lg overflow-hidden border border-gray-200">
+                  <MapContainer
+                    center={selectedComplaint.location.split(",").map(Number)}
+                    zoom={15}
+                    style={{ height: "100%", width: "100%" }}
+                    scrollWheelZoom={false}>
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <Marker
+                      position={selectedComplaint.location
+                        .split(",")
+                        .map(Number)}>
+                      <Popup>موقع الشكوى</Popup>
+                    </Marker>
+                  </MapContainer>
+                </div>
+              </div>
+            )}
+
             <div className="mb-6">
               <h4 className="text-sm font-medium text-gray-500 mb-2">
                 محتوى الشكوى
@@ -645,19 +701,34 @@ const ComplaintsTable = () => {
                 <h4 className="text-sm font-medium text-gray-500 mb-2">
                   الصورة المرفقة
                 </h4>
-                <img 
-                  src={selectedComplaint.imageBase64} 
-                  alt="صورة الشكوى" 
+                <img
+                  src={selectedComplaint.imageBase64}
+                  alt="صورة الشكوى"
                   className="max-w-full h-auto rounded-lg border border-gray-200"
                 />
               </div>
             )}
 
+            {/* Video Attachment Section */}
+            {selectedComplaint.videoUrl && (
+              <div className="mb-6">
+                <h4 className="text-sm font-medium text-gray-500 mb-2">
+                  الفيديو المرفق
+                </h4>
+                <div className="rounded-lg overflow-hidden">
+                  <video controls className="w-full max-h-96">
+                    <source src={selectedComplaint.videoUrl} type="video/mp4" />
+                    متصفحك لا يدعم تشغيل الفيديو
+                  </video>
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
               <button
-                onClick={() => 
-                  selectedComplaint.isAbusive 
-                    ? unmarkAsAbusive(selectedComplaint.id) 
+                onClick={() =>
+                  selectedComplaint.isAbusive
+                    ? unmarkAsAbusive(selectedComplaint.id)
                     : markAsAbusive(selectedComplaint.id)
                 }
                 className={`px-4 py-2.5 rounded-xl transition flex items-center gap-2 ${
@@ -665,14 +736,16 @@ const ComplaintsTable = () => {
                     ? "bg-red-100 hover:bg-red-200 text-red-800"
                     : "bg-red-50 hover:bg-red-100 text-red-600"
                 }`}>
-                <ShieldAlert className="w-4 h-4" /> 
-                {selectedComplaint.isAbusive ? "إلغاء تحديد مسيء" : "تحديد كمحتوى مسيء"}
+                <ShieldAlert className="w-4 h-4" />
+                {selectedComplaint.isAbusive
+                  ? "إلغاء تحديد مسيء"
+                  : "تحديد كمحتوى مسيء"}
               </button>
-              
+
               <button
-                onClick={() => 
-                  selectedComplaint.isDuplicate 
-                    ? unmarkAsDuplicate(selectedComplaint.id) 
+                onClick={() =>
+                  selectedComplaint.isDuplicate
+                    ? unmarkAsDuplicate(selectedComplaint.id)
                     : markAsDuplicate(selectedComplaint.id)
                 }
                 className={`px-4 py-2.5 rounded-xl transition flex items-center gap-2 ${
@@ -680,16 +753,18 @@ const ComplaintsTable = () => {
                     ? "bg-purple-100 hover:bg-purple-200 text-mustard"
                     : "bg-purple-50 hover:bg-purple-100 text-mustard"
                 }`}>
-                <Copy className="w-4 h-4" /> 
-                {selectedComplaint.isDuplicate ? "إلغاء تحديد مكررة" : "تحديد كمكررة"}
+                <Copy className="w-4 h-4" />
+                {selectedComplaint.isDuplicate
+                  ? "إلغاء تحديد مكررة"
+                  : "تحديد كمكررة"}
               </button>
-              
+
               <button
                 onClick={() => handleDeleteClick(selectedComplaint)}
                 className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition flex items-center gap-2">
                 <Trash2 className="w-4 h-4" /> حذف الشكوى
               </button>
-              
+
               <button
                 onClick={() => setShowModal(false)}
                 className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition">
@@ -712,11 +787,12 @@ const ComplaintsTable = () => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <p className="text-gray-600 mb-6">
-              هل أنت متأكد من رغبتك في حذف الشكوى؟ هذا الإجراء لا يمكن التراجع عنه.
+              هل أنت متأكد من رغبتك في حذف الشكوى؟ هذا الإجراء لا يمكن التراجع
+              عنه.
             </p>
-            
+
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteModal(false)}

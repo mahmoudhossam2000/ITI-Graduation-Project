@@ -35,15 +35,19 @@ const UsersTable = () => {
       try {
         setIsLoading(true);
 
-        // جلب جميع المستخدمين
         const usersSnapshot = await getDocs(collection(db, "users"));
-        const usersData = [];
-        
+        const uniqueUsers = [];
+        const seenEmails = new Set();
+
         for (const userDoc of usersSnapshot.docs) {
           const user = { id: userDoc.id, ...userDoc.data() };
 
           // استثناء المستخدمين اللي رولهم department
           if (user.role === "department") continue;
+
+          // منع التكرار بناءً على الإيميل
+          if (!user.email || seenEmails.has(user.email.toLowerCase())) continue;
+          seenEmails.add(user.email.toLowerCase());
 
           // جلب جميع شكاوى المستخدم
           const complaintsQuery = query(
@@ -63,10 +67,10 @@ const UsersTable = () => {
           user.complaintCount = complaintsSnapshot.size;
           user.abusiveComplaintsCount = abusiveComplaintsSnapshot.size;
           user.lastActive = userDoc.data().lastLogin?.toDate();
-          usersData.push(user);
+          uniqueUsers.push(user);
         }
 
-        setUsers(usersData);
+        setUsers(uniqueUsers);
       } catch (error) {
         console.error("Error fetching users:", error);
       } finally {
@@ -95,7 +99,7 @@ const UsersTable = () => {
         email: selectedUser.email,
         banDate: new Date(),
         reason: "حظر يدوي من المشرف",
-        abusiveComplaintsCount: selectedUser.abusiveComplaintsCount
+        abusiveComplaintsCount: selectedUser.abusiveComplaintsCount,
       });
 
       setUsers((prev) =>
@@ -156,6 +160,7 @@ const UsersTable = () => {
       </div>
     );
   }
+
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
