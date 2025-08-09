@@ -6,7 +6,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "react-toastify";
 import Navbar from "../../Components/Navbar";
-
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,19 +35,21 @@ const Login = () => {
       navigate("/");
     } catch (err) {
       toast.error("البريد الإلكتروني أو كلمة المرور غير صحيحة ❌");
-      setError("فشل تسجيل الدخول. يرجى التحقق من البريد الإلكتروني وكلمة المرور.");
+      setError(
+        "فشل تسجيل الدخول. يرجى التحقق من البريد الإلكتروني وكلمة المرور."
+      );
       console.error("Login error:", err);
     }
   };
-
+  const [showPassword, setShowPassword] = useState(false);
   return (
     <>
-      <Navbar />
-
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 pt-24">
         <div className="max-w-md w-full space-y-6 bg-white p-8 rounded-lg shadow-md">
           <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-darkTeal">تسجيل الدخول</h2>
+            <h2 className="text-3xl font-extrabold text-darkTeal">
+              تسجيل الدخول
+            </h2>
           </div>
 
           {error && (
@@ -59,7 +61,10 @@ const Login = () => {
           <form className="mt-6 space-y-6" onSubmit={handleLogin}>
             <div className="space-y-4">
               <div>
-                <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1 text-right">
+                <label
+                  htmlFor="email-address"
+                  className="block text-sm font-medium text-gray-700 mb-1 text-right"
+                >
                   البريد الإلكتروني
                 </label>
                 <input
@@ -75,24 +80,43 @@ const Login = () => {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1 text-right">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 mb-1 text-right"
+                >
                   كلمة المرور
                 </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="كلمة المرور"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10"
+                    placeholder="كلمة المرور"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
             <div className="text-sm text-right">
-              <Link to="/forgot-password" className="text-blue-600 hover:text-blue-500 font-medium">
+              <Link
+                to="/forgot-password"
+                className="text-blue-600 hover:text-blue-500 font-medium"
+              >
                 نسيت كلمة المرور؟
               </Link>
             </div>
@@ -132,7 +156,10 @@ const Login = () => {
           <div className="mt-8 text-center">
             <p className="text-gray-700 text-md">
               ليس لديك حساب؟{" "}
-              <Link to="/signup" className="ml-1 text-blue font-semibold hover:underline">
+              <Link
+                to="/signup"
+                className="ml-1 text-blue font-semibold hover:underline"
+              >
                 إنشاء حساب جديد
               </Link>
             </p>

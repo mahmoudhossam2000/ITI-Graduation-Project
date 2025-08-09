@@ -15,7 +15,7 @@ export default function PlateFormFeatures() {
       subTitle: "واجهة بسيطة وسلسة لأي مستخدم",
     },
     {
-      icon: <HiDocumentArrowUp size={25} className="me-2 text-blue"/>,
+      icon: <HiDocumentArrowUp size={25} className="me-2 text-blue" />,
       title: "إرفق مستنداتك بسهولة",
       subTitle: "أضف صور أو ملفات داعمة مع الشكوى لتوضيح المشكلة بشكل أفضل.",
     },
@@ -56,7 +56,10 @@ export default function PlateFormFeatures() {
         {/* Features */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 lg:px-20">
           {features.map((feature) => (
-            <TiltCard className="card bg-white shadow-md p-5 border-l-4 border-blue">
+            <TiltCard
+              key={feature.title}
+              className="card bg-white shadow-md p-5 border-l-4 border-blue"
+            >
               <div className="flex items-center mb-2">
                 {feature.icon}
                 <h3 className="font-bold text-lg text-blue ml-2">

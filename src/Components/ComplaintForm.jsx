@@ -26,7 +26,7 @@ const validationSchema = Yup.object().shape({
     .required("البريد الإلكتروني مطلوب")
     .email("من فضلك أدخل بريدًا إلكترونيًا صحيحًا"),
   governorate: Yup.string().required("المحافظة مطلوبة"),
-  ministry: Yup.string().required("الوزارة مطلوبة"),
+  administration: Yup.string().required("الإدارة المختصة مطلوبة"),
   description: Yup.string()
     .required("ادخال الوصف مطلوب")
     .min(20, "الوصف يجب أن يكون على الأقل 20 حرفًا"),
@@ -159,7 +159,7 @@ function ComplaintForm() {
       name: "",
       email: "",
       governorate: "",
-      ministry: "",
+      administration: "",
       description: "",
       imageBase64: "",
     },
@@ -189,7 +189,7 @@ function ComplaintForm() {
           name: values.name,
           email: values.email,
           governorate: values.governorate,
-          ministry: values.ministry,
+          administration: values.administration,
           description: values.description,
           imageBase64: values.imageBase64 || null,
           createdAt: new Date(),
@@ -333,34 +333,49 @@ function ComplaintForm() {
               )}
             </div>
 
-            {/* الوزارة */}
+            {/* الإدارة المختصة */}
             <div>
               <label className="block font-medium text-blue mb-1">
-                اختر الوزارة المختصة
+                اختر الإدارة المختصة
               </label>
               <select
-                id="ministry"
-                name="ministry"
+                id="administration"
+                name="administration"
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
-                value={formik.values.ministry}
+                value={formik.values.administration}
                 className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue"
               >
                 <option disabled value="">
-                  اختر الوزارة
+                  اختر الإدارة المختصة
                 </option>
                 {[
-                  "وزارة الصحة", "وزارة التعليم", "وزارة الداخلية", "وزارة التموين",
-                  "وزارة الكهرباء والطاقة", "وزارة النقل", "وزارة البيئة",
-                  "وزارة التضامن الاجتماعي", "وزارة الاتصالات وتكنولوجيا المعلومات",
-                  "وزارة الإسكان والمرافق", "وزارة القوى العاملة", "وزارة الثقافة",
-                  "وزارة التنمية المحلية", "وزارة العدل", "وزارة المالية"
-                ].map((ministry) => (
-                  <option key={ministry}>{ministry}</option>
+                  "إدارة الكهرباء والطاقة",
+                  "إدارة الغاز الطبيعي",
+                  "إدارة الطرق والكباري",
+                  "إدارة المرور",
+                  "إدارة النقل والمواصلات العامة",
+                  "مديرية الصحة",
+                  "إدارة البيئة ومكافحة التلوث",
+                  "مديرية التربية والتعليم",
+                  "مديرية الإسكان والمرافق",
+                  "إدارة التخطيط العمراني",
+                  "إدارة الأراضي وأملاك الدولة",
+                  "مديرية الأمن",
+                  "إدارة الدفاع المدني والحريق",
+                  "إدارة التموين والتجارة الداخلية",
+                  "إدارة حماية المستهلك",
+                  "إدارة الزراعة",
+                  "إدارة الري والموارد المائية",
+                  "إدارة الشباب والرياضة",
+                  "إدارة الثقافة",
+                  "إدارة السياحة والآثار"
+                ].map((admin) => (
+                  <option key={admin}>{admin}</option>
                 ))}
               </select>
-              {formik.touched.ministry && formik.errors.ministry && (
-                <div className="text-red-500 text-sm">{formik.errors.ministry}</div>
+              {formik.touched.administration && formik.errors.administration && (
+                <div className="text-red-500 text-sm">{formik.errors.administration}</div>
               )}
             </div>
 
