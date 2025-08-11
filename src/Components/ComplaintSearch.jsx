@@ -149,7 +149,15 @@ function ComplaintSearch() {
               </div>
 
               <div className="space-y-4">
-                {/* name */}
+                {/* رقم الشكوى */}
+                <div>
+                  <p className="text-gray-500 text-base">رقم الشكوى</p>
+                  <p className="font-medium text-gray-800">
+                    {complaint.complaintId}
+                  </p>
+                </div>
+
+                {/* اسم المواطن */}
                 <div className="flex items-start gap-1">
                   <FaUser className="mt-1 mr-3 text-blue-600" />
                   <div>
@@ -160,18 +168,18 @@ function ComplaintSearch() {
                   </div>
                 </div>
 
-                {/* email */}
+                {/* البريد الإلكتروني */}
                 <div className="flex items-start gap-1">
                   <FaIdCard className="mt-1 mr-3 text-blue-600" />
                   <div>
-                    <p className="text-gray-500 text-base"> البريد الالكتروني</p>
+                    <p className="text-gray-500 text-base">البريد الالكتروني</p>
                     <p className="font-medium text-gray-800">
                       {complaint.email}
                     </p>
                   </div>
                 </div>
 
-                {/* ministry */}
+                {/* الوزارة */}
                 <div className="flex items-start gap-1">
                   <FaBuilding className="mt-1 mr-3 text-blue-600" />
                   <div>
@@ -182,7 +190,7 @@ function ComplaintSearch() {
                   </div>
                 </div>
 
-                {/* complaint description */}
+                {/* وصف الشكوى */}
                 <div className="flex items-start gap-1">
                   <FaFileAlt className="mt-1 mr-3 text-blue-600" />
                   <div>
@@ -192,6 +200,39 @@ function ComplaintSearch() {
                     </p>
                   </div>
                 </div>
+
+                {/* تاريخ الشكوى */}
+                {complaint.createdAt && complaint.createdAt.seconds && (
+                  <div>
+                    <p className="text-gray-500 text-base">تاريخ الشكوى</p>
+                    <p className="font-medium text-gray-800">
+                      {new Date(
+                        complaint.createdAt.seconds * 1000
+                      ).toLocaleDateString("ar-EG")}
+                    </p>
+                  </div>
+                )}
+
+                {/* الصور */}
+                {complaint.imagesBase64 &&
+                  complaint.imagesBase64.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-gray-500 text-base mb-2">
+                        الصور المرفقة
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {complaint.imagesBase64.map((img, i) => (
+                          <img
+                            key={i}
+                            src={img}
+                            alt={`صورة ${i + 1}`}
+                            className="w-full h-auto border rounded-lg"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
               </div>
             </div>
           ))}

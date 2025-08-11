@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
+import { createUserWithEmailAndPassword, signOut,updateProfile } from "firebase/auth";
 import { setDoc, doc, getDocs, collection } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import { FcGoogle } from "react-icons/fc";
-import Navbar from "../../Components/Navbar";
 import { toast } from "react-toastify";
 
 const Signup = () => {
@@ -111,13 +110,19 @@ const Signup = () => {
 
       const user = userCredential.user;
 
-      // احضار عدد الشكاوى لهذا اليوزر (لو فيه)
+      // update displayName in Firebase Auth
+      await updateProfile(user, {
+        displayName: formData.name,
+      });
+
+      // fetch all complaints related user
       const complaintsSnap = await getDocs(collection(db, "complaints"));
       const userComplaints = complaintsSnap.docs.filter(
         (doc) => doc.data().userId === user.uid
       );
       const complaintCount = userComplaints.length;
 
+      // store userData in Firestore
       await setDoc(doc(db, "users", user.uid), {
         name: formData.name,
         email: formData.email,
@@ -129,10 +134,8 @@ const Signup = () => {
 
       toast.success("تم إنشاء الحساب بنجاح 🎉");
 
-      // تسجيل خروج المستخدم بعد التسجيل
+      // logout after signup(علشان اجبره يوديني للوجن الاول)
       await signOut(auth);
-
-      // إعادة توجيه المستخدم لصفحة تسجيل الدخول
       navigate("/login");
     } catch (err) {
       console.error("Signup error:", err);
@@ -175,8 +178,7 @@ const Signup = () => {
               <div key={field.name}>
                 <label
                   className="block text-sm font-medium text-gray-700 mb-1 text-right"
-                  htmlFor={field.name}
-                >
+                  htmlFor={field.name}>
                   {field.label}
                 </label>
                 <input
@@ -200,8 +202,7 @@ const Signup = () => {
 
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               إنشاء حساب
             </button>
 
@@ -217,8 +218,7 @@ const Signup = () => {
             <button
               onClick={handleGoogleSignUp}
               type="button"
-              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
+              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
               <FcGoogle className="w-5 h-5 ml-2" />
               التسجيل باستخدام جوجل
             </button>
@@ -228,8 +228,7 @@ const Signup = () => {
             <span className="text-gray-700 text-md">لديك حساب بالفعل؟ </span>
             <Link
               to="/login"
-              className="inline-block ml-2 ms-1 text-blue font-semibold hover:underline"
-            >
+              className="inline-block ml-2 ms-1 text-blue font-semibold hover:underline">
               تسجيل الدخول
             </Link>
           </div>

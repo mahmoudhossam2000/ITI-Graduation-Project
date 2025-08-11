@@ -15,8 +15,19 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../Components/Navbar";
 import { Link } from "react-router-dom";
-import { FaRegCheckCircle, FaMapMarkerAlt, FaUpload, FaTimes } from "react-icons/fa";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import {
+  FaRegCheckCircle,
+  FaMapMarkerAlt,
+  FaUpload,
+  FaTimes,
+} from "react-icons/fa";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMapEvents,
+  useMap,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
 // map
@@ -33,6 +44,216 @@ const DefaultIcon = L.icon({
   shadowSize: [41, 41],
 });
 L.Marker.prototype.options.icon = DefaultIcon;
+
+// حدود المحافظات المصرية (إحداثيات تقريبية)
+const governorateBounds = {
+  القاهرة: {
+    minLat: 29.8,
+    maxLat: 30.2,
+    minLng: 31.0,
+    maxLng: 31.5,
+  },
+  الجيزة: {
+    minLat: 29.5,
+    maxLat: 30.2,
+    minLng: 30.8,
+    maxLng: 31.5,
+  },
+  الإسكندرية: {
+    minLat: 31.0,
+    maxLat: 31.4,
+    minLng: 29.8,
+    maxLng: 30.2,
+  },
+  الدقهلية: {
+    minLat: 30.9,
+    maxLat: 31.5,
+    minLng: 31.2,
+    maxLng: 31.8,
+  },
+  البحيرة: {
+    minLat: 30.5,
+    maxLat: 31.2,
+    minLng: 29.9,
+    maxLng: 30.7,
+  },
+  الفيوم: {
+    minLat: 29.0,
+    maxLat: 29.6,
+    minLng: 30.3,
+    maxLng: 31.0,
+  },
+  الغربية: {
+    minLat: 30.7,
+    maxLat: 31.2,
+    minLng: 30.9,
+    maxLng: 31.4,
+  },
+  الإسماعيلية: {
+    minLat: 30.5,
+    maxLat: 30.8,
+    minLng: 32.0,
+    maxLng: 32.5,
+  },
+  المنوفية: {
+    minLat: 30.3,
+    maxLat: 30.7,
+    minLng: 30.7,
+    maxLng: 31.2,
+  },
+  المنيا: {
+    minLat: 27.8,
+    maxLat: 28.6,
+    minLng: 30.4,
+    maxLng: 31.0,
+  },
+  القليوبية: {
+    minLat: 30.1,
+    maxLat: 30.5,
+    minLng: 31.0,
+    maxLng: 31.5,
+  },
+  "الوادي الجديد": {
+    minLat: 22.0,
+    maxLat: 26.0,
+    minLng: 27.0,
+    maxLng: 30.5,
+  },
+  السويس: {
+    minLat: 29.9,
+    maxLat: 30.1,
+    minLng: 32.4,
+    maxLng: 32.6,
+  },
+  أسوان: {
+    minLat: 23.5,
+    maxLat: 24.5,
+    minLng: 32.5,
+    maxLng: 33.0,
+  },
+  أسيوط: {
+    minLat: 26.8,
+    maxLat: 27.6,
+    minLng: 30.6,
+    maxLng: 31.4,
+  },
+  "بني سويف": {
+    minLat: 28.8,
+    maxLat: 29.4,
+    minLng: 30.6,
+    maxLng: 31.3,
+  },
+  بورسعيد: {
+    minLat: 31.2,
+    maxLat: 31.3,
+    minLng: 32.2,
+    maxLng: 32.4,
+  },
+  دمياط: {
+    minLat: 31.3,
+    maxLat: 31.6,
+    minLng: 31.6,
+    maxLng: 32.0,
+  },
+  "جنوب سيناء": {
+    minLat: 27.5,
+    maxLat: 29.5,
+    minLng: 33.0,
+    maxLng: 34.5,
+  },
+  "كفر الشيخ": {
+    minLat: 31.0,
+    maxLat: 31.5,
+    minLng: 30.5,
+    maxLng: 31.2,
+  },
+  مطروح: {
+    minLat: 29.0,
+    maxLat: 32.0,
+    minLng: 25.0,
+    maxLng: 29.5,
+  },
+  الأقصر: {
+    minLat: 25.5,
+    maxLat: 26.0,
+    minLng: 32.5,
+    maxLng: 33.0,
+  },
+  قنا: {
+    minLat: 25.7,
+    maxLat: 26.5,
+    minLng: 32.5,
+    maxLng: 33.0,
+  },
+  "شمال سيناء": {
+    minLat: 30.0,
+    maxLat: 31.5,
+    minLng: 32.5,
+    maxLng: 34.5,
+  },
+  سوهاج: {
+    minLat: 26.2,
+    maxLat: 27.0,
+    minLng: 31.5,
+    maxLng: 32.0,
+  },
+  "البحر الأحمر": {
+    minLat: 23.0,
+    maxLat: 27.5,
+    minLng: 33.0,
+    maxLng: 36.0,
+  },
+  الشرقية: {
+    minLat: 30.5,
+    maxLat: 31.0,
+    minLng: 31.3,
+    maxLng: 32.0,
+  },
+};
+
+function LocationPicker({ setFieldValue, governorateBounds }) {
+  const [position, setPosition] = useState(null);
+  const map = useMap();
+
+  useEffect(() => {
+    if (governorateBounds) {
+      map.fitBounds(
+        [
+          [governorateBounds.minLat, governorateBounds.minLng],
+          [governorateBounds.maxLat, governorateBounds.maxLng],
+        ],
+        { padding: [50, 50] }
+      );
+    } else {
+      map.setView([30.0444, 31.2357], 7); // عرض مصر بالكامل إذا لم يتم تحديد محافظة
+    }
+  }, [governorateBounds, map]);
+
+  useMapEvents({
+    click(e) {
+      if (governorateBounds) {
+        const { lat, lng } = e.latlng;
+        // التحقق مما إذا كان النقاط داخل حدود المحافظة
+        if (
+          lat >= governorateBounds.minLat &&
+          lat <= governorateBounds.maxLat &&
+          lng >= governorateBounds.minLng &&
+          lng <= governorateBounds.maxLng
+        ) {
+          setPosition(e.latlng);
+          setFieldValue("location", `${lat},${lng}`);
+        } else {
+          toast.error("الموقع خارج حدود المحافظة المحددة");
+        }
+      } else {
+        setPosition(e.latlng);
+        setFieldValue("location", `${e.latlng.lat},${e.latlng.lng}`);
+      }
+    },
+  });
+
+  return position === null ? null : <Marker position={position}></Marker>;
+}
 
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
@@ -166,24 +387,14 @@ function ComplaintForm() {
   const [user, setUser] = useState(null);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
 
-  function LocationPicker({ setFieldValue }) {
-    const [position, setPosition] = useState(null);
-
-    useMapEvents({
-      click(e) {
-        setPosition(e.latlng);
-        setFieldValue("location", `${e.latlng.lat},${e.latlng.lng}`);
-      },
-    });
-
-    return position === null ? null : <Marker position={position}></Marker>;
-  }
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
         logUserIp(currentUser.uid);
+
+        formik.setFieldValue("name", currentUser.displayName || "");
+        formik.setFieldValue("email", currentUser.email || "");
 
         const usersRef = collection(db, "users");
         const q = query(usersRef, where("email", "==", currentUser.email));
@@ -253,7 +464,7 @@ function ComplaintForm() {
       governorate: "",
       administration: "",
       description: "",
-      imageBase64: "",
+      imagesBase64: [],
       location: "",
     },
     validationSchema,
@@ -300,7 +511,8 @@ function ComplaintForm() {
           governorate: values.governorate,
           administration: values.administration,
           description: values.description,
-          imageBase64: values.imageBase64 || null,
+          imagesBase64:
+            values.imagesBase64.length > 0 ? values.imagesBase64 : null,
           createdAt: new Date(),
           status: "قيد المعالجة",
           complaintId: complaintId,
@@ -328,22 +540,37 @@ function ComplaintForm() {
   });
 
   const handleImageChange = async (event) => {
-    const file = event.currentTarget.files[0];
-    if (file && file.size > 2 * 1024 * 1024) {
-      toast.error("حجم الصورة يجب أن يكون أقل من 2MB");
-      return;
-    }
+    const files = Array.from(event.currentTarget.files);
+    const validFiles = [];
 
-    if (file) {
+    for (let file of files) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error(`الصورة ${file.name} أكبر من 2MB`);
+        continue;
+      }
       try {
         const base64String = await fileToBase64(file);
-        formik.setFieldValue("imageBase64", base64String);
+        validFiles.push(base64String);
       } catch (error) {
         console.error("Error converting file to Base64:", error);
-        toast.error("حدث خطأ أثناء تحميل الصورة");
+        toast.error(`حدث خطأ أثناء تحميل ${file.name}`);
       }
     }
+
+    formik.setFieldValue("imagesBase64", [
+      ...formik.values.imagesBase64,
+      ...validFiles,
+    ]);
   };
+
+  useEffect(() => {
+    if (
+      formik.values.governorate &&
+      governorateBounds[formik.values.governorate]
+    ) {
+      formik.setFieldValue("location", ""); // مسح الموقع عند تغيير المحافظة
+    }
+  }, [formik.values.governorate]);
 
   if (isBanned) {
     return (
@@ -370,7 +597,6 @@ function ComplaintForm() {
       <ToastContainer rtl position="top-center" autoClose={5000} />
 
       <main className="container mx-auto px-4 py-10">
-        
         {/* complaint content */}
         <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
           <div className="p-8">
@@ -396,6 +622,7 @@ function ComplaintForm() {
                     id="name"
                     name="name"
                     type="text"
+                    readOnly={!!user}
                     placeholder="أدخل اسمك بالكامل"
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -423,6 +650,7 @@ function ComplaintForm() {
                     id="email"
                     name="email"
                     type="email"
+                    readOnly={!!user}
                     placeholder="example@domain.com"
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -441,7 +669,7 @@ function ComplaintForm() {
                 </div>
               </div>
 
-              {/* الصف الثاني: المحافظة والوزارة */}
+              {/* الصف الثاني: المحافظة والاداره */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label
@@ -461,92 +689,55 @@ function ComplaintForm() {
                         : "border-gray-300"
                     } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}>
                     <option value="">اختر المحافظة</option>
-                    {[
-                      "القاهرة",
-                      "الجيزة",
-                      "الإسكندرية",
-                      "الدقهلية",
-                      "الشرقية",
-                      "القليوبية",
-                      "الغربية",
-                      "المنوفية",
-                      "البحيرة",
-                      "كفر الشيخ",
-                      "دمياط",
-                      "بورسعيد",
-                      "الإسماعيلية",
-                      "السويس",
-                      "شمال سيناء",
-                      "جنوب سيناء",
-                      "بني سويف",
-                      "الفيوم",
-                      "المنيا",
-                      "أسيوط",
-                      "سوهاج",
-                      "قنا",
-                      "الأقصر",
-                      "أسوان",
-                      "الوادي الجديد",
-                      "مطروح",
-                      "البحر الأحمر",
-                    ].map((gov) => (
+                    {Object.keys(governorateBounds).map((gov) => (
                       <option key={gov} value={gov}>
                         {gov}
                       </option>
                     ))}
                   </select>
-                  {formik.touched.governorate && formik.errors.governorate && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {formik.errors.governorate}
-                    </p>
-                  )}
                 </div>
-</div>
-            {/* الإدارة المختصة */}
-            <div>
-              <label className="block font-medium text-blue mb-1">
-                اختر الإدارة المختصة
-              </label>
-              <select
-                id="administration"
-                name="administration"
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                value={formik.values.administration}
-                className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue"
-              >
-                <option disabled value="">
-                  اختر الإدارة المختصة
-                </option>
-                {[
-                  "إدارة الكهرباء والطاقة",
-                  "إدارة الغاز الطبيعي",
-                  "إدارة الطرق والكباري",
-                  "إدارة المرور",
-                  "إدارة النقل والمواصلات العامة",
-                  "مديرية الصحة",
-                  "إدارة البيئة ومكافحة التلوث",
-                  "مديرية التربية والتعليم",
-                  "مديرية الإسكان والمرافق",
-                  "إدارة التخطيط العمراني",
-                  "إدارة الأراضي وأملاك الدولة",
-                  "مديرية الأمن",
-                  "إدارة الدفاع المدني والحريق",
-                  "إدارة التموين والتجارة الداخلية",
-                  "إدارة حماية المستهلك",
-                  "إدارة الزراعة",
-                  "إدارة الري والموارد المائية",
-                  "إدارة الشباب والرياضة",
-                  "إدارة الثقافة",
-                  "إدارة السياحة والآثار"
-                ].map((admin) => (
-                  <option key={admin}>{admin}</option>
-                ))}
-              </select>
-              {formik.touched.administration && formik.errors.administration && (
-                <div className="text-red-500 text-sm">{formik.errors.administration}</div>
-              )}
-            </div>
+
+                <div>
+                  <label className="block font-medium text-blue mb-1">
+                    اختر الإدارة المختصة
+                  </label>
+                  <select
+                    id="administration"
+                    name="administration"
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.values.administration}
+                    className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue">
+                    <option disabled value="">
+                      اختر الإدارة المختصة
+                    </option>
+                    {[
+                      "إدارة الكهرباء والطاقة",
+                      "إدارة الغاز الطبيعي",
+                      "إدارة الطرق والكباري",
+                      "إدارة المرور",
+                      "إدارة النقل والمواصلات العامة",
+                      "مديرية الصحة",
+                      "إدارة البيئة ومكافحة التلوث",
+                      "مديرية التربية والتعليم",
+                      "مديرية الإسكان والمرافق",
+                      "إدارة التخطيط العمراني",
+                      "إدارة الأراضي وأملاك الدولة",
+                      "مديرية الأمن",
+                      "إدارة الدفاع المدني والحريق",
+                      "إدارة التموين والتجارة الداخلية",
+                      "إدارة حماية المستهلك",
+                      "إدارة الزراعة",
+                      "إدارة الري والموارد المائية",
+                      "إدارة الشباب والرياضة",
+                      "إدارة الثقافة",
+                      "إدارة السياحة والآثار",
+                    ].map((admin) => (
+                      <option key={admin}>{admin}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
               {/* وصف الشكوى */}
               <div>
@@ -584,14 +775,40 @@ function ComplaintForm() {
                 <div className="rounded-lg overflow-hidden border border-gray-300">
                   <MapContainer
                     center={[30.0444, 31.2357]}
-                    zoom={10}
+                    zoom={7}
                     style={{ height: "300px", width: "100%" }}
-                    className="z-0">
+                    className="z-0"
+                    maxBounds={
+                      formik.values.governorate &&
+                      governorateBounds[formik.values.governorate]
+                        ? [
+                            [
+                              governorateBounds[formik.values.governorate]
+                                .minLat,
+                              governorateBounds[formik.values.governorate]
+                                .minLng,
+                            ],
+                            [
+                              governorateBounds[formik.values.governorate]
+                                .maxLat,
+                              governorateBounds[formik.values.governorate]
+                                .maxLng,
+                            ],
+                          ]
+                        : undefined
+                    }
+                    maxBoundsViscosity={1.0} // تمنع الخروج من الحدود
+                  >
                     <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    <LocationPicker setFieldValue={formik.setFieldValue} />
+                    <LocationPicker
+                      setFieldValue={formik.setFieldValue}
+                      governorateBounds={
+                        governorateBounds[formik.values.governorate]
+                      }
+                    />
                   </MapContainer>
                 </div>
                 <div className="mt-2 flex items-center text-sm text-gray-500">
@@ -609,27 +826,26 @@ function ComplaintForm() {
                 )}
               </div>
 
-              {/* رفع الصورة */}
+              {/* رفع الصور والفيديو */}
               <div>
                 <label
-                  htmlFor="image"
+                  htmlFor="media"
                   className="block text-sm font-medium text-gray-700 mb-1">
-                  إرفاق صورة (اختياري)
+                  إرفاق صورة أو فيديو (اختياري)
                 </label>
-                <div className="mt-1 flex items-center">
+
+                {/* زر رفع صورة */}
+                <div className="mt-1 flex flex-col md:flex-row gap-4">
                   <label
                     htmlFor="image"
-                    className="flex flex-col items-center justify-center w-full p-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-300">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <FaUpload className="text-gray-400 text-2xl mb-2" />
-                      <p className="mb-2 text-sm text-gray-500">
-                        <span className="font-semibold">اضغط لرفع ملف</span> أو
-                        اسحبه هنا
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        الصور فقط (بحد أقصى 2MB)
-                      </p>
-                    </div>
+                    className="flex flex-col items-center justify-center w-full md:w-1/2 p-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-300">
+                    <FaUpload className="text-gray-400 text-2xl mb-2" />
+                    <p className="mb-2 text-sm text-gray-500">
+                      <span className="font-semibold">اضغط لرفع صورة</span> 
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      الصور فقط (بحد أقصى 2MB)
+                    </p>
                     <input
                       id="image"
                       name="image"
@@ -639,53 +855,68 @@ function ComplaintForm() {
                       className="hidden"
                     />
                   </label>
-                </div>
-                {formik.values.imageBase64 && (
-                  <div className="mt-2 flex items-center text-sm text-green-600">
-                    <FaRegCheckCircle className="ml-1" />
-                    <span>تم تحميل الصورة بنجاح</span>
-                  </div>
-                )}
-              </div>
 
-              {/* رفع الفيديو */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  إرفاق فيديو (اختياري)
-                </label>
-                <div className="flex items-center gap-4">
-                  <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition">
-                    <span>اختر ملف فيديو</span>
+                  {/* زر رفع فيديو */}
+                  <label
+                    htmlFor="video"
+                    className="flex flex-col items-center justify-center w-full md:w-1/2 p-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-300">
+                    <FaUpload className="text-gray-400 text-2xl mb-2" />
+                    <p className="mb-2 text-sm text-gray-500">
+                      <span className="font-semibold">اضغط لرفع فيديو</span> 
+                    </p>
+                    <p className="text-xs text-gray-500">بحد أقصى 20MB</p>
                     <input
+                      id="video"
+                      name="video"
                       type="file"
                       accept="video/*"
                       onChange={handleVideoChange}
                       className="hidden"
                     />
                   </label>
-                  {isUploadingVideo && (
-                    <div className="text-blue-600">جاري رفع الفيديو...</div>
+                </div>
+
+                {/* عرض الصور والفيديو بنفس التصميم */}
+                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {/* الصور */}
+                  {formik.values.imagesBase64.map((img, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={img}
+                        alt={`uploaded-${index}`}
+                        className="rounded-lg border w-full h-40 object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = formik.values.imagesBase64.filter(
+                            (_, i) => i !== index
+                          );
+                          formik.setFieldValue("imagesBase64", updated);
+                        }}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1">
+                        <FaTimes />
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* الفيديو */}
+                  {videoPreview && (
+                    <div className="relative">
+                      <video
+                        src={videoPreview}
+                        controls
+                        className="rounded-lg border w-full h-40 object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={removeVideo}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1">
+                        <FaTimes />
+                      </button>
+                    </div>
                   )}
                 </div>
-                {videoPreview && (
-                  <div className="mt-2 relative">
-                    <video
-                      src={videoPreview}
-                      controls
-                      className="max-h-40 rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={removeVideo}
-                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-                    >
-                      <FaTimes />
-                    </button>
-                  </div>
-                )}
-                <p className="mt-1 text-xs text-gray-500">
-                  الحد الأقصى لحجم الفيديو: 20MB
-                </p>
               </div>
 
               {/* زر الإرسال */}
@@ -695,9 +926,7 @@ function ComplaintForm() {
                   disabled={formik.isSubmitting || isUploadingVideo}
                   className="bg-blue w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center">
                   {formik.isSubmitting || isUploadingVideo ? (
-                    <>
-                      جاري الإرسال...
-                    </>
+                    <>جاري الإرسال...</>
                   ) : (
                     "إرسال الشكوى"
                   )}
