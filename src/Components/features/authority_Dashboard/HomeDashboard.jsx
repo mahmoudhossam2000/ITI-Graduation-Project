@@ -4,24 +4,52 @@ import { getComplaintsByDepartment } from "../../services/complaintsService";
 import { useAuth } from "../../../contexts/AuthContext";
 
 export default function HomeDashboard() {
-  const { userData } = useAuth();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const { userData } = useAuth();
 
   useEffect(() => {
     setLoading(true);
-    getComplaintsByDepartment(userData.department)
-      .then((complaints) => {
-        setData(complaints);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError("فشل تحميل البيانات");
-        setLoading(false);
-      });
-  }, [userData.department]);
+
+    // استخدام بيانات المستخدم لجلب الشكاوى المناسبة
+    if (userData?.accountType === "department" && userData?.governorate) {
+      getComplaintsByDepartment(userData.department, userData.governorate)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+          setLoading(false);
+        });
+    } else if (userData?.accountType === "governorate") {
+      getComplaintsByDepartment(null, userData.governorate)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+          setLoading(false);
+        });
+    } else {
+      // Fallback للخدمة القديمة
+      getComplaintsByDepartment(ministry)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+          setLoading(false);
+        });
+    }
+  }, [ministry, userData]);
 
   if (loading) {
     return (

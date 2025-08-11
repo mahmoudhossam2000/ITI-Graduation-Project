@@ -15,19 +15,47 @@ function Complaints() {
 
   const detailsRef = useRef(null);
   const actionRef = useRef(null);
+
   useEffect(() => {
     setLoading(true);
-    getComplaintsByDepartment(userData.department)
-      .then((complaints) => {
-        setData(complaints);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError("فشل تحميل البيانات");
-      })
-      .finally(() => setLoading(false));
-  }, []);
+
+    // استخدام بيانات المستخدم لجلب الشكاوى المناسبة
+    if (userData?.accountType === "department" && userData?.governorate) {
+      getComplaintsByDepartment(userData.department, userData.governorate)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+          setLoading(false);
+        });
+    } else if (userData?.accountType === "governorate") {
+      getComplaintsByDepartment(null, userData.governorate)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+          setLoading(false);
+        });
+    } else {
+      // Fallback للخدمة القديمة
+      getComplaintsByDepartment(ministry)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [ministry, userData]);
 
   // handlers to set details complaint and show modal
   const handleDetails = (complaint) => {
