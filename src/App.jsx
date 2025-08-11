@@ -1,4 +1,10 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import LandingPage from "./Pages/LandingPage";
 import ComplaintForm from "./Components/ComplaintForm";
@@ -15,10 +21,25 @@ import ResetPassword from "./Pages/Auth/ResetPassword";
 import ComplaintHistory from "./Components/ComplaintHistory";
 import NotFound from "./Pages/NotFound";
 import ComplaintReports from "./Pages/ComplaintReports";
+import Unauthorized from "./Pages/Unauthorized";
 
-const PrivateRoute = ({ children }) => {
-  const { currentUser } = useAuth();
-  return currentUser ? children : <Navigate to="/login" />;
+const PrivateRoute = ({ children, allowedRoles }) => {
+  const { currentUser, userData } = useAuth();
+  const location = useLocation();
+
+  if (!currentUser) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (!userData || !userData.role) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+  if (!allowedRoles.includes(userData.role)) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  return children;
+  // return currentUser ? children : <Navigate to="/login" />;
 };
 
 function AppContent() {
@@ -41,6 +62,7 @@ function AppContent() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/traceComplaint" element={<ComplaintSearch />} />
+        <Route path="/unauthorized" element={<Unauthorized />} />
         <Route
           path="/profile"
           element={
@@ -57,7 +79,14 @@ function AppContent() {
             </PrivateRoute>
           }
         />
-        <Route path="/dashboard" element={<Layout />}>
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute allowedRoles={["department", "moderator"]}>
+              <Layout />
+            </PrivateRoute>
+          }
+        >
           <Route index element={<Dashboard />} />
           <Route path="complaints" element={<Complaints />} />
           <Route path="complaint-reports" element={<ComplaintReports />} />

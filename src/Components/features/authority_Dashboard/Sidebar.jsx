@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../../contexts/AuthContext";
 
 const sidebarItems = [
   { label: "الرئيسية", icon: "🏠", href: "/dashboard" },
@@ -7,9 +8,14 @@ const sidebarItems = [
 ];
 
 export default function Sidebar() {
+  const { userData } = useAuth();
+
   return (
     <aside className="h-screen w-full bg-blue text-white shadow-lg border-r">
-      <div className="p-4 text-center text-xl font-bold ">لوحة التحكم</div>
+      <div className="p-4 text-center text-xl font-bold ">
+        {" "}
+        {userData.department}{" "}
+      </div>
       <nav className="flex flex-col p-4 space-y-2">
         {sidebarItems.map((item) => (
           <NavLink

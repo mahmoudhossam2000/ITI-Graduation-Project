@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { getComplaintsByDepartment } from "../Components/services/complaintsService";
 import ComplainAction from "../Components/features/authority_Dashboard/ComplaintAction";
 import ComplaintDetails from "../Components/features/authority_Dashboard/ComplaintDetails";
+import { useAuth } from "../contexts/AuthContext";
 
-function Complaints({ ministry }) {
+function Complaints() {
+  const { userData } = useAuth();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -15,7 +17,7 @@ function Complaints({ ministry }) {
   const actionRef = useRef(null);
   useEffect(() => {
     setLoading(true);
-    getComplaintsByDepartment("وزارة الثقافة")
+    getComplaintsByDepartment(userData.department)
       .then((complaints) => {
         setData(complaints);
         setLoading(false);
@@ -27,9 +29,8 @@ function Complaints({ ministry }) {
       .finally(() => setLoading(false));
   }, []);
 
-  // handlers
+  // handlers to set details complaint and show modal
   const handleDetails = (complaint) => {
-    console.log(detailsRef.current);
     setSelectedComplaint(complaint);
     setTimeout(() => {
       if (detailsRef.current) {
@@ -38,9 +39,11 @@ function Complaints({ ministry }) {
     }, 0);
   };
 
+  // handle to change actions for complaints
   const handleAction = (complaint) => {
-    console.log(complaint);
     setSelectedComplaint(complaint);
+    console.log(complaint);
+
     setTimeout(() => {
       if (actionRef.current) {
         actionRef.current?.showModal();

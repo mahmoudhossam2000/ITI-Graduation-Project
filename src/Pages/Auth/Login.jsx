@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase/firebase";
+import { auth, db } from "../../firebase/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "react-toastify";
 import Navbar from "../../Components/Navbar";
+import { doc, getDoc } from "firebase/firestore";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -30,12 +31,41 @@ const Login = () => {
     e.preventDefault();
     setError("");
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast.success("تم تسجيل الدخول بنجاح 🎉");
-      navigate("/");
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // 👇 استرجاع بيانات المستخدم من Firestore
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+
+        if (userData.role === "department" || userData.role === "moderator") {
+          toast.success("تم تسجيل الدخول بنجاح 🎉");
+          navigate("/dashboard");
+        } else {
+          toast.success("تم تسجيل الدخول كمستخدم عام");
+          navigate("/"); // المستخدم العام
+        }
+
+        console.log("Role:", userData.role);
+        console.log("Department:", userData.department);
+      } else {
+        toast.error("لم يتم العثور على بيانات هذا المستخدم.");
+        navigate("/");
+      }
+
+      // await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
       toast.error("البريد الإلكتروني أو كلمة المرور غير صحيحة ❌");
-      setError("فشل تسجيل الدخول. يرجى التحقق من البريد الإلكتروني وكلمة المرور.");
+      setError(
+        "فشل تسجيل الدخول. يرجى التحقق من البريد الإلكتروني وكلمة المرور."
+      );
       console.error("Login error:", err);
     }
   };
@@ -47,7 +77,9 @@ const Login = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 pt-24">
         <div className="max-w-md w-full space-y-6 bg-white p-8 rounded-lg shadow-md">
           <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-darkTeal">تسجيل الدخول</h2>
+            <h2 className="text-3xl font-extrabold text-darkTeal">
+              تسجيل الدخول
+            </h2>
           </div>
 
           {error && (
@@ -59,7 +91,10 @@ const Login = () => {
           <form className="mt-6 space-y-6" onSubmit={handleLogin}>
             <div className="space-y-4">
               <div>
-                <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1 text-right">
+                <label
+                  htmlFor="email-address"
+                  className="block text-sm font-medium text-gray-700 mb-1 text-right"
+                >
                   البريد الإلكتروني
                 </label>
                 <input
@@ -75,7 +110,10 @@ const Login = () => {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1 text-right">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 mb-1 text-right"
+                >
                   كلمة المرور
                 </label>
                 <input
@@ -92,7 +130,10 @@ const Login = () => {
             </div>
 
             <div className="text-sm text-right">
-              <Link to="/forgot-password" className="text-blue-600 hover:text-blue-500 font-medium">
+              <Link
+                to="/forgot-password"
+                className="text-blue-600 hover:text-blue-500 font-medium"
+              >
                 نسيت كلمة المرور؟
               </Link>
             </div>
@@ -132,7 +173,10 @@ const Login = () => {
           <div className="mt-8 text-center">
             <p className="text-gray-700 text-md">
               ليس لديك حساب؟{" "}
-              <Link to="/signup" className="ml-1 text-blue font-semibold hover:underline">
+              <Link
+                to="/signup"
+                className="ml-1 text-blue font-semibold hover:underline"
+              >
                 إنشاء حساب جديد
               </Link>
             </p>

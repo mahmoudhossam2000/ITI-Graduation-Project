@@ -5,13 +5,27 @@ import { InView } from "react-intersection-observer";
 import { motion } from "framer-motion";
 import SyncLoader from "react-spinners/SyncLoader";
 
-const HeroSection = React.lazy(() => import("../Components/SectionsLanding/HeroSection"));
-const PlateFormFeatures = React.lazy(() => import("../Components/SectionsLanding/PlateFormFeatures"));
-const PrivacySection = React.lazy(() => import("../Components/SectionsLanding/PrivacySection"));
-const AboutPlatform = React.lazy(() => import("../Components/SectionsLanding/AboutSection"));
-const HowItWorks = React.lazy(() => import("../Components/SectionsLanding/HowWork"));
-const DepartmentsBar = React.lazy(() => import("../Components/SectionsLanding/DepartmentsBar"));
-const FAQSection = React.lazy(() => import("../Components/SectionsLanding/AccordingSection"));
+const HeroSection = React.lazy(() =>
+  import("../Components/SectionsLanding/HeroSection")
+);
+const PlateFormFeatures = React.lazy(() =>
+  import("../Components/SectionsLanding/PlateFormFeatures")
+);
+const PrivacySection = React.lazy(() =>
+  import("../Components/SectionsLanding/PrivacySection")
+);
+const AboutPlatform = React.lazy(() =>
+  import("../Components/SectionsLanding/AboutSection")
+);
+const HowItWorks = React.lazy(() =>
+  import("../Components/SectionsLanding/HowWork")
+);
+const DepartmentsBar = React.lazy(() =>
+  import("../Components/SectionsLanding/DepartmentsBar")
+);
+const FAQSection = React.lazy(() =>
+  import("../Components/SectionsLanding/AccordingSection")
+);
 
 function LazyLoadComponent({ Component }) {
   return (
@@ -19,7 +33,13 @@ function LazyLoadComponent({ Component }) {
       {({ inView, ref }) => (
         <div ref={ref} style={{ minHeight: "200px" }}>
           {inView ? (
-            <Suspense fallback={<div className="flex items-center justify-center h-64"><SyncLoader color="#27548A"/></div>}>
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center h-64">
+                  <SyncLoader color="#27548A" />
+                </div>
+              }
+            >
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}

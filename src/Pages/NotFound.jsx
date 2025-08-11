@@ -197,10 +197,13 @@ const FuzzyText = ({
   return <canvas ref={canvasRef} />;
 };
 
-
 export default function NotFound() {
   return (
-    <section className="min-h-screen flex justify-center items-center flex-col space-y-7 px-4 text-center" dir="rtl" lang="ar">
+    <section
+      className="min-h-screen flex justify-center items-center flex-col space-y-7 px-4 text-center"
+      dir="rtl"
+      lang="ar"
+    >
       <FuzzyText
         baseIntensity={0.2}
         hoverIntensity={0.6}

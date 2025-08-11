@@ -1,8 +1,22 @@
 import { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { getComplaintsByDepartment } from "../../services/complaintsService";
+import { useAuth } from "../../../contexts/AuthContext";
 
-export default function Reports({ ministry }) {
+// {
+//   "email": "moderator@example.com",
+//   "role": "moderator",
+//   "department": null
+// }
+
+// {
+//   "email": "moderator@example.com",
+//   "role": "moderator",
+//   "department": null
+// }
+
+export default function Reports() {
+  const { userData } = useAuth();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -10,7 +24,7 @@ export default function Reports({ ministry }) {
 
   useEffect(() => {
     setLoading(true);
-    getComplaintsByDepartment("وزارة الثقافة")
+    getComplaintsByDepartment(userData.department)
       .then((complaints) => {
         setData(complaints);
         setLoading(false);
@@ -20,7 +34,7 @@ export default function Reports({ ministry }) {
         setError("فشل تحميل البيانات");
         setLoading(false);
       });
-  }, ["وزارة الثقافة"]);
+  }, [userData.department]);
 
   if (loading) {
     return (

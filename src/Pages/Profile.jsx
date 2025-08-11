@@ -50,7 +50,10 @@ const Profile = () => {
     } catch (error) {
       console.log("حدث خطأ أثناء تغيير كلمة المرور:", error);
 
-      if (error.code === "auth/wrong-password" || error.code === "auth/invalid-credential") {
+      if (
+        error.code === "auth/wrong-password" ||
+        error.code === "auth/invalid-credential"
+      ) {
         toast.error("كلمة المرور الحالية غير صحيحة");
       } else if (error.code === "auth/network-request-failed") {
         toast.error("تأكد من الاتصال بالإنترنت");
