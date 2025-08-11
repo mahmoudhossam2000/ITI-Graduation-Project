@@ -59,8 +59,7 @@ const validationSchema = Yup.object().shape({
 async function checkForAbuse(text) {
   try {
     const response = await fetch(
-      `https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=${
-        import.meta.env.VITE_API_KEY
+      `https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=${import.meta.env.VITE_API_KEY
       }`,
       {
         method: "POST",
@@ -156,28 +155,55 @@ async function logUserIp(userId) {
   }
 }
 
-function ComplaintForm() {
-  const [newComplaintId, setNewComplaintId] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+function LocationPicker({ setFieldValue }) {
+  const [position, setPosition] = useState(null);
+
+  useMapEvents({
+    click(e) {
+      setPosition(e.latlng);
+      setFieldValue("location", `${e.latlng.lat},${e.latlng.lng}`);
+    },
+  });
+
+  return position === null ? null : <Marker position={position}></Marker>;
+}
+
+const ComplaintForm = () => {
+  const [user, setUser] = useState(null);
   const [isBanned, setIsBanned] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [newComplaintId, setNewComplaintId] = useState("");
   const [videoFile, setVideoFile] = useState(null);
   const [videoPreview, setVideoPreview] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
-  const [user, setUser] = useState(null);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [position, setPosition] = useState(null);
+  const [departments, setDepartments] = useState([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(false);
 
-  function LocationPicker({ setFieldValue }) {
-    const [position, setPosition] = useState(null);
-
-    useMapEvents({
-      click(e) {
-        setPosition(e.latlng);
-        setFieldValue("location", `${e.latlng.lat},${e.latlng.lng}`);
-      },
-    });
-
-    return position === null ? null : <Marker position={position}></Marker>;
-  }
+  // قائمة الإدارات الثابتة كخيار احتياطي
+  const staticDepartments = [
+    "إدارة الكهرباء والطاقة",
+    "إدارة الغاز الطبيعي",
+    "إدارة الطرق والكباري",
+    "إدارة المرور",
+    "إدارة النقل والمواصلات العامة",
+    "مديرية الصحة",
+    "إدارة البيئة ومكافحة التلوث",
+    "مديرية التربية والتعليم",
+    "مديرية الإسكان والمرافق",
+    "إدارة التخطيط العمراني",
+    "إدارة الأراضي وأملاك الدولة",
+    "مديرية الأمن",
+    "إدارة الدفاع المدني والحريق",
+    "إدارة التموين والتجارة الداخلية",
+    "إدارة حماية المستهلك",
+    "إدارة الزراعة",
+    "إدارة الري والموارد المائية",
+    "إدارة الشباب والرياضة",
+    "إدارة الثقافة",
+    "إدارة السياحة والآثار"
+  ];
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -196,8 +222,52 @@ function ComplaintForm() {
         });
       }
     });
+
+    // تهيئة الإدارات بالقائمة الثابتة عند تحميل المكون
+    setDepartments(staticDepartments);
+
     return () => unsubscribe();
   }, []);
+
+  // دالة لجلب الإدارات حسب المحافظة
+  const fetchDepartmentsByGovernorate = async (governorate) => {
+    if (!governorate) {
+      setDepartments([]);
+      return;
+    }
+
+    try {
+      setLoadingDepartments(true);
+      const deptQuery = query(
+        collection(db, 'departmentAccounts'),
+        where('accountType', '==', 'department'),
+        where('governorate', '==', governorate)
+      );
+      const querySnapshot = await getDocs(deptQuery);
+
+      const deptList = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.department) {
+          deptList.push(data.department);
+        }
+      });
+
+      // إذا لم يتم العثور على إدارات في Firestore، استخدم القائمة الثابتة
+      if (deptList.length === 0) {
+        setDepartments(staticDepartments);
+      } else {
+        setDepartments(deptList);
+      }
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+      // في حالة الخطأ، استخدم القائمة الثابتة
+      setDepartments(staticDepartments);
+      toast.error('حدث خطأ أثناء جلب الإدارات، سيتم عرض القائمة الافتراضية');
+    } finally {
+      setLoadingDepartments(false);
+    }
+  };
 
   const uploadVideoToCloudinary = async (file) => {
     setIsUploadingVideo(true);
@@ -370,7 +440,7 @@ function ComplaintForm() {
       <ToastContainer rtl position="top-center" autoClose={5000} />
 
       <main className="container mx-auto px-4 py-10">
-        
+
         {/* complaint content */}
         <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
           <div className="p-8">
@@ -400,11 +470,10 @@ function ComplaintForm() {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     value={formik.values.name}
-                    className={`w-full px-4 py-3 rounded-lg border ${
-                      formik.touched.name && formik.errors.name
+                    className={`w-full px-4 py-3 rounded-lg border ${formik.touched.name && formik.errors.name
                         ? "border-red-500"
                         : "border-gray-300"
-                    } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent bg-background`}
+                      } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent bg-background`}
                   />
                   {formik.touched.name && formik.errors.name && (
                     <p className="mt-1 text-sm text-red-600">
@@ -427,11 +496,10 @@ function ComplaintForm() {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     value={formik.values.email}
-                    className={`bg-background w-full px-4 py-3 rounded-lg border ${
-                      formik.touched.email && formik.errors.email
+                    className={`bg-background w-full px-4 py-3 rounded-lg border ${formik.touched.email && formik.errors.email
                         ? "border-red-500"
                         : "border-gray-300"
-                    } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}
+                      } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}
                   />
                   {formik.touched.email && formik.errors.email && (
                     <p className="mt-1 text-sm text-red-600">
@@ -452,14 +520,17 @@ function ComplaintForm() {
                   <select
                     id="governorate"
                     name="governorate"
-                    onChange={formik.handleChange}
+                    onChange={(e) => {
+                      formik.handleChange(e);
+                      fetchDepartmentsByGovernorate(e.target.value);
+                      formik.setFieldValue("administration", ""); // إعادة تعيين الإدارة
+                    }}
                     onBlur={formik.handleBlur}
                     value={formik.values.governorate}
-                    className={`bg-background w-full px-4 py-3 rounded-lg border ${
-                      formik.touched.governorate && formik.errors.governorate
+                    className={`bg-background w-full px-4 py-3 rounded-lg border ${formik.touched.governorate && formik.errors.governorate
                         ? "border-red-500"
                         : "border-gray-300"
-                    } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}>
+                      } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}>
                     <option value="">اختر المحافظة</option>
                     {[
                       "القاهرة",
@@ -501,52 +572,40 @@ function ComplaintForm() {
                     </p>
                   )}
                 </div>
-</div>
-            {/* الإدارة المختصة */}
-            <div>
-              <label className="block font-medium text-blue mb-1">
-                اختر الإدارة المختصة
-              </label>
-              <select
-                id="administration"
-                name="administration"
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                value={formik.values.administration}
-                className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue"
-              >
-                <option disabled value="">
-                  اختر الإدارة المختصة
-                </option>
-                {[
-                  "إدارة الكهرباء والطاقة",
-                  "إدارة الغاز الطبيعي",
-                  "إدارة الطرق والكباري",
-                  "إدارة المرور",
-                  "إدارة النقل والمواصلات العامة",
-                  "مديرية الصحة",
-                  "إدارة البيئة ومكافحة التلوث",
-                  "مديرية التربية والتعليم",
-                  "مديرية الإسكان والمرافق",
-                  "إدارة التخطيط العمراني",
-                  "إدارة الأراضي وأملاك الدولة",
-                  "مديرية الأمن",
-                  "إدارة الدفاع المدني والحريق",
-                  "إدارة التموين والتجارة الداخلية",
-                  "إدارة حماية المستهلك",
-                  "إدارة الزراعة",
-                  "إدارة الري والموارد المائية",
-                  "إدارة الشباب والرياضة",
-                  "إدارة الثقافة",
-                  "إدارة السياحة والآثار"
-                ].map((admin) => (
-                  <option key={admin}>{admin}</option>
-                ))}
-              </select>
-              {formik.touched.administration && formik.errors.administration && (
-                <div className="text-red-500 text-sm">{formik.errors.administration}</div>
-              )}
-            </div>
+              </div>
+              {/* الإدارة المختصة */}
+              <div>
+                <label className="block font-medium text-blue mb-1">
+                  اختر الإدارة المختصة <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="administration"
+                  name="administration"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.values.administration}
+                  disabled={loadingDepartments}
+                  className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option value="">
+                    {loadingDepartments
+                      ? "جاري تحميل الإدارات..."
+                      : "اختر الإدارة المختصة"
+                    }
+                  </option>
+                  {departments.map((dept) => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                </select>
+                {!formik.values.governorate && (
+                  <p className="mt-1 text-sm text-orange-600">
+                    ملاحظة: يرجى اختيار المحافظة أولاً لضمان عرض الإدارات المناسبة
+                  </p>
+                )}
+                {formik.touched.administration && formik.errors.administration && (
+                  <div className="text-red-500 text-sm">{formik.errors.administration}</div>
+                )}
+              </div>
 
               {/* وصف الشكوى */}
               <div>
@@ -563,11 +622,10 @@ function ComplaintForm() {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   value={formik.values.description}
-                  className={`bg-background w-full px-4 py-3 rounded-lg border ${
-                    formik.touched.description && formik.errors.description
+                  className={`bg-background w-full px-4 py-3 rounded-lg border ${formik.touched.description && formik.errors.description
                       ? "border-red-500"
                       : "border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}
+                    } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}
                 />
                 {formik.touched.description && formik.errors.description && (
                   <p className="mt-1 text-sm text-red-600">

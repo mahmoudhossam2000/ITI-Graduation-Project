@@ -4,28 +4,58 @@ import { useEffect, useState } from "react";
 import { getComplaintsByDepartment } from "../Components/services/complaintsService";
 import ComplainAction from "../Components/features/authority_Dashboard/ComplaintAction";
 import ComplaintDetails from "../Components/features/authority_Dashboard/ComplaintDetails";
+import { useAuth } from "../contexts/AuthContext";
 
 function Complaints({ ministry }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const { userData } = useAuth();
 
   const detailsRef = useRef(null);
   const actionRef = useRef(null);
+
   useEffect(() => {
     setLoading(true);
-    getComplaintsByDepartment("وزارة الثقافة")
-      .then((complaints) => {
-        setData(complaints);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError("فشل تحميل البيانات");
-      })
-      .finally(() => setLoading(false));
-  }, []);
+
+    // استخدام بيانات المستخدم لجلب الشكاوى المناسبة
+    if (userData?.accountType === "department" && userData?.governorate) {
+      getComplaintsByDepartment(userData.department, userData.governorate)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+          setLoading(false);
+        });
+    } else if (userData?.accountType === "governorate") {
+      getComplaintsByDepartment(null, userData.governorate)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+          setLoading(false);
+        });
+    } else {
+      // Fallback للخدمة القديمة
+      getComplaintsByDepartment(ministry)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [ministry, userData]);
 
   // handlers
   const handleDetails = (complaint) => {

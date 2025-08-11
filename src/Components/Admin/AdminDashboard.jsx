@@ -127,7 +127,7 @@ const AdminDashboard = () => {
       !email ||
       !password ||
       (accountType === "department" && !department) ||
-      (accountType === "governorate" && !governorate)
+      (accountType === "department" && !governorate)
     ) {
       toast.error("الرجاء ملء جميع الحقول المطلوبة");
       return;
@@ -272,25 +272,53 @@ const AdminDashboard = () => {
           </select>
         </div>
         {accountType === "department" ? (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-              <FaBuilding className="ml-1" />
-              اسم الإدارة
-            </label>
-            <select
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            >
-              <option value="">اختر الإدارة</option>
-              {departments.map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept}
-                </option>
-              ))}
-            </select>
-          </div>
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                <FaBuilding className="ml-1" />
+                اسم الإدارة
+              </label>
+              <select
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              >
+                <option value="">اختر الإدارة</option>
+                {departments.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                <FaMapMarkerAlt className="ml-1" />
+                اسم المحافظة <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={governorate}
+                onChange={(e) => setGovernorate(e.target.value)}
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              >
+                <option value="">اختر المحافظة</option>
+                {governorates.map((gov) => (
+                  <option key={gov} value={gov}>
+                    {gov}
+                  </option>
+                ))}
+              </select>
+              {department && governorate && (
+                <p className="mt-2 text-sm text-blue-600 bg-blue-50 p-2 rounded-lg">
+                  <strong>تأكيد:</strong> سيتم إنشاء حساب {department} في{" "}
+                  {governorate} فقط
+                </p>
+              )}
+            </div>
+          </>
         ) : (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
@@ -356,7 +384,7 @@ const AdminDashboard = () => {
     <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-gray-800">
-          الحسابات المسجلة
+          حسابات الادارات والمحافظات المسجلة{" "}
         </h2>
         <div className="text-sm text-gray-500">
           إجمالي الحسابات:{" "}
@@ -414,6 +442,12 @@ const AdminDashboard = () => {
                   scope="col"
                   className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
+                  المحافظة
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   الحالة
                 </th>
                 <th
@@ -460,6 +494,11 @@ const AdminDashboard = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
                       {account.department || account.governorate}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {account.governorate}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

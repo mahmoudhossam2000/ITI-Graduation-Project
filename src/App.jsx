@@ -29,7 +29,7 @@ import DepartmentDashboard from "./Components/Dashboard/DepartmentDashboard";
 import ProtectedRoute from "./Components/Auth/ProtectedRoute";
 
 const PrivateRoute = ({ children }) => {
-  const { currentUser, isAdmin, isDepartment, isGovernorate, userData } =
+  const { currentUser, isAdmin, isDepartment, isGovernorate, userData, preventNavigation } =
     useAuth();
 
   // If not logged in, redirect to login
@@ -40,6 +40,11 @@ const PrivateRoute = ({ children }) => {
   // If logged in but userData hasn't loaded yet, show loading or return null
   if (!userData) {
     return null; // or a loading spinner
+  }
+
+  // If navigation is prevented (e.g., during account creation), don't redirect
+  if (preventNavigation) {
+    return children;
   }
 
   // Redirect to appropriate dashboard based on user role
@@ -56,7 +61,7 @@ const PrivateRoute = ({ children }) => {
 };
 
 const RoleRedirect = ({ children }) => {
-  const { currentUser, userData, isAdmin, isDepartment, isGovernorate } =
+  const { currentUser, userData, isAdmin, isDepartment, isGovernorate, preventNavigation } =
     useAuth();
 
   // If not logged in, show the public page
@@ -67,6 +72,11 @@ const RoleRedirect = ({ children }) => {
   // Wait until userData resolves
   if (!userData) {
     return null; // or a loading spinner
+  }
+
+  // If navigation is prevented (e.g., during account creation), don't redirect
+  if (preventNavigation) {
+    return children;
   }
 
   if (isAdmin) {

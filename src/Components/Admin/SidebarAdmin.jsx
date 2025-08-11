@@ -2,13 +2,15 @@ import React from "react";
 
 const sidebarItems = [
   { key: "create", label: "إضافة حساب جديد", icon: "➕" },
-  { key: "list", label: "الحسابات المسجلة", icon: "📋" },
+  { key: "list", label: "حسابات الادارات والمحافظات المسجلة", icon: "📋" },
 ];
 
 export default function SidebarAdmin({ activeTab, onSelect, email }) {
   return (
     <aside className="h-screen w-80 bg-blue text-white shadow-lg border-r rounded-xl p-5">
-      <div className="text-center text-2xl font-bold mb-6">لوحة التحكم</div>
+      <div className="text-center text-2xl font-bold mb-6">
+        لوحة تحكم الآدمن
+      </div>
       <nav className="flex flex-col space-y-2">
         {sidebarItems.map((item) => (
           <button
