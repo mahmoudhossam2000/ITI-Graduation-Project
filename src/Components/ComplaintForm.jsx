@@ -15,7 +15,12 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../Components/Navbar";
 import { Link } from "react-router-dom";
-import { FaRegCheckCircle, FaMapMarkerAlt, FaUpload, FaTimes } from "react-icons/fa";
+import {
+  FaRegCheckCircle,
+  FaMapMarkerAlt,
+  FaUpload,
+  FaTimes,
+} from "react-icons/fa";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -59,7 +64,8 @@ const validationSchema = Yup.object().shape({
 async function checkForAbuse(text) {
   try {
     const response = await fetch(
-      `https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=${import.meta.env.VITE_API_KEY
+      `https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=${
+        import.meta.env.VITE_API_KEY
       }`,
       {
         method: "POST",
@@ -202,7 +208,7 @@ const ComplaintForm = () => {
     "إدارة الري والموارد المائية",
     "إدارة الشباب والرياضة",
     "إدارة الثقافة",
-    "إدارة السياحة والآثار"
+    "إدارة السياحة والآثار",
   ];
 
   useEffect(() => {
@@ -239,9 +245,9 @@ const ComplaintForm = () => {
     try {
       setLoadingDepartments(true);
       const deptQuery = query(
-        collection(db, 'departmentAccounts'),
-        where('accountType', '==', 'department'),
-        where('governorate', '==', governorate)
+        collection(db, "departmentAccounts"),
+        where("role", "==", "department"),
+        where("governorate", "==", governorate)
       );
       const querySnapshot = await getDocs(deptQuery);
 
@@ -260,10 +266,10 @@ const ComplaintForm = () => {
         setDepartments(deptList);
       }
     } catch (error) {
-      console.error('Error fetching departments:', error);
+      console.error("Error fetching departments:", error);
       // في حالة الخطأ، استخدم القائمة الثابتة
       setDepartments(staticDepartments);
-      toast.error('حدث خطأ أثناء جلب الإدارات، سيتم عرض القائمة الافتراضية');
+      toast.error("حدث خطأ أثناء جلب الإدارات، سيتم عرض القائمة الافتراضية");
     } finally {
       setLoadingDepartments(false);
     }
@@ -426,7 +432,8 @@ const ComplaintForm = () => {
           </p>
           <Link
             to="/"
-            className="text-blue hover:text-blue-800 font-medium transition duration-300 underline">
+            className="text-blue hover:text-blue-800 font-medium transition duration-300 underline"
+          >
             العودة إلى الصفحة الرئيسية
           </Link>
         </div>
@@ -440,7 +447,6 @@ const ComplaintForm = () => {
       <ToastContainer rtl position="top-center" autoClose={5000} />
 
       <main className="container mx-auto px-4 py-10">
-
         {/* complaint content */}
         <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
           <div className="p-8">
@@ -459,7 +465,8 @@ const ComplaintForm = () => {
                 <div>
                   <label
                     htmlFor="name"
-                    className="block text-sm font-medium text-gray-700 mb-1">
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     الاسم الكامل <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -470,10 +477,11 @@ const ComplaintForm = () => {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     value={formik.values.name}
-                    className={`w-full px-4 py-3 rounded-lg border ${formik.touched.name && formik.errors.name
+                    className={`w-full px-4 py-3 rounded-lg border ${
+                      formik.touched.name && formik.errors.name
                         ? "border-red-500"
                         : "border-gray-300"
-                      } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent bg-background`}
+                    } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent bg-background`}
                   />
                   {formik.touched.name && formik.errors.name && (
                     <p className="mt-1 text-sm text-red-600">
@@ -485,7 +493,8 @@ const ComplaintForm = () => {
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-sm font-medium text-gray-700 mb-1">
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     البريد الإلكتروني <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -496,10 +505,11 @@ const ComplaintForm = () => {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     value={formik.values.email}
-                    className={`bg-background w-full px-4 py-3 rounded-lg border ${formik.touched.email && formik.errors.email
+                    className={`bg-background w-full px-4 py-3 rounded-lg border ${
+                      formik.touched.email && formik.errors.email
                         ? "border-red-500"
                         : "border-gray-300"
-                      } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}
+                    } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}
                   />
                   {formik.touched.email && formik.errors.email && (
                     <p className="mt-1 text-sm text-red-600">
@@ -514,7 +524,8 @@ const ComplaintForm = () => {
                 <div>
                   <label
                     htmlFor="governorate"
-                    className="block text-sm font-medium text-gray-700 mb-1">
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     المحافظة <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -527,10 +538,12 @@ const ComplaintForm = () => {
                     }}
                     onBlur={formik.handleBlur}
                     value={formik.values.governorate}
-                    className={`bg-background w-full px-4 py-3 rounded-lg border ${formik.touched.governorate && formik.errors.governorate
+                    className={`bg-background w-full px-4 py-3 rounded-lg border ${
+                      formik.touched.governorate && formik.errors.governorate
                         ? "border-red-500"
                         : "border-gray-300"
-                      } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}>
+                    } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}
+                  >
                     <option value="">اختر المحافظة</option>
                     {[
                       "القاهرة",
@@ -590,28 +603,34 @@ const ComplaintForm = () => {
                   <option value="">
                     {loadingDepartments
                       ? "جاري تحميل الإدارات..."
-                      : "اختر الإدارة المختصة"
-                    }
+                      : "اختر الإدارة المختصة"}
                   </option>
                   {departments.map((dept) => (
-                    <option key={dept} value={dept}>{dept}</option>
+                    <option key={dept} value={dept}>
+                      {dept}
+                    </option>
                   ))}
                 </select>
                 {!formik.values.governorate && (
                   <p className="mt-1 text-sm text-orange-600">
-                    ملاحظة: يرجى اختيار المحافظة أولاً لضمان عرض الإدارات المناسبة
+                    ملاحظة: يرجى اختيار المحافظة أولاً لضمان عرض الإدارات
+                    المناسبة
                   </p>
                 )}
-                {formik.touched.administration && formik.errors.administration && (
-                  <div className="text-red-500 text-sm">{formik.errors.administration}</div>
-                )}
+                {formik.touched.administration &&
+                  formik.errors.administration && (
+                    <div className="text-red-500 text-sm">
+                      {formik.errors.administration}
+                    </div>
+                  )}
               </div>
 
               {/* وصف الشكوى */}
               <div>
                 <label
                   htmlFor="description"
-                  className="block text-sm font-medium text-gray-700 mb-1">
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   تفاصيل الشكوى <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -622,10 +641,11 @@ const ComplaintForm = () => {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   value={formik.values.description}
-                  className={`bg-background w-full px-4 py-3 rounded-lg border ${formik.touched.description && formik.errors.description
+                  className={`bg-background w-full px-4 py-3 rounded-lg border ${
+                    formik.touched.description && formik.errors.description
                       ? "border-red-500"
                       : "border-gray-300"
-                    } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}
+                  } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}
                 />
                 {formik.touched.description && formik.errors.description && (
                   <p className="mt-1 text-sm text-red-600">
@@ -644,7 +664,8 @@ const ComplaintForm = () => {
                     center={[30.0444, 31.2357]}
                     zoom={10}
                     style={{ height: "300px", width: "100%" }}
-                    className="z-0">
+                    className="z-0"
+                  >
                     <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -671,13 +692,15 @@ const ComplaintForm = () => {
               <div>
                 <label
                   htmlFor="image"
-                  className="block text-sm font-medium text-gray-700 mb-1">
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   إرفاق صورة (اختياري)
                 </label>
                 <div className="mt-1 flex items-center">
                   <label
                     htmlFor="image"
-                    className="flex flex-col items-center justify-center w-full p-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-300">
+                    className="flex flex-col items-center justify-center w-full p-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-300"
+                  >
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <FaUpload className="text-gray-400 text-2xl mb-2" />
                       <p className="mb-2 text-sm text-gray-500">
@@ -751,11 +774,10 @@ const ComplaintForm = () => {
                 <button
                   type="submit"
                   disabled={formik.isSubmitting || isUploadingVideo}
-                  className="bg-blue w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center">
+                  className="bg-blue w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center"
+                >
                   {formik.isSubmitting || isUploadingVideo ? (
-                    <>
-                      جاري الإرسال...
-                    </>
+                    <>جاري الإرسال...</>
                   ) : (
                     "إرسال الشكوى"
                   )}
@@ -771,7 +793,8 @@ const ComplaintForm = () => {
             لديك شكوى مسبقاً؟{" "}
             <Link
               to="/traceComplaint"
-              className="text-blue hover:text-blue-800 font-semibold transition duration-300 text-base">
+              className="text-blue hover:text-blue-800 font-semibold transition duration-300 text-base"
+            >
               اضغط هنا لمتابعة الشكوى
             </Link>
           </p>
@@ -801,7 +824,8 @@ const ComplaintForm = () => {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm transition duration-300 bg-blue">
+                  className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm transition duration-300 bg-blue"
+                >
                   اغلاق
                 </button>
               </div>
@@ -811,6 +835,6 @@ const ComplaintForm = () => {
       )}
     </div>
   );
-}
+};
 
 export default ComplaintForm;

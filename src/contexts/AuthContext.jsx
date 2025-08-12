@@ -5,9 +5,21 @@ import {
   signInWithPopup,
   signOut,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
 } from "firebase/auth";
-import { getDoc, setDoc, doc, collection, query, where, getDocs, addDoc } from "firebase/firestore";
+import {
+  getDoc,
+  setDoc,
+  doc,
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  updateDoc,
+  serverTimestamp,
+  deleteDoc,
+} from "firebase/firestore";
 import { auth, db } from "../firebase/firebase";
 
 const AuthContext = createContext();
@@ -19,84 +31,159 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState(null);
   const [preventNavigation, setPreventNavigation] = useState(false);
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
-  const [adminSessionData, setAdminSessionData] = useState(null);
 
   useEffect(() => {
+    console.log("Setting up auth state listener");
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log('Auth state changed:', { 
-        user: user?.uid, 
-        isCreatingAccount, 
-        adminSessionData: adminSessionData?.uid,
-        currentUser: currentUser?.uid 
+      console.log("=== AUTH STATE CHANGED ===");
+      console.log("Firebase user:", user);
+      console.log("Current state:", {
+        user: user?.uid,
+        isCreatingAccount,
+        currentUser: currentUser?.uid,
+        userData: userData?.role,
       });
-      
+
       // Skip auth state changes if we're in the middle of creating an account
       if (isCreatingAccount) {
-        console.log('Skipping auth state change - account creation in progress');
+        console.log(
+          "Skipping auth state change - account creation in progress"
+        );
         return;
       }
 
-      // If we have admin session data and no user, we're restoring the admin session
-      if (adminSessionData && !user) {
-        console.log('Skipping auth state change - restoring admin session');
-        return;
-      }
-
-      // If we have a current user and a new user comes in, check if this is a new account creation
-      if (currentUser && user && currentUser.uid !== user.uid) {
-        console.log('Skipping auth state change - new account creation detected');
-        // This is likely a new account creation, don't update the state
-        // The admin should stay on their dashboard
-        return;
-      }
-
-      // If we're restoring admin session, don't process this auth change
-      if (adminSessionData && user && user.uid === adminSessionData.uid) {
-        console.log('Skipping auth state change - admin session restoration');
-        return;
-      }
-
-      console.log('Processing auth state change');
+      // Always update currentUser when auth state changes
       setCurrentUser(user);
+      console.log("Updated currentUser to:", user?.uid);
 
       if (user) {
+        console.log("User authenticated:", user.uid);
         // Check if user is admin or department/governorate account
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
 
         if (userSnap.exists()) {
-          setUserData(userSnap.data());
+          const userDocData = userSnap.data();
+          console.log("User found in users collection:", userDocData);
+          setUserData({
+            ...userDocData,
+            role: userDocData.role || "user", // Ensure role is always set
+          });
         } else {
+          console.log(
+            "User not found in users collection, checking department and ministry accounts"
+          );
+
           // Check if it's a department or governorate account
           const deptQuery = query(
-            collection(db, 'departmentAccounts'),
-            where('uid', '==', user.uid)
+            collection(db, "departmentAccounts"),
+            where("uid", "==", user.uid)
           );
-          const querySnapshot = await getDocs(deptQuery);
+          const deptSnapshot = await getDocs(deptQuery);
 
-          if (!querySnapshot.empty) {
-            const accountData = querySnapshot.docs[0].data();
-            setUserData({
+          if (!deptSnapshot.empty) {
+            const accountData = deptSnapshot.docs[0].data();
+            console.log("User found in department accounts:", accountData);
+            console.log("Department account fields:", Object.keys(accountData));
+            console.log("Department account role field:", accountData.role);
+            console.log(
+              "Department account accountType field:",
+              accountData.accountType
+            );
+
+            const userDataToSet = {
               ...accountData,
-              role: accountData.accountType // 'department' or 'governorate'
-            });
+              role: accountData.role || accountData.accountType, // Support both old and new field names
+            };
+            console.log(
+              "Setting userData for department account:",
+              userDataToSet
+            );
+            setUserData(userDataToSet);
           } else {
-            // Default user role
-            setUserData({ role: 'user' });
+            // Check if it's a ministry account
+            const ministryQuery = query(
+              collection(db, "ministryAccounts"),
+              where("uid", "==", user.uid)
+            );
+            const ministrySnapshot = await getDocs(ministryQuery);
+
+            if (!ministrySnapshot.empty) {
+              const accountData = ministrySnapshot.docs[0].data();
+              console.log("User found in ministry accounts:", accountData);
+              console.log("Ministry account fields:", Object.keys(accountData));
+              console.log("Ministry account role field:", accountData.role);
+              console.log(
+                "Ministry account accountType field:",
+                accountData.accountType
+              );
+
+              const userDataToSet = {
+                ...accountData,
+                role: accountData.role || accountData.accountType, // Support both old and new field names
+              };
+              console.log(
+                "Setting userData for ministry account:",
+                userDataToSet
+              );
+              setUserData(userDataToSet);
+            } else {
+              // Check if it's a governorate account
+              const governorateQuery = query(
+                collection(db, "governorateAccounts"),
+                where("uid", "==", user.uid)
+              );
+              const governorateSnapshot = await getDocs(governorateQuery);
+
+              if (!governorateSnapshot.empty) {
+                const accountData = governorateSnapshot.docs[0].data();
+                console.log("User found in governorate accounts:", accountData);
+                console.log(
+                  "Governorate account fields:",
+                  Object.keys(accountData)
+                );
+                console.log(
+                  "Governorate account role field:",
+                  accountData.role
+                );
+                console.log(
+                  "Governorate account accountType field:",
+                  accountData.accountType
+                );
+
+                const userDataToSet = {
+                  ...accountData,
+                  role: accountData.role || accountData.accountType, // Support both old and new field names
+                };
+                console.log(
+                  "Setting userData for governorate account:",
+                  userDataToSet
+                );
+                setUserData(userDataToSet);
+              } else {
+                console.log("User not found anywhere, setting default role");
+                // Default user role
+                setUserData({ role: "user" });
+              }
+            }
           }
         }
       } else {
+        console.log("No user authenticated");
         setUserData(null);
       }
 
+      console.log("=== END AUTH STATE CHANGE ===");
       setLoading(false);
     });
 
-    return unsubscribe;
-  }, [isCreatingAccount, currentUser, adminSessionData]);
+    return () => {
+      console.log("Cleaning up auth state listener");
+      unsubscribe();
+    };
+  }, [isCreatingAccount]);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
@@ -116,19 +203,19 @@ export const AuthProvider = ({ children }) => {
           phone: "",
           complaintCount: 0,
           banned: false,
-          role: 'user',
+          role: "user",
           createdAt: new Date(),
         });
 
         setUserData({
           name: user.displayName || "مستخدم جوجل",
           email: user.email,
-          role: 'user'
+          role: "user",
         });
       } else {
         setUserData({
           ...userSnap.data(),
-          role: userSnap.data().role || 'user'
+          role: userSnap.data().role || "user",
         });
       }
 
@@ -141,82 +228,382 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithEmail = async (email, password) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log("=== LOGIN WITH EMAIL START ===");
+      console.log("Attempting to login with email:", email);
+      console.log("Current auth state before login:", {
+        currentUser: currentUser?.uid,
+        userData: userData?.role,
+        isCreatingAccount,
+      });
+
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      console.log("Login successful, user:", userCredential.user.uid);
+      console.log("User credential:", userCredential);
+      console.log("=== LOGIN WITH EMAIL END ===");
+
       // The user data will be handled by the onAuthStateChanged listener
       return userCredential.user;
     } catch (error) {
+      console.error("=== LOGIN WITH EMAIL ERROR ===");
       console.error("Error signing in with email", error);
+      console.error("Error code:", error.code);
+      console.error("Error message:", error.message);
       throw error;
     }
   };
 
-  const createDepartmentAccount = async (email, password, accountType, department = null, governorate = null) => {
+  const createDepartmentAccount = async (
+    email,
+    password,
+    accountType,
+    department = null,
+    governorate = null,
+    ministry = null
+  ) => {
     try {
-      console.log('Starting account creation for:', accountType, email);
-      
-      // Store the current admin user's session data before creating the new account
-      const adminUID = auth.currentUser?.uid;
-      const adminData = userData;
-      
-      console.log('Admin session data:', { adminUID, adminData });
-      
-      if (adminUID && adminData) {
-        setAdminSessionData({ uid: adminUID, userData: adminData });
-      }
-      
+      console.log("Starting account creation for:", accountType, email);
+
       // Set flag to prevent auth state changes during account creation
       setIsCreatingAccount(true);
-      console.log('Set isCreatingAccount to true');
+      console.log("Set isCreatingAccount to true");
 
-      // Create auth user (this will automatically sign in the new user)
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // Store the current admin user's credentials
+      const currentAdminUser = currentUser; // Use currentUser from state instead of auth.currentUser
+      if (!currentAdminUser) {
+        throw new Error("Admin user not authenticated");
+      }
+
+      console.log("Current admin user:", currentAdminUser.uid);
+
+      // Create the Firebase Auth user
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
-      console.log('Created new user:', user.uid);
+      console.log("Created new Firebase Auth user:", user.uid);
 
       // Save additional user data to Firestore
-      await addDoc(collection(db, 'departmentAccounts'), {
+      await addDoc(collection(db, "departmentAccounts"), {
         uid: user.uid,
         email,
-        accountType,
-        department: accountType === 'department' ? department : null,
-        governorate: accountType === 'department' ? governorate : (accountType === 'governorate' ? governorate : null),
-        createdAt: new Date()
+        role: accountType,
+        department: accountType === "department" ? department : null,
+        governorate:
+          accountType === "department"
+            ? governorate
+            : accountType === "governorate"
+            ? governorate
+            : null,
+        ministry: accountType === "department" ? ministry : null,
+        createdAt: new Date(),
       });
-      console.log('Saved account data to Firestore');
+      console.log("Saved account data to Firestore");
 
-      // Sign out the newly created user to return to the previous auth state
+      // Sign out the newly created user immediately to return to admin session
       await signOut(auth);
-      console.log('Signed out newly created user');
+      console.log("Signed out newly created user");
 
       // Wait a moment for the signOut to complete
-      await new Promise(resolve => setTimeout(resolve, 200));
-
-      // Restore the admin's session data
-      if (adminSessionData) {
-        console.log('Restoring admin session data');
-        setCurrentUser({ uid: adminSessionData.uid });
-        setUserData(adminSessionData.userData);
-        setAdminSessionData(null);
-      }
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Reset the flag after account creation is complete
       setIsCreatingAccount(false);
-      console.log('Account creation completed successfully');
+      console.log("Account creation completed successfully");
 
       return user;
     } catch (error) {
-      console.error('Error creating department account:', error);
+      console.error("Error creating department account:", error);
       // Reset the flag in case of error
       setIsCreatingAccount(false);
-      // Clear admin session data in case of error
-      setAdminSessionData(null);
+
+      // Provide better error messages
+      if (error.code === "auth/email-already-in-use") {
+        throw new Error("البريد الإلكتروني مستخدم بالفعل في حساب آخر");
+      } else if (error.code === "auth/invalid-email") {
+        throw new Error("البريد الإلكتروني غير صحيح");
+      } else if (error.code === "auth/weak-password") {
+        throw new Error("كلمة المرور ضعيفة جداً");
+      } else {
+        throw new Error(error.message || "حدث خطأ أثناء إنشاء الحساب");
+      }
+    }
+  };
+
+  const createMinistryAccount = async (email, password, ministry) => {
+    try {
+      console.log("Starting ministry account creation for:", ministry, email);
+
+      // Set flag to prevent auth state changes during account creation
+      setIsCreatingAccount(true);
+      console.log("Set isCreatingAccount to true");
+
+      // Store the current admin user's credentials
+      const currentAdminUser = currentUser; // Use currentUser from state instead of auth.currentUser
+      if (!currentAdminUser) {
+        throw new Error("Admin user not authenticated");
+      }
+
+      console.log("Current admin user:", currentAdminUser.uid);
+
+      // Create the Firebase Auth user
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      console.log("Created new Firebase Auth user:", user.uid);
+
+      // Save additional user data to Firestore in ministryAccounts collection
+      await addDoc(collection(db, "ministryAccounts"), {
+        uid: user.uid,
+        email,
+        role: "ministry",
+        ministry,
+        createdAt: new Date(),
+      });
+      console.log("Saved ministry account data to Firestore");
+
+      // Sign out the newly created user immediately to return to admin session
+      await signOut(auth);
+      console.log("Signed out newly created user");
+
+      // Wait a moment for the signOut to complete
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Reset the flag after account creation is complete
+      setIsCreatingAccount(false);
+      console.log("Ministry account creation completed successfully");
+
+      return user;
+    } catch (error) {
+      console.error("Error creating ministry account:", error);
+      // Reset the flag in case of error
+      setIsCreatingAccount(false);
+
+      // Provide better error messages
+      if (error.code === "auth/email-already-in-use") {
+        throw new Error("البريد الإلكتروني مستخدم بالفعل في حساب آخر");
+      } else if (error.code === "auth/invalid-email") {
+        throw new Error("البريد الإلكتروني غير صحيح");
+      } else if (error.code === "auth/weak-password") {
+        throw new Error("كلمة المرور ضعيفة جداً");
+      } else {
+        throw new Error(error.message || "حدث خطأ أثناء إنشاء الحساب");
+      }
+    }
+  };
+
+  const createGovernorateAccount = async (email, password, governorate) => {
+    try {
+      console.log(
+        "Starting governorate account creation for:",
+        governorate,
+        email
+      );
+
+      // Set flag to prevent auth state changes during account creation
+      setIsCreatingAccount(true);
+      console.log("Set isCreatingAccount to true");
+
+      // Store the current admin user's credentials
+      const currentAdminUser = currentUser; // Use currentUser from state instead of auth.currentUser
+      if (!currentAdminUser) {
+        throw new Error("Admin user not authenticated");
+      }
+
+      console.log("Current admin user:", currentAdminUser.uid);
+
+      // Create the Firebase Auth user
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      console.log("Created new Firebase Auth user:", user.uid);
+
+      // Save additional user data to Firestore in governorateAccounts collection
+      await addDoc(collection(db, "governorateAccounts"), {
+        uid: user.uid,
+        email,
+        role: "governorate",
+        governorate,
+        createdAt: new Date(),
+      });
+      console.log("Saved governorate account data to Firestore");
+
+      // Sign out the newly created user immediately to return to admin session
+      await signOut(auth);
+      console.log("Signed out newly created user");
+
+      // Wait a moment for the signOut to complete
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Reset the flag after account creation is complete
+      setIsCreatingAccount(false);
+      console.log("Governorate account creation completed successfully");
+
+      return user;
+    } catch (error) {
+      console.error("Error creating governorate account:", error);
+      // Reset the flag in case of error
+      setIsCreatingAccount(false);
+
+      // Provide better error messages
+      if (error.code === "auth/email-already-in-use") {
+        throw new Error("البريد الإلكتروني مستخدم بالفعل في حساب آخر");
+      } else if (error.code === "auth/invalid-email") {
+        throw new Error("البريد الإلكتروني غير صحيح");
+      } else if (error.code === "auth/weak-password") {
+        throw new Error("كلمة المرور ضعيفة جداً");
+      } else {
+        throw new Error(error.message || "حدث خطأ أثناء إنشاء الحساب");
+      }
+    }
+  };
+
+  const updateDepartmentAccount = async (docId, updates) => {
+    try {
+      const docRef = doc(db, "departmentAccounts", docId);
+      await updateDoc(docRef, {
+        ...updates,
+        updatedAt: serverTimestamp(),
+      });
+      return true;
+    } catch (error) {
+      console.error("Error updating department account:", error);
+      throw error;
+    }
+  };
+
+  const updateMinistryAccount = async (docId, updates) => {
+    try {
+      const docRef = doc(db, "ministryAccounts", docId);
+      await updateDoc(docRef, {
+        ...updates,
+        updatedAt: serverTimestamp(),
+      });
+      return true;
+    } catch (error) {
+      console.error("Error updating ministry account:", error);
+      throw error;
+    }
+  };
+
+  const updateGovernorateAccount = async (docId, updates) => {
+    try {
+      const docRef = doc(db, "governorateAccounts", docId);
+      await updateDoc(docRef, {
+        ...updates,
+        updatedAt: serverTimestamp(),
+      });
+      return true;
+    } catch (error) {
+      console.error("Error updating governorate account:", error);
+      throw error;
+    }
+  };
+
+  const updateDepartmentAccountPassword = async (uid, newPassword) => {
+    try {
+      // Store the new password in Firestore as a temporary password
+      // The user will need to use this temporary password to sign in and then change it
+      const deptQuery = query(
+        collection(db, "departmentAccounts"),
+        where("uid", "==", uid)
+      );
+      const deptSnapshot = await getDocs(deptQuery);
+
+      if (!deptSnapshot.empty) {
+        const docRef = doc(db, "departmentAccounts", deptSnapshot.docs[0].id);
+        await updateDoc(docRef, {
+          tempPassword: newPassword,
+          passwordUpdatedAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        return true;
+      } else {
+        throw new Error("Account not found");
+      }
+    } catch (error) {
+      console.error("Error updating department account password:", error);
+      throw error;
+    }
+  };
+
+  const updateMinistryAccountPassword = async (uid, newPassword) => {
+    try {
+      // Store the new password in Firestore as a temporary password
+      // The user will need to use this temporary password to sign in and then change it
+      const ministryQuery = query(
+        collection(db, "ministryAccounts"),
+        where("uid", "==", uid)
+      );
+      const ministrySnapshot = await getDocs(ministryQuery);
+
+      if (!ministrySnapshot.empty) {
+        const docRef = doc(db, "ministryAccounts", ministrySnapshot.docs[0].id);
+        await updateDoc(docRef, {
+          tempPassword: newPassword,
+          passwordUpdatedAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        return true;
+      } else {
+        throw new Error("Account not found");
+      }
+    } catch (error) {
+      console.error("Error updating ministry account password:", error);
+      throw error;
+    }
+  };
+
+  const updateGovernorateAccountPassword = async (uid, newPassword) => {
+    try {
+      // Store the new password in Firestore as a temporary password
+      // The user will need to use this temporary password to sign in and then change it
+      const governorateQuery = query(
+        collection(db, "governorateAccounts"),
+        where("uid", "==", uid)
+      );
+      const governorateSnapshot = await getDocs(governorateQuery);
+
+      if (!governorateSnapshot.empty) {
+        const docRef = doc(
+          db,
+          "governorateAccounts",
+          governorateSnapshot.docs[0].id
+        );
+        await updateDoc(docRef, {
+          tempPassword: newPassword,
+          passwordUpdatedAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        return true;
+      } else {
+        throw new Error("Account not found");
+      }
+    } catch (error) {
+      console.error("Error updating governorate account password:", error);
       throw error;
     }
   };
 
   const logout = async () => {
+    console.log("Logging out user:", currentUser?.uid);
     await signOut(auth);
+    console.log("User signed out from Firebase");
+    setCurrentUser(null);
     setUserData(null);
+    console.log("State cleared after logout");
   };
 
   const value = {
@@ -226,12 +613,35 @@ export const AuthProvider = ({ children }) => {
     loginWithEmail,
     logout,
     createDepartmentAccount,
+    createMinistryAccount,
+    createGovernorateAccount,
+    updateDepartmentAccount,
+    updateMinistryAccount,
+    updateDepartmentAccountPassword,
+    updateMinistryAccountPassword,
+    updateGovernorateAccount,
+    updateGovernorateAccountPassword,
     preventNavigation,
     isCreatingAccount,
-    isAdmin: userData?.role === 'admin',
-    isDepartment: userData?.accountType === 'department',
-    isGovernorate: userData?.accountType === 'governorate'
+    isAdmin: userData?.role === "admin",
+    isDepartment: userData?.role === "department",
+    isGovernorate: userData?.role === "governorate",
+    isMinistry: userData?.role === "ministry",
+    isModerator: userData?.role === "moderator",
   };
+
+  // Debug logging for role checks
+  console.log("AuthContext role debug:", {
+    userDataRole: userData?.role,
+    userDataExists: !!userData,
+    isAdmin: userData?.role === "admin",
+    isDepartment: userData?.role === "department",
+    isGovernorate: userData?.role === "governorate",
+    isMinistry: userData?.role === "ministry",
+    isModerator: userData?.role === "moderator",
+    currentUser: currentUser?.uid,
+    loading,
+  });
 
   return (
     <AuthContext.Provider value={value}>

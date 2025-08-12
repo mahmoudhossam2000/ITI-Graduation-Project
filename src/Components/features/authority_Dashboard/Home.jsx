@@ -14,7 +14,7 @@ export default function Home({ ministry }) {
     setLoading(true);
 
     // استخدام بيانات المستخدم لجلب الشكاوى المناسبة
-    if (userData?.accountType === "department" && userData?.governorate) {
+    if (userData?.role === "department" && userData?.governorate) {
       getComplaintsByDepartment(userData.department, userData.governorate)
         .then((complaints) => {
           setData(complaints);
@@ -25,7 +25,7 @@ export default function Home({ ministry }) {
           setError("فشل تحميل البيانات");
           setLoading(false);
         });
-    } else if (userData?.accountType === "governorate") {
+    } else if (userData?.role === "governorate") {
       getComplaintsByDepartment(null, userData.governorate)
         .then((complaints) => {
           setData(complaints);
@@ -147,7 +147,7 @@ export default function Home({ ministry }) {
         </div>
         <div className="card bg-red-500 text-white p-4 rounded-xl shadow">
           <p className="text-lg">مرفوضة</p>
-          <h2 className="text-3xl font-bold">{rejected}</h2>
+          <h2 className="text-2xl font-bold">{rejected}</h2>
         </div>
       </div>
 

@@ -1,18 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "react-toastify";
 import Navbar from "../../Components/Navbar";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false);
   const navigate = useNavigate();
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, loginWithEmail, userData, currentUser } = useAuth();
+
+  // Watch for userData changes after login attempt
+  useEffect(() => {
+    if (hasAttemptedLogin && userData && currentUser) {
+      console.log("User data updated after login:", userData);
+      let redirectPath = "/";
+
+      if (userData.role === "department") {
+        redirectPath = "/department/dashboard";
+        toast.success("تم تسجيل الدخول بنجاح 🎉");
+      } else if (userData.role === "ministry") {
+        redirectPath = "/dashboard";
+        toast.success("مرحباً بك في لوحة تحكم الوزارة");
+      } else if (userData.role === "governorate") {
+        redirectPath = "/department/dashboard";
+        toast.success("مرحباً بك في لوحة تحكم المحافظة");
+      } else if (userData.role === "moderator") {
+        redirectPath = "/moderator";
+        toast.success("مرحباً بك في لوحة تحكم المشرف");
+      } else if (userData.role === "admin") {
+        redirectPath = "/admin";
+        toast.success("مرحباً بك في لوحة تحكم المدير");
+      } else {
+        toast.success("تم تسجيل الدخول بنجاح");
+      }
+
+      console.log("Navigating to:", redirectPath);
+      navigate(redirectPath);
+      setHasAttemptedLogin(false);
+    }
+  }, [userData, currentUser, hasAttemptedLogin, navigate]);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -29,16 +61,22 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
+    setHasAttemptedLogin(true);
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast.success("تم تسجيل الدخول بنجاح 🎉");
-      navigate("/");
+      // Use the AuthContext's loginWithEmail function
+      await loginWithEmail(email, password);
+      console.log("Login successful, waiting for user data update...");
     } catch (err) {
+      console.error("Login error:", err);
       toast.error("البريد الإلكتروني أو كلمة المرور غير صحيحة ❌");
       setError(
         "فشل تسجيل الدخول. يرجى التحقق من البريد الإلكتروني وكلمة المرور."
       );
-      console.error("Login error:", err);
+      setHasAttemptedLogin(false);
+    } finally {
+      setIsLoading(false);
     }
   };
   const [showPassword, setShowPassword] = useState(false);
@@ -124,9 +162,10 @@ const Login = () => {
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium text-white bg-blue"
+                disabled={isLoading}
+                className="w-full flex justify-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium text-white bg-blue disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                تسجيل الدخول
+                {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
               </button>
             </div>
           </form>

@@ -1,8 +1,28 @@
 import React from "react";
+import { FaPlus, FaBuilding, FaLandmark, FaUsers, FaMapMarkerAlt, FaTrash } from "react-icons/fa";
 
 const sidebarItems = [
-  { key: "create", label: "إضافة حساب جديد", icon: "➕" },
-  { key: "list", label: "حسابات الادارات والمحافظات المسجلة", icon: "📋" },
+  { key: "create", label: "إضافة حساب جديد", icon: <FaPlus /> },
+  {
+    key: "departmentAccounts",
+    label: "حسابات الإدارات",
+    icon: <FaBuilding />,
+  },
+  {
+    key: "governorateAccounts",
+    label: "حسابات المحافظات",
+    icon: <FaMapMarkerAlt />,
+  },
+  {
+    key: "ministryAccounts",
+    label: "حسابات الوزارات",
+    icon: <FaLandmark />,
+  },
+  {
+    key: "deletedAccounts",
+    label: "الحسابات المحذوفة",
+    icon: <FaTrash />,
+  },
 ];
 
 export default function SidebarAdmin({ activeTab, onSelect, email }) {
@@ -17,14 +37,13 @@ export default function SidebarAdmin({ activeTab, onSelect, email }) {
             key={item.key}
             onClick={() => onSelect(item.key)}
             className={`flex items-center gap-3 px-4 py-2 rounded text-right transition-colors
-              ${
-                activeTab === item.key
-                  ? "bg-blue-200 text-blue font-semibold"
-                  : "hover:bg-blue-100/20"
+              ${activeTab === item.key
+                ? "bg-blue-200 text-blue font-semibold"
+                : "hover:bg-blue-100/20"
               }
             `}
           >
-            <span className="text-xl">{item.icon}</span>
+            <span className="text-lg">{item.icon}</span>
             <span>{item.label}</span>
           </button>
         ))}

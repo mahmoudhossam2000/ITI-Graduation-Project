@@ -14,7 +14,7 @@ export default function Reports({ ministry }) {
     setLoading(true);
     
     // استخدام بيانات المستخدم لجلب الشكاوى المناسبة
-    if (userData?.accountType === "department" && userData?.governorate) {
+    if (userData?.role === "department" && userData?.governorate) {
       getComplaintsByDepartment(userData.department, userData.governorate)
         .then((complaints) => {
           setData(complaints);
@@ -25,7 +25,7 @@ export default function Reports({ ministry }) {
           setError("فشل تحميل البيانات");
           setLoading(false);
         });
-    } else if (userData?.accountType === "governorate") {
+    } else if (userData?.role === "governorate") {
       getComplaintsByDepartment(null, userData.governorate)
         .then((complaints) => {
           setData(complaints);

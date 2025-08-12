@@ -28,41 +28,87 @@ import AdminDashboard from "./Components/Admin/AdminDashboard";
 import DepartmentDashboard from "./Components/Dashboard/DepartmentDashboard";
 import ProtectedRoute from "./Components/Auth/ProtectedRoute";
 
-const PrivateRoute = ({ children }) => {
-  const { currentUser, isAdmin, isDepartment, isGovernorate, userData, preventNavigation } =
-    useAuth();
+const PrivateRoute = ({ children, allowedRoles = null }) => {
+  const {
+    currentUser,
+    isAdmin,
+    isDepartment,
+    isGovernorate,
+    isMinistry,
+    userData,
+    preventNavigation,
+  } = useAuth();
+  const location = useLocation();
+
+  console.log("PrivateRoute Debug:", {
+    currentUser: currentUser?.uid,
+    userData,
+    allowedRoles,
+    isAdmin,
+    isDepartment,
+    isGovernorate,
+    isMinistry,
+    preventNavigation,
+  });
 
   // If not logged in, redirect to login
   if (!currentUser) {
-    return <Navigate to="/login" />;
+    console.log("No current user, redirecting to login");
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // If logged in but userData hasn't loaded yet, show loading or return null
   if (!userData) {
+    console.log("No userData yet, showing loading");
     return null; // or a loading spinner
   }
 
   // If navigation is prevented (e.g., during account creation), don't redirect
   if (preventNavigation) {
+    console.log("Navigation prevented, showing children");
     return children;
   }
 
-  // Redirect to appropriate dashboard based on user role
-  if (isAdmin) {
-    return <Navigate to="/admin" replace />;
+  // If specific roles are required, check if user has access
+  if (allowedRoles && !allowedRoles.includes(userData.role)) {
+    console.log("=== ROLE CHECK FAILED ===");
+    console.log("Allowed roles:", allowedRoles);
+    console.log("User role:", userData.role);
+    console.log("User data:", userData);
+    console.log("Role check result:", !allowedRoles.includes(userData.role));
+    console.log("Redirecting to unauthorized");
+    return <Navigate to="/unauthorized" replace />;
   }
 
-  if (isDepartment || isGovernorate) {
-    return <Navigate to="/department/dashboard" replace />;
+  // Redirect to appropriate dashboard based on user role (only if no specific roles required)
+  if (!allowedRoles) {
+    if (isAdmin) {
+      console.log("User is admin, redirecting to admin dashboard");
+      return <Navigate to="/admin" replace />;
+    }
+
+    // Don't redirect department/governorate/ministry users - let them access the current route
+    // The /dashboard route is already protected by allowedRoles
+    console.log(
+      "User is department/governorate/ministry, allowing access to current route"
+    );
   }
 
-  // If regular user, show the protected content
+  // If regular user or authorized role, show the protected content
+  console.log("User authorized, showing protected content");
   return children;
 };
 
 const RoleRedirect = ({ children }) => {
-  const { currentUser, userData, isAdmin, isDepartment, isGovernorate, preventNavigation } =
-    useAuth();
+  const {
+    currentUser,
+    userData,
+    isAdmin,
+    isDepartment,
+    isGovernorate,
+    isMinistry,
+    preventNavigation,
+  } = useAuth();
 
   // If not logged in, show the public page
   if (!currentUser) {
@@ -83,10 +129,11 @@ const RoleRedirect = ({ children }) => {
     return <Navigate to="/admin" replace />;
   }
 
-  if (isDepartment || isGovernorate) {
-    return <Navigate to="/department/dashboard" replace />;
-  }
-
+  // Don't redirect department/governorate/ministry users - let them access the landing page
+  // They can navigate to their dashboard when needed
+  console.log(
+    "User is department/governorate/ministry, allowing access to landing page"
+  );
   return children;
 };
 
@@ -113,8 +160,19 @@ const AdminRoute = ({ children }) => {
 };
 
 const DepartmentRoute = ({ children }) => {
-  const { currentUser, isDepartment, isGovernorate } = useAuth();
-  return currentUser && (isDepartment || isGovernorate) ? (
+  const { currentUser, isDepartment, isGovernorate, isMinistry, userData } =
+    useAuth();
+
+  console.log("DepartmentRoute Debug:", {
+    currentUser: currentUser?.uid,
+    userData: userData?.role,
+    isDepartment,
+    isGovernorate,
+    isMinistry,
+    hasAccess: currentUser && (isDepartment || isGovernorate || isMinistry),
+  });
+
+  return currentUser && (isDepartment || isGovernorate || isMinistry) ? (
     children
   ) : (
     <Navigate to="/login" replace />
@@ -199,14 +257,35 @@ function AppContent() {
           }
         />
         {/* department routes */}
-        <Route path="/dashboard" element={<Layout />}>
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute
+              allowedRoles={[
+                "department",
+                "moderator",
+                "ministry",
+                "governorate",
+              ]}
+            >
+              <Layout />
+            </PrivateRoute>
+          }
+        >
           <Route index element={<Dashboard />} />
           <Route path="complaints" element={<Complaints />} />
           <Route path="complaint-reports" element={<ComplaintReports />} />
         </Route>
 
         {/* moderator routes*/}
-        <Route path="/moderator" element={<ModeratorLayout />}>
+        <Route
+          path="/moderator"
+          element={
+            <PrivateRoute allowedRoles={["moderator"]}>
+              <ModeratorLayout />
+            </PrivateRoute>
+          }
+        >
           <Route index element={<DashboardModerator />} />
           <Route path="dashboard" element={<DashboardModerator />} />
           <Route path="complaints" element={<ComplaintsPage />} />

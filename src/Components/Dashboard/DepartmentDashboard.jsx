@@ -132,14 +132,14 @@ const DepartmentDashboard = () => {
       }
       let q;
 
-      if (userData.accountType === "department") {
+      if (userData.role === "department") {
         // للإدارة: عرض الشكاوى حسب الإدارة والمحافظة معاً
         q = query(
           collection(db, "complaints"),
           where("administration", "==", userData.department),
           where("governorate", "==", userData.governorate)
         );
-      } else if (userData.accountType === "governorate") {
+      } else if (userData.role === "governorate") {
         // للمحافظة: عرض جميع الشكاوى في المحافظة
         q = query(
           collection(db, "complaints"),
@@ -418,7 +418,7 @@ const DepartmentDashboard = () => {
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 الوصف
               </th>
-              {userData.accountType === "governorate" && (
+              {userData.role === "governorate" && (
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   الإدارة المختصة
                 </th>
@@ -461,7 +461,7 @@ const DepartmentDashboard = () => {
                       )}
                     </div>
                   </td>
-                  {userData.accountType === "governorate" && (
+                  {userData.role === "governorate" && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {complaint.administration}
                     </td>
@@ -479,7 +479,7 @@ const DepartmentDashboard = () => {
                         عرض
                       </button>
 
-                      {userData.accountType === "department" && (
+                      {userData.role === "department" && (
                         <>
                           <button
                             onClick={() =>
@@ -507,7 +507,7 @@ const DepartmentDashboard = () => {
                         </>
                       )}
 
-                      {userData.accountType === "governorate" && (
+                      {userData.role === "governorate" && (
                         <select
                           onChange={(e) =>
                             updateComplaintStatus(complaint.id, e.target.value)
@@ -529,7 +529,7 @@ const DepartmentDashboard = () => {
             ) : (
               <tr>
                 <td
-                  colSpan={userData.accountType === "governorate" ? 7 : 6}
+                  colSpan={userData.role === "governorate" ? 7 : 6}
                   className="px-6 py-4 text-center text-sm text-gray-500"
                 >
                   {selectedDepartment
@@ -689,7 +689,7 @@ const DepartmentDashboard = () => {
               </h3>
 
               <div className="flex flex-wrap gap-3">
-                {userData.accountType === "department" && (
+                {userData.role === "department" && (
                   <>
                     <button
                       onClick={() => updateComplaintStatus(selectedComplaint.id, "تمت المعالجة")}
@@ -710,7 +710,7 @@ const DepartmentDashboard = () => {
                   </>
                 )}
 
-                {userData.accountType === "governorate" && (
+                {userData.role === "governorate" && (
                   <div className="flex items-center gap-3">
                     <label className="font-medium text-gray-700">تغيير الحالة:</label>
                     <select
@@ -759,9 +759,9 @@ const DepartmentDashboard = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             لوحة تحكم{" "}
-            {userData?.accountType === "department" ? "" : " محافظة  "}
+            {userData?.role === "department" ? "" : " محافظة  "}
             <span className="text-3xl font-bold text-gray-900 mb-2">
-              {userData?.accountType === "department"
+              {userData?.role === "department"
                 ? `${userData.department} - ${userData.governorate}`
                 : userData.governorate}
             </span>
@@ -772,7 +772,7 @@ const DepartmentDashboard = () => {
         <StatisticsCards />
 
         {/* Filters Section */}
-        {userData.accountType === "governorate" && <FiltersSection />}
+        {userData.role === "governorate" && <FiltersSection />}
 
         {/* Complaints Table */}
         <ComplaintsTable />
