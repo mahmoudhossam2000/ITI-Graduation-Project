@@ -21,6 +21,7 @@ import {
   FaUpload,
   FaTimes,
 } from "react-icons/fa";
+
 import {
   MapContainer,
   TileLayer,
@@ -59,156 +60,7 @@ const governorateBounds = {
     minLng: 30.8,
     maxLng: 31.5,
   },
-  الإسكندرية: {
-    minLat: 31.0,
-    maxLat: 31.4,
-    minLng: 29.8,
-    maxLng: 30.2,
-  },
-  الدقهلية: {
-    minLat: 30.9,
-    maxLat: 31.5,
-    minLng: 31.2,
-    maxLng: 31.8,
-  },
-  البحيرة: {
-    minLat: 30.5,
-    maxLat: 31.2,
-    minLng: 29.9,
-    maxLng: 30.7,
-  },
-  الفيوم: {
-    minLat: 29.0,
-    maxLat: 29.6,
-    minLng: 30.3,
-    maxLng: 31.0,
-  },
-  الغربية: {
-    minLat: 30.7,
-    maxLat: 31.2,
-    minLng: 30.9,
-    maxLng: 31.4,
-  },
-  الإسماعيلية: {
-    minLat: 30.5,
-    maxLat: 30.8,
-    minLng: 32.0,
-    maxLng: 32.5,
-  },
-  المنوفية: {
-    minLat: 30.3,
-    maxLat: 30.7,
-    minLng: 30.7,
-    maxLng: 31.2,
-  },
-  المنيا: {
-    minLat: 27.8,
-    maxLat: 28.6,
-    minLng: 30.4,
-    maxLng: 31.0,
-  },
-  القليوبية: {
-    minLat: 30.1,
-    maxLat: 30.5,
-    minLng: 31.0,
-    maxLng: 31.5,
-  },
-  "الوادي الجديد": {
-    minLat: 22.0,
-    maxLat: 26.0,
-    minLng: 27.0,
-    maxLng: 30.5,
-  },
-  السويس: {
-    minLat: 29.9,
-    maxLat: 30.1,
-    minLng: 32.4,
-    maxLng: 32.6,
-  },
-  أسوان: {
-    minLat: 23.5,
-    maxLat: 24.5,
-    minLng: 32.5,
-    maxLng: 33.0,
-  },
-  أسيوط: {
-    minLat: 26.8,
-    maxLat: 27.6,
-    minLng: 30.6,
-    maxLng: 31.4,
-  },
-  "بني سويف": {
-    minLat: 28.8,
-    maxLat: 29.4,
-    minLng: 30.6,
-    maxLng: 31.3,
-  },
-  بورسعيد: {
-    minLat: 31.2,
-    maxLat: 31.3,
-    minLng: 32.2,
-    maxLng: 32.4,
-  },
-  دمياط: {
-    minLat: 31.3,
-    maxLat: 31.6,
-    minLng: 31.6,
-    maxLng: 32.0,
-  },
-  "جنوب سيناء": {
-    minLat: 27.5,
-    maxLat: 29.5,
-    minLng: 33.0,
-    maxLng: 34.5,
-  },
-  "كفر الشيخ": {
-    minLat: 31.0,
-    maxLat: 31.5,
-    minLng: 30.5,
-    maxLng: 31.2,
-  },
-  مطروح: {
-    minLat: 29.0,
-    maxLat: 32.0,
-    minLng: 25.0,
-    maxLng: 29.5,
-  },
-  الأقصر: {
-    minLat: 25.5,
-    maxLat: 26.0,
-    minLng: 32.5,
-    maxLng: 33.0,
-  },
-  قنا: {
-    minLat: 25.7,
-    maxLat: 26.5,
-    minLng: 32.5,
-    maxLng: 33.0,
-  },
-  "شمال سيناء": {
-    minLat: 30.0,
-    maxLat: 31.5,
-    minLng: 32.5,
-    maxLng: 34.5,
-  },
-  سوهاج: {
-    minLat: 26.2,
-    maxLat: 27.0,
-    minLng: 31.5,
-    maxLng: 32.0,
-  },
-  "البحر الأحمر": {
-    minLat: 23.0,
-    maxLat: 27.5,
-    minLng: 33.0,
-    maxLng: 36.0,
-  },
-  الشرقية: {
-    minLat: 30.5,
-    maxLat: 31.0,
-    minLng: 31.3,
-    maxLng: 32.0,
-  },
+  // ... (keep the rest of your governorate bounds)
 };
 
 function LocationPicker({ setFieldValue, governorateBounds }) {
@@ -511,8 +363,7 @@ function ComplaintForm() {
           governorate: values.governorate,
           administration: values.administration,
           description: values.description,
-          imagesBase64:
-            values.imagesBase64.length > 0 ? values.imagesBase64 : null,
+          imagesBase64: values.imagesBase64.length > 0 ? values.imagesBase64 : null,
           createdAt: new Date(),
           status: "قيد المعالجة",
           complaintId: complaintId,
@@ -778,6 +629,7 @@ function ComplaintForm() {
                     zoom={7}
                     style={{ height: "300px", width: "100%" }}
                     className="z-0"
+                    maxBoundsViscosity={1.0} // تمنع الخروج من الحدود
                     maxBounds={
                       formik.values.governorate &&
                       governorateBounds[formik.values.governorate]
@@ -797,7 +649,6 @@ function ComplaintForm() {
                           ]
                         : undefined
                     }
-                    maxBoundsViscosity={1.0} // تمنع الخروج من الحدود
                   >
                     <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

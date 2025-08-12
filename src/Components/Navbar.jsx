@@ -91,12 +91,12 @@ export default function Navbar() {
             <div className="hidden md:flex items-center space-x-2">
               <Link
                 to="/"
-                className="text-blue hover:bg-blue hover:text-white px-4 py-2 rounded-md text-base font-medium flex items-center gap-1 transition-colors mx-4">
+                className="text-blue hover:border-b-2 hover:font-semibold hover:border-blue px-4 py-2 rounded-md text-base font-medium flex items-center gap-1 transition-colors mx-4">
                 <AiFillHome /> الرئيسية
               </Link>
               <Link
                 to="/submitComplaint"
-                className="text-blue hover:bg-blue hover:text-white px-4 py-2 rounded-md text-base font-medium flex items-center gap-1 transition-colors">
+                className="text-blue hover:border-b-2 hover:font-semibold hover:border-blue px-4 py-2 rounded-md text-base font-medium flex items-center gap-1 transition-colors mx-4">
                 <TfiWrite /> الشكاوي
               </Link>
 
@@ -104,16 +104,16 @@ export default function Navbar() {
                 <>
                   <Link
                     to="/complaintHistory"
-                    className="px-4 py-2  text-blue rounded-md text-sm font-medium flex items-center gap-1 transition-colors hover:bg-blue hover:text-white">
+                    className="text-blue hover:border-b-2 hover:font-semibold hover:border-blue px-4 py-2 rounded-md text-base font-medium flex items-center gap-1 transition-colors mx-4">
                     <LuHistory size={18} /> سجلات الشكاوي
                   </Link>
 
                   <Menu as="div" className="relative inline-block">
-                    <MenuButton className="w-10 h-10 flex justify-center items-center rounded-md bg-white text-darkTeal shadow-xs inset-ring-1 inset-ring-gray-300 hover:bg-gray-50">
+                    <MenuButton className="w-10 h-10 flex justify-center items-center rounded-md bg-white text-darkTeal shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-white focus:ring-offset-0">
                       <FaUserAlt size={18} color="#27548A" />
                     </MenuButton>
 
-                    <MenuItems className="absolute left-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-xl border border-gray-200 overflow-hidden">
+                    <MenuItems className="absolute left-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-xl border border-[#ccc] overflow-hidden">
                       <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
                         <h3 className="text-sm font-semibold text-gray-700">
                           إعدادات الحساب

@@ -19,6 +19,7 @@ import Dashboard from "./Pages/Dashboard";
 import Complaints from "./Pages/Complaints";
 import ComplaintReports from "./Pages/ComplaintReports";
 
+
 import ModeratorLayout from "./Components/Moderator/ModeratorLayout";
 import DashboardModerator from "./Pages/DashboardModerator";
 import ComplaintsPage from "./Components/Moderator/ComplaintsTable";
@@ -29,11 +30,13 @@ import DepartmentDashboard from "./Components/Dashboard/DepartmentDashboard";
 import ProtectedRoute from "./Components/Auth/ProtectedRoute";
 
 const PrivateRoute = ({ children }) => {
+
   const { currentUser, isAdmin, isDepartment, isGovernorate, userData } =
     useAuth();
 
   // If not logged in, redirect to login
   if (!currentUser) {
+    return <Navigate to="/login" />;
     return <Navigate to="/login" />;
   }
 
@@ -58,6 +61,7 @@ const PrivateRoute = ({ children }) => {
 const RoleRedirect = ({ children }) => {
   const { currentUser, userData, isAdmin, isDepartment, isGovernorate } =
     useAuth();
+
 
   // If not logged in, show the public page
   if (!currentUser) {
@@ -205,7 +209,9 @@ function AppContent() {
       </Routes>
     </>
   );
+
 }
+
 
 function App() {
   return (

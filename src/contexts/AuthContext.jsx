@@ -25,10 +25,12 @@ export const AuthProvider = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       
+      
       if (user) {
         // Check if user is admin or department/governorate account
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
+        
         
         if (userSnap.exists()) {
           setUserData(userSnap.data());
@@ -40,6 +42,7 @@ export const AuthProvider = ({ children }) => {
           );
           const querySnapshot = await getDocs(deptQuery);
           
+          
           if (!querySnapshot.empty) {
             const accountData = querySnapshot.docs[0].data();
             setUserData({
@@ -49,11 +52,13 @@ export const AuthProvider = ({ children }) => {
           } else {
             // Default user role
             setUserData({ role: 'user' });
+            setUserData({ role: 'user' });
           }
         }
       } else {
         setUserData(null);
       }
+      
       
       setLoading(false);
     });
@@ -80,8 +85,10 @@ export const AuthProvider = ({ children }) => {
           complaintCount: 0,
           banned: false,
           role: 'user',
+          role: 'user',
           createdAt: new Date(),
         });
+        
         
         setUserData({
           name: user.displayName || "مستخدم جوجل",
@@ -104,6 +111,7 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithEmail = async (email, password) => {
     try {
+
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       // The user data will be handled by the onAuthStateChanged listener
       return userCredential.user;
@@ -125,12 +133,15 @@ export const AuthProvider = ({ children }) => {
         email,
         accountType,
         department: accountType === 'department' ? department : null,
+        createdAt: new Date(),
+        department: accountType === 'department' ? department : null,
         governorate: accountType === 'governorate' ? governorate : null,
         createdAt: new Date()
       });
 
       return user;
     } catch (error) {
+      console.error('Error creating department account:', error);
       console.error('Error creating department account:', error);
       throw error;
     }
