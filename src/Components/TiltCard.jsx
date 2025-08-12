@@ -6,19 +6,19 @@ import {
   useSpring,
 } from "framer-motion";
 
-const ROTATION_RANGE = 32.5;                                       // اقصي زاويه ميل 
-const HALF_ROTATION_RANGE = ROTATION_RANGE / 2;                    // هنقسمها بالنص علشان الميل يبدا من النص
+const ROTATION_RANGE = 32.5; // اقصي زاويه ميل
+const HALF_ROTATION_RANGE = ROTATION_RANGE / 2; // هنقسمها بالنص علشان الميل يبدا من النص
 
 const TiltCard = ({ children, className = "" }) => {
-  const ref = useRef(null);                                        // create reference---> علشان تعرف ابعاد الكارد في الصفحه 
+  const ref = useRef(null); // create reference---> علشان تعرف ابعاد الكارد في الصفحه
 
-  const x = useMotionValue(0);                                     //زاويه الميل علي المحور X
-  const y = useMotionValue(0);                                    //زاويه الميل علي المحور y
+  const x = useMotionValue(0); //زاويه الميل علي المحور X
+  const y = useMotionValue(0); //زاويه الميل علي المحور y
 
-  const xSpring = useSpring(x);                                   // animation smooth on X
-  const ySpring = useSpring(y);      
+  const xSpring = useSpring(x); // animation smooth on X
+  const ySpring = useSpring(y);
 
-  const transform = useMotionTemplate`rotateX(${xSpring}deg) rotateY(${ySpring}deg)`;     // دا اللي هيتطبق كانيميشن علي الكارد
+  const transform = useMotionTemplate`rotateX(${xSpring}deg) rotateY(${ySpring}deg)`; // دا اللي هيتطبق كانيميشن علي الكارد
 
   // if mouse move
   const handleMouseMove = (e) => {
@@ -46,7 +46,7 @@ const TiltCard = ({ children, className = "" }) => {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
-        transformStyle: "preserve-3d",          // (3D) مهم علشان يتحول 
+        transformStyle: "preserve-3d", // (3D) مهم علشان يتحول
         transform,
       }}
       className={`rounded-xl ${className}`}

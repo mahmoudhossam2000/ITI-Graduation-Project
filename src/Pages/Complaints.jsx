@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { getComplaintsByDepartment } from "../Components/services/complaintsService";
 import ComplainAction from "../Components/features/authority_Dashboard/ComplaintAction";
 import ComplaintDetails from "../Components/features/authority_Dashboard/ComplaintDetails";
+import { useAuth } from "../contexts/AuthContext";
 
-function Complaints({ ministry }) {
+function Complaints() {
+  const { userData } = useAuth();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -13,23 +15,50 @@ function Complaints({ ministry }) {
 
   const detailsRef = useRef(null);
   const actionRef = useRef(null);
+
   useEffect(() => {
     setLoading(true);
-    getComplaintsByDepartment("وزارة الثقافة")
-      .then((complaints) => {
-        setData(complaints);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError("فشل تحميل البيانات");
-      })
-      .finally(() => setLoading(false));
-  }, []);
 
-  // handlers
+    // استخدام بيانات المستخدم لجلب الشكاوى المناسبة
+    if (userData?.role === "department" && userData?.governorate) {
+      getComplaintsByDepartment(userData.department, userData.governorate)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+          setLoading(false);
+        });
+    } else if (userData?.role === "governorate") {
+      getComplaintsByDepartment(null, userData.governorate)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+          setLoading(false);
+        });
+    } else {
+      // Fallback للخدمة القديمة
+      getComplaintsByDepartment(ministry)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [ministry, userData]);
+
+  // handlers to set details complaint and show modal
   const handleDetails = (complaint) => {
-    console.log(detailsRef.current);
     setSelectedComplaint(complaint);
     setTimeout(() => {
       if (detailsRef.current) {
@@ -38,9 +67,11 @@ function Complaints({ ministry }) {
     }, 0);
   };
 
+  // handle to change actions for complaints
   const handleAction = (complaint) => {
-    console.log(complaint);
     setSelectedComplaint(complaint);
+    console.log(complaint);
+
     setTimeout(() => {
       if (actionRef.current) {
         actionRef.current?.showModal();

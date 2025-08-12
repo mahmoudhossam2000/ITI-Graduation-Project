@@ -1,8 +1,21 @@
 import React from "react";
 import Sidebar from "./Sidebar";
 import IconNotification from "../../ui/icons/icon-notification";
+import { useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import { auth } from "../../../firebase/firebase";
 
 function NavbardAuthority() {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
   return (
     <div className="navbar bg-base-100 shadow-sm items-start border-b sticky">
       <div className="flex-1">
@@ -48,7 +61,7 @@ function NavbardAuthority() {
               <a>Settings</a>
             </li>
             <li>
-              <a>Logout</a>
+              <a onClick={handleLogout}>Logout</a>
             </li>
           </ul>
         </div>

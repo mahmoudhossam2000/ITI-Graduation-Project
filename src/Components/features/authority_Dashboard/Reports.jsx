@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { getComplaintsByDepartment } from "../../services/complaintsService";
+import { useAuth } from "../../../contexts/AuthContext";
 
-export default function Reports({ ministry }) {
+export default function Reports() {
+  const { userData } = useAuth();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -10,17 +12,44 @@ export default function Reports({ ministry }) {
 
   useEffect(() => {
     setLoading(true);
-    getComplaintsByDepartment("وزارة الثقافة")
-      .then((complaints) => {
-        setData(complaints);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError("فشل تحميل البيانات");
-        setLoading(false);
-      });
-  }, ["وزارة الثقافة"]);
+
+    // استخدام بيانات المستخدم لجلب الشكاوى المناسبة
+    if (userData?.role === "department" && userData?.governorate) {
+      getComplaintsByDepartment(userData.department, userData.governorate)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+          setLoading(false);
+        });
+    } else if (userData?.role === "governorate") {
+      getComplaintsByDepartment(null, userData.governorate)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+          setLoading(false);
+        });
+    } else {
+      // Fallback للخدمة القديمة
+      getComplaintsByDepartment(ministry)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+          setLoading(false);
+        });
+    }
+  }, [ministry, userData]);
 
   if (loading) {
     return (

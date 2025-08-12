@@ -1,25 +1,55 @@
 import { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { getComplaintsByDepartment } from "../../services/complaintsService";
+import { useAuth } from "../../../contexts/AuthContext";
 
-export default function Home({ ministry }) {
+export default function HomeDashboard() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const { userData } = useAuth();
 
   useEffect(() => {
     setLoading(true);
-    getComplaintsByDepartment("وزارة الثقافة")
-      .then((complaints) => {
-        setData(complaints);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError("فشل تحميل البيانات");
-        setLoading(false);
-      });
-  }, ["وزارة الثقافة"]);
+
+    // استخدام بيانات المستخدم لجلب الشكاوى المناسبة
+    if (userData?.role === "department" && userData?.governorate) {
+      getComplaintsByDepartment(userData.department, userData.governorate)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+          setLoading(false);
+        });
+    } else if (userData?.role === "governorate") {
+      getComplaintsByDepartment(null, userData.governorate)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+          setLoading(false);
+        });
+    } else {
+      // Fallback للخدمة القديمة
+      getComplaintsByDepartment(ministry)
+        .then((complaints) => {
+          setData(complaints);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("فشل تحميل البيانات");
+          setLoading(false);
+        });
+    }
+  }, [ministry, userData]);
 
   if (loading) {
     return (
@@ -117,7 +147,7 @@ export default function Home({ ministry }) {
         </div>
         <div className="card bg-red-500 text-white p-4 rounded-xl shadow">
           <p className="text-lg">مرفوضة</p>
-          <h2 className="text-3xl font-bold">{rejected}</h2>
+          <h2 className="text-2xl font-bold">{rejected}</h2>
         </div>
       </div>
 
