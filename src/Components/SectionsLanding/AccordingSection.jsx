@@ -6,7 +6,7 @@ export default function FAQSection() {
       <h2 className="text-3xl font-bold text-center mb-6 text-darkTeal">
         الأسئلة الشائعة
       </h2>
-      
+
       <div className="space-y-4">
         {/* q&a 1 */}
         <div className="collapse collapse-arrow bg-white border border-gray-100 rounded-lg">
@@ -16,10 +16,14 @@ export default function FAQSection() {
           </div>
           <div className="collapse-content text-right text-gray-600">
             <p className="mb-2">
-              نعم! يمكنك تقديم شكوى <span className="font-medium">كضيف</span> دون تسجيل، وسيتم توليد <span className="font-medium">رقم متابعة فريد</span> للشكوى. احفظ هذا الرقم لمتابعة حالة شكواك لاحقًا عبر قسم "تتبع الشكوى".
+              نعم! يمكنك تقديم شكوى <span className="font-medium">كضيف</span>{" "}
+              دون تسجيل، وسيتم توليد{" "}
+              <span className="font-medium">رقم متابعة فريد</span> للشكوى. احفظ
+              هذا الرقم لمتابعة حالة شكواك لاحقًا عبر قسم "تتبع الشكوى".
             </p>
             <p className="text-blue-600 font-medium">
-              ننصح بالتسجيل لحفظ جميع شكاويك في لوحة تحكم شخصية وتلقي إشعارات تلقائية بالتحديثات.
+              ننصح بالتسجيل لحفظ جميع شكاويك في لوحة تحكم شخصية وتلقي إشعارات
+              تلقائية بالتحديثات.
             </p>
           </div>
         </div>
@@ -31,13 +35,17 @@ export default function FAQSection() {
             2. ما أنواع الملفات المسموح برفعها مع الشكوى؟
           </div>
           <div className="collapse-content text-right text-gray-600">
-            <p className="mb-2">
-              يمكنك إرفاق:
-            </p>
+            <p className="mb-2">يمكنك إرفاق:</p>
             <ul className="list-disc pr-5 space-y-1">
-              <li>الصور (<span className="font-mono">JPG, PNG</span>)</li>
-              <li>مستندات (<span className="font-mono">PDF, Word</span>)</li>
-              <li>ملفات صوتية (<span className="font-mono">MP3</span>)</li>
+              <li>
+                الصور (<span className="font-mono">JPG, PNG</span>)
+              </li>
+              <li>
+                مستندات (<span className="font-mono">PDF, Word</span>)
+              </li>
+              <li>
+                ملفات صوتية (<span className="font-mono">MP3</span>)
+              </li>
             </ul>
             <p className="mt-2">
               بحد أقصى <span className="font-medium">10MB</span> لكل ملف.
@@ -52,9 +60,7 @@ export default function FAQSection() {
             3. ماذا لو كانت الشكوى غير واضحة للجهة المختصة؟
           </div>
           <div className="collapse-content text-right text-gray-600">
-            <p>
-              ستصلك رسالة من الجهة تطلب توضيحًا إضافيًا عبر المنصة، ويمكنك:
-            </p>
+            <p>ستصلك رسالة من الجهة تطلب توضيحًا إضافيًا عبر المنصة، ويمكنك:</p>
             <ul className="list-disc pr-5 mt-2 space-y-1">
               <li>تعديل الشكوى</li>
               <li>إضافة مستندات جديدة</li>
@@ -69,7 +75,9 @@ export default function FAQSection() {
             4. هل يمكن للجهات رفض الشكوى؟
           </div>
           <div className="collapse-content text-right text-gray-600">
-            <p className="font-medium mb-2">نعم، قد ترفض الجهة المختصة الشكوى في الحالات التالية:</p>
+            <p className="font-medium mb-2">
+              نعم، قد ترفض الجهة المختصة الشكوى في الحالات التالية:
+            </p>
             <ul className="list-disc pr-5 space-y-1 mb-3">
               <li>ألفاظ غير لائقة أو مسيئة</li>
               <li>معلومات غير صحيحة أو مُضللة</li>
@@ -79,7 +87,9 @@ export default function FAQSection() {
               سيتم إعلامك بالرفض مع ذكر السبب، ويمكنك في هذه الحالة:
             </p>
             <ul className="list-disc pr-5 space-y-1 mb-3">
-              <li>تعديل الشكوى وإعادة إرسالها (إذا كانت المشكلة قابلة للتعديل)</li>
+              <li>
+                تعديل الشكوى وإعادة إرسالها (إذا كانت المشكلة قابلة للتعديل)
+              </li>
             </ul>
           </div>
         </div>

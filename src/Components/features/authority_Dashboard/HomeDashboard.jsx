@@ -3,7 +3,7 @@ import ReactApexChart from "react-apexcharts";
 import { getComplaintsByDepartment } from "../../services/complaintsService";
 import { useAuth } from "../../../contexts/AuthContext";
 
-export default function Home({ ministry }) {
+export default function HomeDashboard() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

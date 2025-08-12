@@ -12,12 +12,20 @@ import department10 from "../../assets/images/water.png";
 
 export default function DepartmentsBar() {
   const departments = [
-    department1, department2, department3, department4, department5,
-    department6, department7, department8, department9, department10,
+    department1,
+    department2,
+    department3,
+    department4,
+    department5,
+    department6,
+    department7,
+    department8,
+    department9,
+    department10,
   ];
 
   // تكرار الصور مرتين علشان الأنيميشن يبقى seamless
-  const loopedDepartments = [...departments, ...departments,...departments];
+  const loopedDepartments = [...departments, ...departments, ...departments];
 
   return (
     <section className="bottom-bar-wrapper relative py-10 overflow-hidden">

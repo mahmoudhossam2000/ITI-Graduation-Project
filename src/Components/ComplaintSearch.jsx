@@ -101,7 +101,8 @@ function ComplaintSearch() {
             <button
               onClick={handleSearch}
               disabled={loading}
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-blue-600 hover:bg-blue-700 p-2 rounded-lg transition-all shadow-sm">
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-blue-600 hover:bg-blue-700 p-2 rounded-lg transition-all shadow-sm"
+            >
               {loading ? (
                 <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                   <circle
@@ -110,11 +111,13 @@ function ComplaintSearch() {
                     cy="12"
                     r="10"
                     stroke="currentColor"
-                    strokeWidth="4"></circle>
+                    strokeWidth="4"
+                  ></circle>
                   <path
                     className="opacity-75"
                     fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
               ) : (
                 <FaSearch className="h-5 w-5 text-blue" />
@@ -135,7 +138,8 @@ function ComplaintSearch() {
           {results.map((complaint, index) => (
             <div
               key={index}
-              className="border rounded-xl p-6 bg-white shadow-md mb-6 border-gray-200 hover:shadow-lg transition-shadow">
+              className="border rounded-xl p-6 bg-white shadow-md mb-6 border-gray-200 hover:shadow-lg transition-shadow"
+            >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-blue-900">
                   تفاصيل الشكوى
@@ -143,7 +147,8 @@ function ComplaintSearch() {
                 <span
                   className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
                     complaint.status
-                  )}`}>
+                  )}`}
+                >
                   {complaint.status}
                 </span>
               </div>
@@ -164,7 +169,10 @@ function ComplaintSearch() {
                 <div className="flex items-start gap-1">
                   <FaIdCard className="mt-1 mr-3 text-blue-600" />
                   <div>
-                    <p className="text-gray-500 text-base"> البريد الالكتروني</p>
+                    <p className="text-gray-500 text-base">
+                      {" "}
+                      البريد الالكتروني
+                    </p>
                     <p className="font-medium text-gray-800">
                       {complaint.email}
                     </p>

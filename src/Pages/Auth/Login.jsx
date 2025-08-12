@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../../firebase/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "react-toastify";
@@ -61,13 +63,37 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
-    setHasAttemptedLogin(true);
-
     try {
-      // Use the AuthContext's loginWithEmail function
-      await loginWithEmail(email, password);
-      console.log("Login successful, waiting for user data update...");
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // 👇 استرجاع بيانات المستخدم من Firestore
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+
+        if (userData.role === "department" || userData.role === "moderator") {
+          toast.success("تم تسجيل الدخول بنجاح 🎉");
+          navigate("/dashboard");
+        } else {
+          toast.success("تم تسجيل الدخول كمستخدم عام");
+          navigate("/"); // المستخدم العام
+        }
+
+        console.log("Role:", userData.role);
+        console.log("Department:", userData.department);
+      } else {
+        toast.error("لم يتم العثور على بيانات هذا المستخدم.");
+        navigate("/");
+      }
+
+      // await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
       console.error("Login error:", err);
       toast.error("البريد الإلكتروني أو كلمة المرور غير صحيحة ❌");

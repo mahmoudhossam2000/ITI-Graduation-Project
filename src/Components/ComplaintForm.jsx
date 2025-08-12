@@ -246,7 +246,7 @@ const ComplaintForm = () => {
       setLoadingDepartments(true);
       const deptQuery = query(
         collection(db, "departmentAccounts"),
-        where("role", "==", "department"),
+        where("accountType", "==", "department"),
         where("governorate", "==", governorate)
       );
       const querySnapshot = await getDocs(deptQuery);

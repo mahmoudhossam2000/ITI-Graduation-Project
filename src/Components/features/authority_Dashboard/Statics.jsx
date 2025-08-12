@@ -1,14 +1,9 @@
-import React from "react";
-import LineChart from "./charts/LineCharts";
-import ColumnChart from "./charts/ColumnChart";
-import Home from "./Home";
+import HomeDashboard from "./HomeDashboard";
 
 function Statics() {
   return (
     <>
-      <Home />
-      {/* <LineChart />
-      <ColumnChart /> */}
+      <HomeDashboard />
     </>
   );
 }

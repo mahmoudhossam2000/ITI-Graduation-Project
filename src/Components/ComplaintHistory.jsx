@@ -108,7 +108,7 @@ export default function ComplaintHistory() {
             <p className="text-gray-600 text-center mb-6">
               هنا يمكنك عرض وتعديل ومتابعة جميع شكاويك السابقة
             </p>
-            
+
             {loading ? (
               <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -163,7 +163,10 @@ export default function ComplaintHistory() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {complaints.map((complaint, index) => (
-                      <tr key={complaint.id || index} className="hover:bg-gray-50">
+                      <tr
+                        key={complaint.id || index}
+                        className="hover:bg-gray-50"
+                      >
                         <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500 text-center">
                           {index + 1}
                         </td>
@@ -247,7 +250,9 @@ export default function ComplaintHistory() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-darkTeal mx-auto">تعديل الشكوى</h3>
+                <h3 className="text-xl font-bold text-darkTeal mx-auto">
+                  تعديل الشكوى
+                </h3>
                 <button
                   onClick={() => setShowEditModal(false)}
                   className="text-red-700 hover:text-gray-700 bg-gray-300 rounded-3xl p-2"
@@ -319,7 +324,8 @@ export default function ComplaintHistory() {
                 تأكيد الحذف
               </h3>
               <p className="text-gray-500 mb-6">
-                هل أنت متأكد من رغبتك في حذف هذه الشكوى؟ لا يمكن التراجع عن هذا الإجراء.
+                هل أنت متأكد من رغبتك في حذف هذه الشكوى؟ لا يمكن التراجع عن هذا
+                الإجراء.
               </p>
               <div className="flex justify-center gap-2">
                 <button

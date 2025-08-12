@@ -6,12 +6,12 @@ import ComplainAction from "../Components/features/authority_Dashboard/Complaint
 import ComplaintDetails from "../Components/features/authority_Dashboard/ComplaintDetails";
 import { useAuth } from "../contexts/AuthContext";
 
-function Complaints({ ministry }) {
+function Complaints() {
+  const { userData } = useAuth();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
-  const { userData } = useAuth();
 
   const detailsRef = useRef(null);
   const actionRef = useRef(null);
@@ -57,9 +57,8 @@ function Complaints({ ministry }) {
     }
   }, [ministry, userData]);
 
-  // handlers
+  // handlers to set details complaint and show modal
   const handleDetails = (complaint) => {
-    console.log(detailsRef.current);
     setSelectedComplaint(complaint);
     setTimeout(() => {
       if (detailsRef.current) {
@@ -68,9 +67,11 @@ function Complaints({ ministry }) {
     }, 0);
   };
 
+  // handle to change actions for complaints
   const handleAction = (complaint) => {
-    console.log(complaint);
     setSelectedComplaint(complaint);
+    console.log(complaint);
+
     setTimeout(() => {
       if (actionRef.current) {
         actionRef.current?.showModal();

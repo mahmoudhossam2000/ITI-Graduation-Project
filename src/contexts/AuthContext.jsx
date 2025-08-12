@@ -6,6 +6,7 @@ import {
   signOut,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  createUserWithEmailAndPassword,
 } from "firebase/auth";
 import {
   getDoc,
@@ -51,6 +52,9 @@ export const AuthProvider = ({ children }) => {
         console.log(
           "Skipping auth state change - account creation in progress"
         );
+        console.log(
+          "Skipping auth state change - account creation in progress"
+        );
         return;
       }
 
@@ -78,6 +82,8 @@ export const AuthProvider = ({ children }) => {
 
           // Check if it's a department or governorate account
           const deptQuery = query(
+            collection(db, "departmentAccounts"),
+            where("uid", "==", user.uid),
             collection(db, "departmentAccounts"),
             where("uid", "==", user.uid)
           );
@@ -204,6 +210,7 @@ export const AuthProvider = ({ children }) => {
           complaintCount: 0,
           banned: false,
           role: "user",
+          role: "user",
           createdAt: new Date(),
         });
 
@@ -211,10 +218,12 @@ export const AuthProvider = ({ children }) => {
           name: user.displayName || "مستخدم جوجل",
           email: user.email,
           role: "user",
+          role: "user",
         });
       } else {
         setUserData({
           ...userSnap.data(),
+          role: userSnap.data().role || "user",
           role: userSnap.data().role || "user",
         });
       }
@@ -270,6 +279,7 @@ export const AuthProvider = ({ children }) => {
 
       // Set flag to prevent auth state changes during account creation
       setIsCreatingAccount(true);
+      console.log("Set isCreatingAccount to true");
       console.log("Set isCreatingAccount to true");
 
       // Store the current admin user's credentials
@@ -373,6 +383,7 @@ export const AuthProvider = ({ children }) => {
 
       // Sign out the newly created user immediately to return to admin session
       await signOut(auth);
+      console.log("Signed out newly created user");
       console.log("Signed out newly created user");
 
       // Wait a moment for the signOut to complete
