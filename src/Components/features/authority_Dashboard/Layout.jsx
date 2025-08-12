@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import NavbardAuthority from "./NavbardAuthority";
 import Sidebar from "./Sidebar";
+import Topbar from "../../Topbar";
 
 export default function Layout() {
   return (
@@ -10,7 +11,8 @@ export default function Layout() {
       </div>
 
       <div className="w-9/12 mr-[25%]">
-        <NavbardAuthority />
+        {/* <NavbardAuthority /> */}
+        <Topbar />
         <div className="p-4">
           <Outlet />
         </div>

@@ -82,6 +82,10 @@ const PrivateRoute = ({ children, allowedRoles = null }) => {
     console.log("User role:", userData.role);
     console.log("User data:", userData);
     console.log("Role check result:", !allowedRoles.includes(userData.role));
+    console.log("isMinistry boolean:", isMinistry);
+    console.log("isDepartment boolean:", isDepartment);
+    console.log("isGovernorate boolean:", isGovernorate);
+    console.log("isAdmin boolean:", isAdmin);
     console.log("Redirecting to unauthorized");
     return <Navigate to="/unauthorized" replace />;
   }
@@ -267,7 +271,7 @@ function AppContent() {
         <Route
           path="/dashboard"
           element={
-            <PrivateRoute allowedRoles={["department", "moderator"]}>
+            <PrivateRoute allowedRoles={["department", "moderator", "ministry"]}>
               <Layout />
             </PrivateRoute>
           }
