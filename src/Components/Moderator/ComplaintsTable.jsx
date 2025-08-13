@@ -613,9 +613,10 @@ const ComplaintsTable = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
                 <h4 className="text-sm font-medium text-gray-500 mb-2">
-                  الجهة المقدمة لها
+                  الإدارة المخصصه
+                   
                 </h4>
-                <p className="text-gray-800">{selectedComplaint.ministry}</p>
+                <p className="text-gray-800">{selectedComplaint.administration}</p>
               </div>
 
               <div>
