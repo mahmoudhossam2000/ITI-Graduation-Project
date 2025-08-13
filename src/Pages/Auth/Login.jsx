@@ -133,7 +133,7 @@ const Login = () => {
                 disabled={isLoading}
                 className="w-full flex justify-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium text-white bg-blue"
               >
-                {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+                تسجيل الدخول
               </button>
             </div>
           </form>

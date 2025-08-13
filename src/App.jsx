@@ -48,7 +48,7 @@ const PrivateRoute = ({ children, allowedRoles = null }) => {
 
   // If not logged in
   if (!currentUser) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" />;
   }
 
   // Wait until user data is loaded
