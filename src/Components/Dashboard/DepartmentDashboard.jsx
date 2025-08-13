@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   collection,
   query,
@@ -12,6 +12,7 @@ import { db } from "../../firebase/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import { toast } from "react-toastify";
 import Topbar from "../Topbar";
+import ComplaintAction from "../features/authority_Dashboard/ComplaintAction";
 import {
   FaFilter,
   FaEye,
@@ -30,6 +31,7 @@ import {
   FaTimesCircle,
   FaEdit,
   FaArrowRight,
+  FaCog,
 } from "react-icons/fa";
 
 const DepartmentDashboard = () => {
@@ -44,6 +46,9 @@ const DepartmentDashboard = () => {
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [showComplaintModal, setShowComplaintModal] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  // Ref for ComplaintAction modal
+  const complaintActionRef = useRef();
 
   // Static list of departments for filtering
   const departmentsList = [
@@ -194,7 +199,7 @@ const DepartmentDashboard = () => {
 
       // Update the selected complaint if it's open
       if (selectedComplaint && selectedComplaint.id === complaintId) {
-        setSelectedComplaint(prev => ({ ...prev, status }));
+        setSelectedComplaint((prev) => ({ ...prev, status }));
       }
     } catch (error) {
       console.error("Error updating complaint status:", error);
@@ -214,8 +219,9 @@ const DepartmentDashboard = () => {
 
     return (
       <span
-        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClasses[status] || "bg-gray-100 text-gray-800"
-          }`}
+        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+          statusClasses[status] || "bg-gray-100 text-gray-800"
+        }`}
       >
         {status}
       </span>
@@ -230,6 +236,32 @@ const DepartmentDashboard = () => {
   const closeComplaintModal = () => {
     setShowComplaintModal(false);
     setSelectedComplaint(null);
+  };
+
+  // Open ComplaintAction modal for department users
+  const openComplaintAction = (complaint) => {
+    setSelectedComplaint(complaint);
+    if (complaintActionRef.current) {
+      complaintActionRef.current.showModal();
+    }
+  };
+
+  // Handle status change from ComplaintAction component
+  const handleComplaintActionStatusChange = (complaintId, newStatus) => {
+    // Update the complaint in the local state
+    setComplaints((prev) =>
+      prev.map((c) => (c.id === complaintId ? { ...c, status: newStatus } : c))
+    );
+    setFilteredComplaints((prev) =>
+      prev.map((c) => (c.id === complaintId ? { ...c, status: newStatus } : c))
+    );
+
+    // Update the selected complaint if it's open
+    if (selectedComplaint && selectedComplaint.id === complaintId) {
+      setSelectedComplaint((prev) => ({ ...prev, status: newStatus }));
+    }
+
+    toast.success("تم تحديث حالة الشكوى بنجاح");
   };
 
   // Calculate statistics
@@ -259,6 +291,8 @@ const DepartmentDashboard = () => {
 
   const StatisticsCards = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+      {/* Role Indicator Card */}
+
       <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
         <div className="flex items-center">
           <div className="p-2 bg-blue-100 rounded-lg">
@@ -388,14 +422,21 @@ const DepartmentDashboard = () => {
     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
       <div className="px-4 py-5 sm:px-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
-            الشكاوى الواردة
-            {selectedDepartment && (
-              <span className="text-sm text-gray-500 mr-2">
-                - {selectedDepartment}
-              </span>
-            )}
-          </h3>
+          <div>
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              الشكاوى الواردة
+              {selectedDepartment && (
+                <span className="text-sm text-gray-500 mr-2">
+                  - {selectedDepartment}
+                </span>
+              )}
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              {userData?.role === "department"
+                ? "يمكنك عرض الشكاوى واتخاذ الإجراءات عليها"
+                : "يمكنك عرض الشكاوى ومتابعة الإجراءات المتخذة"}
+            </p>
+          </div>
           <span className="text-sm text-gray-500">
             {filteredComplaints.length} شكوى
           </span>
@@ -444,7 +485,9 @@ const DepartmentDashboard = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div>
                       <div className="font-medium">{complaint.name}</div>
-                      <div className="text-gray-500 text-xs">{complaint.email}</div>
+                      <div className="text-gray-500 text-xs">
+                        {complaint.email}
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
@@ -467,7 +510,19 @@ const DepartmentDashboard = () => {
                     </td>
                   )}
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(complaint.status || "قيد المعالجة")}
+                    <div className="flex flex-col items-start">
+                      {getStatusBadge(complaint.status || "قيد المعالجة")}
+                      {complaint.updatedAt && (
+                        <span className="text-xs text-gray-500 mt-1">
+                          آخر تحديث: {formatDate(complaint.updatedAt)}
+                        </span>
+                      )}
+                      {complaint.updatedBy && (
+                        <span className="text-xs text-blue-600 mt-1">
+                          بواسطة: {complaint.updatedBy}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex space-x-2 justify-end">
@@ -482,6 +537,13 @@ const DepartmentDashboard = () => {
                       {userData.role === "department" && (
                         <>
                           <button
+                            onClick={() => openComplaintAction(complaint)}
+                            className="text-orange-600 hover:text-orange-900 bg-orange-100 px-3 py-1 rounded text-xs flex items-center"
+                          >
+                            <FaCog className="ml-1" />
+                            إجراء
+                          </button>
+                          {/* <button
                             onClick={() =>
                               updateComplaintStatus(
                                 complaint.id,
@@ -503,25 +565,11 @@ const DepartmentDashboard = () => {
                           >
                             <FaTimes className="ml-1" />
                             رفض
-                          </button>
+                          </button> */}
                         </>
                       )}
 
-                      {userData.role === "governorate" && (
-                        <select
-                          onChange={(e) =>
-                            updateComplaintStatus(complaint.id, e.target.value)
-                          }
-                          disabled={updatingStatus}
-                          className="border rounded p-1 text-sm bg-white disabled:opacity-50"
-                          value={complaint.status || "قيد المعالجة"}
-                        >
-                          <option value="قيد المعالجة">قيد المعالجة</option>
-                          <option value="تمت المعالجة">تمت المعالجة</option>
-                          <option value="مرفوضة">مرفوضة</option>
-                          <option value="محولة">محولة</option>
-                        </select>
-                      )}
+                      {/* Governorate users can only view, no status change */}
                     </div>
                   </td>
                 </tr>
@@ -575,12 +623,20 @@ const DepartmentDashboard = () => {
                   </h3>
                   <div className="space-y-3">
                     <div className="flex items-center">
-                      <span className="font-medium text-gray-700 ml-2">الاسم:</span>
-                      <span className="text-gray-900">{selectedComplaint.name}</span>
+                      <span className="font-medium text-gray-700 ml-2">
+                        الاسم:
+                      </span>
+                      <span className="text-gray-900">
+                        {selectedComplaint.name}
+                      </span>
                     </div>
                     <div className="flex items-center">
-                      <span className="font-medium text-gray-700 ml-2">البريد الإلكتروني:</span>
-                      <span className="text-gray-900">{selectedComplaint.email}</span>
+                      <span className="font-medium text-gray-700 ml-2">
+                        البريد الإلكتروني:
+                      </span>
+                      <span className="text-gray-900">
+                        {selectedComplaint.email}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -592,25 +648,47 @@ const DepartmentDashboard = () => {
                   </h3>
                   <div className="space-y-3">
                     <div className="flex items-center">
-                      <span className="font-medium text-gray-700 ml-2">المحافظة:</span>
-                      <span className="text-gray-900">{selectedComplaint.governorate}</span>
+                      <span className="font-medium text-gray-700 ml-2">
+                        المحافظة:
+                      </span>
+                      <span className="text-gray-900">
+                        {selectedComplaint.governorate}
+                      </span>
                     </div>
                     <div className="flex items-center">
-                      <span className="font-medium text-gray-700 ml-2">الإدارة:</span>
-                      <span className="text-gray-900">{selectedComplaint.administration}</span>
+                      <span className="font-medium text-gray-700 ml-2">
+                        الإدارة:
+                      </span>
+                      <span className="text-gray-900">
+                        {selectedComplaint.administration}
+                      </span>
                     </div>
                     <div className="flex items-center">
-                      <span className="font-medium text-gray-700 ml-2">الحالة:</span>
-                      <div className="mr-2">{getStatusBadge(selectedComplaint.status || "قيد المعالجة")}</div>
+                      <span className="font-medium text-gray-700 ml-2">
+                        الحالة:
+                      </span>
+                      <div className="mr-2">
+                        {getStatusBadge(
+                          selectedComplaint.status || "قيد المعالجة"
+                        )}
+                      </div>
                     </div>
                     <div className="flex items-center">
-                      <span className="font-medium text-gray-700 ml-2">تاريخ الإنشاء:</span>
-                      <span className="text-gray-900">{formatDateTime(selectedComplaint.createdAt)}</span>
+                      <span className="font-medium text-gray-700 ml-2">
+                        تاريخ الإنشاء:
+                      </span>
+                      <span className="text-gray-900">
+                        {formatDateTime(selectedComplaint.createdAt)}
+                      </span>
                     </div>
                     {selectedComplaint.updatedAt && (
                       <div className="flex items-center">
-                        <span className="font-medium text-gray-700 ml-2">آخر تحديث:</span>
-                        <span className="text-gray-900">{formatDateTime(selectedComplaint.updatedAt)}</span>
+                        <span className="font-medium text-gray-700 ml-2">
+                          آخر تحديث:
+                        </span>
+                        <span className="text-gray-900">
+                          {formatDateTime(selectedComplaint.updatedAt)}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -624,16 +702,24 @@ const DepartmentDashboard = () => {
                   {selectedComplaint.location ? (
                     <div className="space-y-2">
                       <div className="flex items-center">
-                        <span className="font-medium text-gray-700 ml-2">الإحداثيات:</span>
-                        <span className="text-gray-900 font-mono text-sm">{selectedComplaint.location}</span>
+                        <span className="font-medium text-gray-700 ml-2">
+                          الإحداثيات:
+                        </span>
+                        <span className="text-gray-900 font-mono text-sm">
+                          {selectedComplaint.location}
+                        </span>
                       </div>
                       <div className="bg-gray-200 rounded-lg p-3 text-center">
                         <FaMapMarkerAlt className="text-2xl text-gray-600 mx-auto mb-2" />
-                        <p className="text-sm text-gray-600">تم تحديد الموقع على الخريطة</p>
+                        <p className="text-sm text-gray-600">
+                          تم تحديد الموقع على الخريطة
+                        </p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-gray-500 text-center">لم يتم تحديد موقع</p>
+                    <p className="text-gray-500 text-center">
+                      لم يتم تحديد موقع
+                    </p>
                   )}
                 </div>
               </div>
@@ -641,8 +727,12 @@ const DepartmentDashboard = () => {
               {/* Right Column - Description and Media */}
               <div className="space-y-4">
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">وصف الشكوى</h3>
-                  <p className="text-gray-700 leading-relaxed">{selectedComplaint.description}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    وصف الشكوى
+                  </h3>
+                  <p className="text-gray-700 leading-relaxed">
+                    {selectedComplaint.description}
+                  </p>
                 </div>
 
                 {/* Image */}
@@ -692,7 +782,19 @@ const DepartmentDashboard = () => {
                 {userData.role === "department" && (
                   <>
                     <button
-                      onClick={() => updateComplaintStatus(selectedComplaint.id, "تمت المعالجة")}
+                      onClick={() => openComplaintAction(selectedComplaint)}
+                      className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center"
+                    >
+                      <FaCog className="ml-2" />
+                      إجراء متقدم
+                    </button>
+                    <button
+                      onClick={() =>
+                        updateComplaintStatus(
+                          selectedComplaint.id,
+                          "تمت المعالجة"
+                        )
+                      }
                       disabled={updatingStatus}
                       className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center"
                     >
@@ -700,7 +802,9 @@ const DepartmentDashboard = () => {
                       تمت المعالجة
                     </button>
                     <button
-                      onClick={() => updateComplaintStatus(selectedComplaint.id, "مرفوضة")}
+                      onClick={() =>
+                        updateComplaintStatus(selectedComplaint.id, "مرفوضة")
+                      }
                       disabled={updatingStatus}
                       className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center"
                     >
@@ -711,19 +815,10 @@ const DepartmentDashboard = () => {
                 )}
 
                 {userData.role === "governorate" && (
-                  <div className="flex items-center gap-3">
-                    <label className="font-medium text-gray-700">تغيير الحالة:</label>
-                    <select
-                      onChange={(e) => updateComplaintStatus(selectedComplaint.id, e.target.value)}
-                      disabled={updatingStatus}
-                      className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
-                      value={selectedComplaint.status || "قيد المعالجة"}
-                    >
-                      <option value="قيد المعالجة">قيد المعالجة</option>
-                      <option value="تمت المعالجة">تمت المعالجة</option>
-                      <option value="مرفوضة">مرفوضة</option>
-                      <option value="محولة">محولة</option>
-                    </select>
+                  <div className="text-gray-600 text-center w-full py-4">
+                    <FaEye className="text-2xl mx-auto mb-2 text-blue-500" />
+                    <p>يمكنك فقط عرض الشكاوى والإجراءات المتخذة عليها</p>
+                    <p className="text-sm mt-1">لا يمكنك تغيير حالة الشكاوى</p>
                   </div>
                 )}
 
@@ -758,14 +853,27 @@ const DepartmentDashboard = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            لوحة تحكم{" "}
-            {userData?.role === "department" ? "" : " محافظة  "}
+            لوحة تحكم {userData?.role === "department" ? "" : " محافظة  "}
             <span className="text-3xl font-bold text-gray-900 mb-2">
               {userData?.role === "department"
                 ? `${userData.department} - ${userData.governorate}`
                 : userData.governorate}
             </span>
           </h1>
+
+          {/* Role Description */}
+          <div className="mt-2">
+            {userData?.role === "department" ? (
+              <p className="text-gray-600 text-lg">
+                يمكنك عرض الشكاوى وتحديث حالاتها واتخاذ الإجراءات اللازمة
+              </p>
+            ) : (
+              <p className="text-gray-600 text-lg">
+                يمكنك عرض الشكاوى ومتابعة الإجراءات المتخذة عليها (لا يمكنك
+                تغيير الحالات)
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Statistics Cards */}
@@ -777,8 +885,108 @@ const DepartmentDashboard = () => {
         {/* Complaints Table */}
         <ComplaintsTable />
 
+        {/* Action History Summary for Governorate Users */}
+        {userData?.role === "governorate" && complaints.length > 0 && (
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg mt-6">
+            <div className="px-4 py-5 sm:px-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
+                <FaChartBar className="ml-2 text-green-600" />
+                ملخص الإجراءات المتخذة
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                آخر الإجراءات التي تم اتخاذها على الشكاوى
+              </p>
+            </div>
+            <div className="border-t border-gray-200">
+              <div className="px-4 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {
+                        complaints.filter((c) => c.status === "تمت المعالجة")
+                          .length
+                      }
+                    </div>
+                    <div className="text-sm text-gray-600">تمت معالجتها</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-yellow-600">
+                      {
+                        complaints.filter((c) => c.status === "قيد المعالجة")
+                          .length
+                      }
+                    </div>
+                    <div className="text-sm text-gray-600">قيد المعالجة</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-red-600">
+                      {complaints.filter((c) => c.status === "مرفوضة").length}
+                    </div>
+                    <div className="text-sm text-gray-600">مرفوضة</div>
+                  </div>
+                </div>
+
+                {/* Recent Actions */}
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    آخر الإجراءات:
+                  </h4>
+                  <div className="space-y-2">
+                    {complaints
+                      .filter((c) => c.updatedAt && c.updatedBy)
+                      .sort((a, b) => {
+                        const dateA = a.updatedAt?.toDate
+                          ? a.updatedAt.toDate()
+                          : new Date(a.updatedAt || 0);
+                        const dateB = b.updatedAt?.toDate
+                          ? b.updatedAt.toDate()
+                          : new Date(b.updatedAt || 0);
+                        return dateB - dateA;
+                      })
+                      .slice(0, 5)
+                      .map((complaint) => (
+                        <div
+                          key={complaint.id}
+                          className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded"
+                        >
+                          <span className="text-gray-600">
+                            شكوى #{complaint.complaintId} -{" "}
+                            {complaint.administration}
+                          </span>
+                          <div className="flex items-center space-x-2">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs ${
+                                getStatusBadge(
+                                  complaint.status || "قيد المعالجة"
+                                ).props.className
+                              }`}
+                            >
+                              {complaint.status}
+                            </span>
+                            <span className="text-gray-500 text-xs">
+                              {formatDate(complaint.updatedAt)}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Complaint Details Modal */}
         {showComplaintModal && <ComplaintDetailsModal />}
+
+        {/* ComplaintAction Modal for Department Users */}
+        {userData?.role === "department" && selectedComplaint && (
+          <ComplaintAction
+            ref={complaintActionRef}
+            complaint={selectedComplaint}
+            onStatusChange={handleComplaintActionStatusChange}
+          />
+        )}
       </div>
     </div>
   );

@@ -5,15 +5,15 @@ import { auth } from "../../firebase/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "react-toastify";
-import { doc, getDoc } from "firebase/firestore";
-import { BiShowAlt } from "react-icons/bi";
-import { BiSolidHide } from "react-icons/bi";
+import { BiShowAlt, BiSolidHide } from "react-icons/bi";
 import Navbar from "../../Components/Navbar";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { signInWithGoogle } = useAuth();
 
@@ -32,22 +32,24 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast.success("تم تسجيل الدخول بنجاح 🎉");
       navigate("/");
     } catch (err) {
       toast.error("البريد الإلكتروني أو كلمة المرور غير صحيحة ❌");
-      setError(
-        "فشل تسجيل الدخول. يرجى التحقق من البريد الإلكتروني وكلمة المرور."
-      );
+      setError("فشل تسجيل الدخول. يرجى التحقق من البريد الإلكتروني وكلمة المرور.");
       console.error("Login error:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
-  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <>
-    <Navbar />
+      <Navbar />
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 pt-24">
         <div className="max-w-md w-full space-y-6 bg-white p-8 rounded-lg shadow-md">
           <div className="text-center">
@@ -101,13 +103,14 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
-                 <button
-                   type="button"
-                   onClick={() => setShowPassword((show) => !show)}
-                   className="absolute left-3 top-1/4 transform  text-gray-400 hover:text-gray-600"
-                   tabIndex={-1}>
-                   {showPassword ? <BiShowAlt size={20}/> : <BiSolidHide size={20}/>}
-                 </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((show) => !show)}
+                    className="absolute left-3 top-1/4 transform text-gray-400 hover:text-gray-600"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <BiShowAlt size={20} /> : <BiSolidHide size={20} />}
+                  </button>
                 </div>
               </div>
             </div>
@@ -124,9 +127,10 @@ const Login = () => {
             <div>
               <button
                 type="submit"
+                disabled={isLoading}
                 className="w-full flex justify-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium text-white bg-blue"
               >
-                تسجيل الدخول
+                {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
               </button>
             </div>
           </form>
@@ -145,7 +149,7 @@ const Login = () => {
               <button
                 onClick={handleGoogleSignIn}
                 type="button"
-                className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
               >
                 <FcGoogle className="w-5 h-5 ml-2" />
                 تسجيل الدخول باستخدام جوجل
@@ -155,7 +159,7 @@ const Login = () => {
 
           <div className="mt-8 text-center">
             <p className="text-gray-700 text-md">
-              ليس لديك حساب؟{" "}
+              ليس لديك حساب؟
               <Link
                 to="/signup"
                 className="ml-1 text-blue font-semibold hover:underline"

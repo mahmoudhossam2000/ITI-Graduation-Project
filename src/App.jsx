@@ -19,7 +19,6 @@ import Dashboard from "./Pages/Dashboard";
 import Complaints from "./Pages/Complaints";
 import ComplaintReports from "./Pages/ComplaintReports";
 
-
 import ModeratorLayout from "./Components/Moderator/ModeratorLayout";
 import DashboardModerator from "./Pages/DashboardModerator";
 import ComplaintsPage from "./Components/Moderator/ComplaintsTable";
@@ -27,94 +26,42 @@ import UsersPage from "./Components/Moderator/UsersTable";
 
 import AdminDashboard from "./Components/Admin/AdminDashboard";
 import DepartmentDashboard from "./Components/Dashboard/DepartmentDashboard";
-import ProtectedRoute from "./Components/Auth/ProtectedRoute";
 
+// ====== ROUTE GUARDS ======
 const PrivateRoute = ({ children }) => {
-
-  const { currentUser, isAdmin, isDepartment, isGovernorate, userData } =
-    useAuth();
-
-  // If not logged in, redirect to login
-  if (!currentUser) {
-    return <Navigate to="/login" />;
-    return <Navigate to="/login" />;
-  }
-
-  // If logged in but userData hasn't loaded yet, show loading or return null
-  if (!userData) {
-    return null; // or a loading spinner
-  }
-
-  // Redirect to appropriate dashboard based on user role
-  if (isAdmin) {
-    return <Navigate to="/admin" replace />;
-  }
-
-  if (isDepartment || isGovernorate) {
-    return <Navigate to="/department/dashboard" replace />;
-  }
-
-  // If regular user, show the protected content
+  const { currentUser, isAdmin, isDepartment, isGovernorate, userData } = useAuth();
+  if (!currentUser) return <Navigate to="/login" />;
+  if (!userData) return null;
+  if (isAdmin) return <Navigate to="/admin" replace />;
+  if (isDepartment || isGovernorate) return <Navigate to="/department/dashboard" replace />;
   return children;
 };
 
 const RoleRedirect = ({ children }) => {
-  const { currentUser, userData, isAdmin, isDepartment, isGovernorate } =
-    useAuth();
-
-
-  // If not logged in, show the public page
-  if (!currentUser) {
-    return children;
-  }
-
-  // Wait until userData resolves
-  if (!userData) {
-    return null; // or a loading spinner
-  }
-
-  if (isAdmin) {
-    return <Navigate to="/admin" replace />;
-  }
-
-  if (isDepartment || isGovernorate) {
-    return <Navigate to="/department/dashboard" replace />;
-  }
-
+  const { currentUser, userData, isAdmin, isDepartment, isGovernorate } = useAuth();
+  if (!currentUser) return children;
+  if (!userData) return null;
+  if (isAdmin) return <Navigate to="/admin" replace />;
+  if (isDepartment || isGovernorate) return <Navigate to="/department/dashboard" replace />;
   return children;
 };
 
 const AdminRoute = ({ children }) => {
   const { currentUser, isAdmin, userData } = useAuth();
-
-  // If not logged in, redirect to login
-  if (!currentUser) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // If user data is still loading
-  if (!userData) {
-    return null; // or a loading spinner
-  }
-
-  // If user is not admin, redirect to home
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
-  }
-
-  // If user is admin, render the children
+  if (!currentUser) return <Navigate to="/login" replace />;
+  if (!userData) return null;
+  if (!isAdmin) return <Navigate to="/" replace />;
   return children;
 };
 
 const DepartmentRoute = ({ children }) => {
   const { currentUser, isDepartment, isGovernorate } = useAuth();
-  return currentUser && (isDepartment || isGovernorate) ? (
-    children
-  ) : (
-    <Navigate to="/login" replace />
-  );
+  return currentUser && (isDepartment || isGovernorate)
+    ? children
+    : <Navigate to="/login" replace />;
 };
 
+// ====== MAIN APP CONTENT ======
 function AppContent() {
   return (
     <>
@@ -126,7 +73,7 @@ function AppContent() {
       />
 
       <Routes>
-        {/* general page */}
+        {/* Public Pages */}
         <Route
           index
           element={
@@ -150,9 +97,6 @@ function AppContent() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Department/Governorate Auth */}
-        <Route path="/login" element={<Login />} />
-
         {/* Admin Routes */}
         <Route
           path="/admin"
@@ -173,9 +117,7 @@ function AppContent() {
           }
         />
 
-        <Route path="*" element={<NotFound />} />
-
-        {/* citizen profile */}
+        {/* Citizen Protected Routes */}
         <Route
           path="/profile"
           element={
@@ -192,27 +134,30 @@ function AppContent() {
             </PrivateRoute>
           }
         />
-        {/* department routes */}
+
+        {/* Department Layout Routes */}
         <Route path="/dashboard" element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="complaints" element={<Complaints />} />
           <Route path="complaint-reports" element={<ComplaintReports />} />
         </Route>
 
-        {/* moderator routes*/}
+        {/* Moderator Routes */}
         <Route path="/moderator" element={<ModeratorLayout />}>
           <Route index element={<DashboardModerator />} />
           <Route path="dashboard" element={<DashboardModerator />} />
           <Route path="complaints" element={<ComplaintsPage />} />
           <Route path="users" element={<UsersPage />} />
         </Route>
+
+        {/* Not Found */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );
-
 }
 
-
+// ====== MAIN APP ======
 function App() {
   return (
     <BrowserRouter>
