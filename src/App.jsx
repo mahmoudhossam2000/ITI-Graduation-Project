@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 import LandingPage from "./Pages/LandingPage";
@@ -11,54 +11,87 @@ import ForgotPassword from "./Pages/Auth/ForgotPassword";
 import ResetPassword from "./Pages/Auth/ResetPassword";
 import ComplaintHistory from "./Components/ComplaintHistory";
 import NotFound from "./Pages/NotFound";
+import Unauthorized from "./Pages/Unauthorized";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+// Authority/Dashboard
 import Layout from "./Components/features/authority_Dashboard/Layout";
 import Dashboard from "./Pages/Dashboard";
 import Complaints from "./Pages/Complaints";
 import ComplaintReports from "./Pages/ComplaintReports";
 
+// Moderator
 import ModeratorLayout from "./Components/Moderator/ModeratorLayout";
 import DashboardModerator from "./Pages/DashboardModerator";
 import ComplaintsPage from "./Components/Moderator/ComplaintsTable";
 import UsersPage from "./Components/Moderator/UsersTable";
 
+// Admin & Department
 import AdminDashboard from "./Components/Admin/AdminDashboard";
 import DepartmentDashboard from "./Components/Dashboard/DepartmentDashboard";
 
 // ====== ROUTE GUARDS ======
-const PrivateRoute = ({ children }) => {
-  const { currentUser, isAdmin, isDepartment, isGovernorate, userData } = useAuth();
-  if (!currentUser) return <Navigate to="/login" />;
+
+// Generic Private Route
+const PrivateRoute = ({ children, allowedRoles = null }) => {
+  const {
+    currentUser,
+    userData,
+    isAdmin,
+    isDepartment,
+    isGovernorate,
+    isMinistry,
+    preventNavigation,
+  } = useAuth();
+  const location = useLocation();
+
+  // If not logged in
+  if (!currentUser) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Wait until user data is loaded
   if (!userData) return null;
-  if (isAdmin) return <Navigate to="/admin" replace />;
-  if (isDepartment || isGovernorate) return <Navigate to="/department/dashboard" replace />;
+
+  // Block navigation during certain processes
+  if (preventNavigation) return children;
+
+  // Role restriction check
+  if (allowedRoles && !allowedRoles.includes(userData.role)) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+
   return children;
 };
 
+// Redirect based on role if logged in
 const RoleRedirect = ({ children }) => {
-  const { currentUser, userData, isAdmin, isDepartment, isGovernorate } = useAuth();
+  const { currentUser, userData, isAdmin } = useAuth();
+
   if (!currentUser) return children;
   if (!userData) return null;
+
   if (isAdmin) return <Navigate to="/admin" replace />;
-  if (isDepartment || isGovernorate) return <Navigate to="/department/dashboard" replace />;
+
   return children;
 };
 
+// Admin-only route
 const AdminRoute = ({ children }) => {
-  const { currentUser, isAdmin, userData } = useAuth();
+  const { currentUser, userData, isAdmin } = useAuth();
   if (!currentUser) return <Navigate to="/login" replace />;
   if (!userData) return null;
   if (!isAdmin) return <Navigate to="/" replace />;
   return children;
 };
 
+// Department/Governorate/Ministry route
 const DepartmentRoute = ({ children }) => {
-  const { currentUser, isDepartment, isGovernorate } = useAuth();
-  return currentUser && (isDepartment || isGovernorate)
-    ? children
-    : <Navigate to="/login" replace />;
+  const { currentUser, isDepartment, isGovernorate, isMinistry, userData } = useAuth();
+  if (!currentUser) return <Navigate to="/login" replace />;
+  if (!userData) return null;
+  return (isDepartment || isGovernorate || isMinistry) ? children : <Navigate to="/unauthorized" replace />;
 };
 
 // ====== MAIN APP CONTENT ======
@@ -96,6 +129,7 @@ function AppContent() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/unauthorized" element={<Unauthorized />} />
 
         {/* Admin Routes */}
         <Route
@@ -121,7 +155,7 @@ function AppContent() {
         <Route
           path="/profile"
           element={
-            <PrivateRoute>
+            <PrivateRoute allowedRoles={["citizen"]}>
               <Profile />
             </PrivateRoute>
           }
@@ -129,21 +163,35 @@ function AppContent() {
         <Route
           path="/complaintHistory"
           element={
-            <PrivateRoute>
+            <PrivateRoute allowedRoles={["citizen"]}>
               <ComplaintHistory />
             </PrivateRoute>
           }
         />
 
         {/* Department Layout Routes */}
-        <Route path="/dashboard" element={<Layout />}>
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute allowedRoles={["department", "moderator", "ministry"]}>
+              <Layout />
+            </PrivateRoute>
+          }
+        >
           <Route index element={<Dashboard />} />
           <Route path="complaints" element={<Complaints />} />
           <Route path="complaint-reports" element={<ComplaintReports />} />
         </Route>
 
         {/* Moderator Routes */}
-        <Route path="/moderator" element={<ModeratorLayout />}>
+        <Route
+          path="/moderator"
+          element={
+            <PrivateRoute allowedRoles={["moderator"]}>
+              <ModeratorLayout />
+            </PrivateRoute>
+          }
+        >
           <Route index element={<DashboardModerator />} />
           <Route path="dashboard" element={<DashboardModerator />} />
           <Route path="complaints" element={<ComplaintsPage />} />

@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase/firebase";
-import { useAuth } from "../../contexts/AuthContext";
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "react-toastify";
 import { BiShowAlt, BiSolidHide } from "react-icons/bi";
 import Navbar from "../../Components/Navbar";
+import { useAuth } from "../../contexts/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -14,9 +12,12 @@ const Login = () => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-  const { signInWithGoogle } = useAuth();
+  const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false);
 
+  const navigate = useNavigate();
+  const { signInWithGoogle, loginWithEmail } = useAuth();
+
+  // Google Login
   const handleGoogleSignIn = async () => {
     try {
       await signInWithGoogle();
@@ -29,13 +30,15 @@ const Login = () => {
     }
   };
 
+  // Email/Password Login
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
+    setHasAttemptedLogin(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await loginWithEmail(email, password);
       toast.success("تم تسجيل الدخول بنجاح 🎉");
       navigate("/");
     } catch (err) {
@@ -53,9 +56,7 @@ const Login = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 pt-24">
         <div className="max-w-md w-full space-y-6 bg-white p-8 rounded-lg shadow-md">
           <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-darkTeal">
-              تسجيل الدخول
-            </h2>
+            <h2 className="text-3xl font-extrabold text-darkTeal">تسجيل الدخول</h2>
           </div>
 
           {error && (
@@ -66,6 +67,7 @@ const Login = () => {
 
           <form className="mt-6 space-y-6" onSubmit={handleLogin}>
             <div className="space-y-4">
+              {/* Email */}
               <div>
                 <label
                   htmlFor="email-address"
@@ -85,6 +87,7 @@ const Login = () => {
                 />
               </div>
 
+              {/* Password */}
               <div>
                 <label
                   htmlFor="password"
@@ -135,6 +138,7 @@ const Login = () => {
             </div>
           </form>
 
+          {/* Divider */}
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -145,6 +149,7 @@ const Login = () => {
               </div>
             </div>
 
+            {/* Google Login */}
             <div className="mt-6">
               <button
                 onClick={handleGoogleSignIn}
@@ -157,6 +162,7 @@ const Login = () => {
             </div>
           </div>
 
+          {/* Signup Link */}
           <div className="mt-8 text-center">
             <p className="text-gray-700 text-md">
               ليس لديك حساب؟

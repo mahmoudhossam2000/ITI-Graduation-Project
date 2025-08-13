@@ -5,7 +5,7 @@ import {
   signInWithPopup,
   signOut,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
 } from "firebase/auth";
 import {
   getDoc,
@@ -15,7 +15,7 @@ import {
   query,
   where,
   getDocs,
-  addDoc
+  addDoc,
 } from "firebase/firestore";
 import { auth, db } from "../firebase/firebase";
 
@@ -25,9 +25,10 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  // متابعة حالة تسجيل الدخول
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
@@ -51,7 +52,7 @@ export const AuthProvider = ({ children }) => {
             const accountData = querySnapshot.docs[0].data();
             setUserData({
               ...accountData,
-              role: accountData.accountType // 'department' أو 'governorate'
+              role: accountData.accountType,
             });
           } else {
             // مستخدم عادي
@@ -93,12 +94,12 @@ export const AuthProvider = ({ children }) => {
         setUserData({
           name: user.displayName || "مستخدم جوجل",
           email: user.email,
-          role: "user"
+          role: "user",
         });
       } else {
         setUserData({
           ...userSnap.data(),
-          role: userSnap.data().role || "user"
+          role: userSnap.data().role || "user",
         });
       }
 
@@ -112,7 +113,11 @@ export const AuthProvider = ({ children }) => {
   // تسجيل الدخول بالإيميل
   const loginWithEmail = async (email, password) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       return userCredential.user;
     } catch (error) {
       console.error("خطأ في تسجيل الدخول بالإيميل", error);
@@ -120,9 +125,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const createDepartmentAccount = async (email, password, accountType, department = null, governorate = null) => {
+  // إنشاء حساب قسم/محافظة
+  const createDepartmentAccount = async (
+    email,
+    password,
+    accountType,
+    department = null,
+    governorate = null
+  ) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
 
       await addDoc(collection(db, "departmentAccounts"), {
@@ -131,7 +147,7 @@ export const AuthProvider = ({ children }) => {
         accountType,
         department: accountType === "department" ? department : null,
         governorate: accountType === "governorate" ? governorate : null,
-        createdAt: new Date()
+        createdAt: new Date(),
       });
 
       return user;
@@ -141,6 +157,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // تسجيل الخروج
   const logout = async () => {
     await signOut(auth);
     setUserData(null);
@@ -155,7 +172,7 @@ export const AuthProvider = ({ children }) => {
     createDepartmentAccount,
     isAdmin: userData?.role === "admin",
     isDepartment: userData?.accountType === "department",
-    isGovernorate: userData?.accountType === "governorate"
+    isGovernorate: userData?.accountType === "governorate",
   };
 
   return (
