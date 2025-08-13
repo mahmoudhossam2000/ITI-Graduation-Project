@@ -41,206 +41,54 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 // حدود المحافظات المصرية (إحداثيات تقريبية)
 const governorateBounds = {
-  القاهرة: {
-    minLat: 29.8,
-    maxLat: 30.2,
-    minLng: 31.0,
-    maxLng: 31.5,
-  },
-  الجيزة: {
-    minLat: 29.5,
-    maxLat: 30.2,
-    minLng: 30.8,
-    maxLng: 31.5,
-  },
-  الإسكندرية: {
-    minLat: 31.0,
-    maxLat: 31.4,
-    minLng: 29.8,
-    maxLng: 30.2,
-  },
-  الدقهلية: {
-    minLat: 30.9,
-    maxLat: 31.5,
-    minLng: 31.2,
-    maxLng: 31.8,
-  },
-  البحيرة: {
-    minLat: 30.5,
-    maxLat: 31.2,
-    minLng: 29.9,
-    maxLng: 30.7,
-  },
-  الفيوم: {
-    minLat: 29.0,
-    maxLat: 29.6,
-    minLng: 30.3,
-    maxLng: 31.0,
-  },
-  الغربية: {
-    minLat: 30.7,
-    maxLat: 31.2,
-    minLng: 30.9,
-    maxLng: 31.4,
-  },
-  الإسماعيلية: {
-    minLat: 30.5,
-    maxLat: 30.8,
-    minLng: 32.0,
-    maxLng: 32.5,
-  },
-  المنوفية: {
-    minLat: 30.3,
-    maxLat: 30.7,
-    minLng: 30.7,
-    maxLng: 31.2,
-  },
-  المنيا: {
-    minLat: 27.8,
-    maxLat: 28.6,
-    minLng: 30.4,
-    maxLng: 31.0,
-  },
-  القليوبية: {
-    minLat: 30.1,
-    maxLat: 30.5,
-    minLng: 31.0,
-    maxLng: 31.5,
-  },
-  "الوادي الجديد": {
-    minLat: 22.0,
-    maxLat: 26.0,
-    minLng: 27.0,
-    maxLng: 30.5,
-  },
-  السويس: {
-    minLat: 29.9,
-    maxLat: 30.1,
-    minLng: 32.4,
-    maxLng: 32.6,
-  },
-  أسوان: {
-    minLat: 23.5,
-    maxLat: 24.5,
-    minLng: 32.5,
-    maxLng: 33.0,
-  },
-  أسيوط: {
-    minLat: 26.8,
-    maxLat: 27.6,
-    minLng: 30.6,
-    maxLng: 31.4,
-  },
-  "بني سويف": {
-    minLat: 28.8,
-    maxLat: 29.4,
-    minLng: 30.6,
-    maxLng: 31.3,
-  },
-  بورسعيد: {
-    minLat: 31.2,
-    maxLat: 31.3,
-    minLng: 32.2,
-    maxLng: 32.4,
-  },
-  دمياط: {
-    minLat: 31.3,
-    maxLat: 31.6,
-    minLng: 31.6,
-    maxLng: 32.0,
-  },
-  "جنوب سيناء": {
-    minLat: 27.5,
-    maxLat: 29.5,
-    minLng: 33.0,
-    maxLng: 34.5,
-  },
-  "كفر الشيخ": {
-    minLat: 31.0,
-    maxLat: 31.5,
-    minLng: 30.5,
-    maxLng: 31.2,
-  },
-  مطروح: {
-    minLat: 29.0,
-    maxLat: 32.0,
-    minLng: 25.0,
-    maxLng: 29.5,
-  },
-  الأقصر: {
-    minLat: 25.5,
-    maxLat: 26.0,
-    minLng: 32.5,
-    maxLng: 33.0,
-  },
-  قنا: {
-    minLat: 25.7,
-    maxLat: 26.5,
-    minLng: 32.5,
-    maxLng: 33.0,
-  },
-  "شمال سيناء": {
-    minLat: 30.0,
-    maxLat: 31.5,
-    minLng: 32.5,
-    maxLng: 34.5,
-  },
-  سوهاج: {
-    minLat: 26.2,
-    maxLat: 27.0,
-    minLng: 31.5,
-    maxLng: 32.0,
-  },
-  "البحر الأحمر": {
-    minLat: 23.0,
-    maxLat: 27.5,
-    minLng: 33.0,
-    maxLng: 36.0,
-  },
-  الشرقية: {
-    minLat: 30.5,
-    maxLat: 31.0,
-    minLng: 31.3,
-    maxLng: 32.0,
-  },
+  // ... (ابقى نفس كود حدود المحافظات كما هو)
 };
 
-function LocationPicker({ setFieldValue, governorateBounds, initialPosition }) {
+function LocationPicker({
+  setFieldValue,
+  governorateBounds,
+  initialPosition,
+  currentLocation,
+  selectedGovernorate
+}) {
   const [position, setPosition] = useState(initialPosition || null);
   const map = useMap();
 
   useEffect(() => {
-    if (initialPosition) {
-      setPosition(initialPosition);
-      map.setView(initialPosition, 15);
-    } else if (governorateBounds) {
-      map.fitBounds(
-        [
-          [governorateBounds.minLat, governorateBounds.minLng],
-          [governorateBounds.maxLat, governorateBounds.maxLng],
-        ],
-        { padding: [50, 50] }
-      );
+    if (currentLocation) {
+      const [lat, lng] = currentLocation.split(",").map(Number);
+      const newPosition = { lat, lng };
+      setPosition(newPosition);
+      map.setView(newPosition, 15);
+    } else if (governorateBounds && selectedGovernorate) {
+      const bounds = governorateBounds[selectedGovernorate];
+      if (bounds) {
+        const centerLat = (bounds.minLat + bounds.maxLat) / 2;
+        const centerLng = (bounds.minLng + bounds.maxLng) / 2;
+        map.setView([centerLat, centerLng], 10);
+      }
     } else {
-      map.setView([30.0444, 31.2357], 7); // عرض مصر بالكامل إذا لم يتم تحديد محافظة
+      map.setView([30.0444, 31.2357], 7);
     }
-  }, [governorateBounds, map, initialPosition]);
+  }, [governorateBounds, map, currentLocation, selectedGovernorate]);
 
   useMapEvents({
     click(e) {
-      if (governorateBounds) {
-        const { lat, lng } = e.latlng;
-        // التحقق مما إذا كان النقاط داخل حدود المحافظة
-        if (
-          lat >= governorateBounds.minLat &&
-          lat <= governorateBounds.maxLat &&
-          lng >= governorateBounds.minLng &&
-          lng <= governorateBounds.maxLng
-        ) {
-          setPosition(e.latlng);
-          setFieldValue("location", `${lat},${lng}`);
-        } else {
-          toast.error("الموقع خارج حدود المحافظة المحددة");
+      if (governorateBounds && selectedGovernorate) {
+        const bounds = governorateBounds[selectedGovernorate];
+        if (bounds) {
+          const { lat, lng } = e.latlng;
+          if (
+            lat >= bounds.minLat &&
+            lat <= bounds.maxLat &&
+            lng >= bounds.minLng &&
+            lng <= bounds.maxLng
+          ) {
+            setPosition(e.latlng);
+            setFieldValue("location", `${lat},${lng}`);
+          } else {
+            toast.error("الموقع خارج حدود المحافظة المحددة");
+          }
         }
       } else {
         setPosition(e.latlng);
@@ -534,7 +382,11 @@ export default function EditComplaintModal({
       formik.values.governorate &&
       governorateBounds[formik.values.governorate]
     ) {
-      formik.setFieldValue("location", ""); // مسح الموقع عند تغيير المحافظة
+      // لا تقم بمسح الموقع إلا إذا كانت المحافظة مختلفة عن القيمة الأصلية
+      if (formik.values.governorate !== complaintData?.governorate) {
+        formik.setFieldValue("location", "");
+        setPosition(null);
+      }
     }
   }, [formik.values.governorate]);
 
@@ -544,12 +396,10 @@ export default function EditComplaintModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-md shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6 border-b pb-4">
-            <h2 className="text-2xl font-bold text-darkTeal">
-              تعديل الشكوى
-            </h2>
+            <h2 className="text-2xl font-bold text-darkTeal">تعديل الشكوى</h2>
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700 transition duration-200">
@@ -561,22 +411,22 @@ export default function EditComplaintModal({
             {/* معلومات المستخدم (غير قابلة للتعديل) */}
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <h3 className="text-lg font-medium text-gray-700 mb-3">
-                معلومات المستخدم
+                معلومات صاحب الشكوي
               </h3>
-              
+
               {/* الاسم */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-500 mb-1 flex items-center">
+                <label className="block text-base font-medium text-gray-500 mb-1 flex items-center">
                   <FaUser className="ml-2" /> الاسم
                 </label>
                 <div className="w-full bg-gray-100 px-4 py-2 rounded-lg text-gray-700">
                   {formik.values.name}
                 </div>
               </div>
-              
+
               {/* البريد الإلكتروني */}
               <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1 flex items-center">
+                <label className="block text-base font-medium text-gray-500 mb-1 flex items-center">
                   <FaEnvelope className="ml-2" /> البريد الإلكتروني
                 </label>
                 <div className="w-full bg-gray-100 px-4 py-2 rounded-lg text-gray-700">
@@ -589,7 +439,7 @@ export default function EditComplaintModal({
             <div>
               <label
                 htmlFor="governorate"
-                className="block text-sm font-medium text-gray-700 mb-1">
+                className="block text-base font-medium text-gray-700 mb-1 ">
                 المحافظة
               </label>
               <select
@@ -603,14 +453,42 @@ export default function EditComplaintModal({
                 value={formik.values.governorate}
                 className="w-full bg-background px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200">
                 <option value="">اختر المحافظة</option>
-                {Object.keys(governorateBounds).map((gov) => (
+                {[
+                  "القاهرة",
+                  "الجيزة",
+                  "الإسكندرية",
+                  "الدقهلية",
+                  "الشرقية",
+                  "القليوبية",
+                  "الغربية",
+                  "المنوفية",
+                  "البحيرة",
+                  "كفر الشيخ",
+                  "دمياط",
+                  "بورسعيد",
+                  "الإسماعيلية",
+                  "السويس",
+                  "شمال سيناء",
+                  "جنوب سيناء",
+                  "بني سويف",
+                  "الفيوم",
+                  "المنيا",
+                  "أسيوط",
+                  "سوهاج",
+                  "قنا",
+                  "الأقصر",
+                  "أسوان",
+                  "الوادي الجديد",
+                  "مطروح",
+                  "البحر الأحمر",
+                ].map((gov) => (
                   <option key={gov} value={gov}>
                     {gov}
                   </option>
                 ))}
               </select>
               {formik.touched.governorate && formik.errors.governorate ? (
-                <div className="text-red-500 text-sm mt-1">
+                <div className="text-red-500 text-base mt-1">
                   {formik.errors.governorate}
                 </div>
               ) : null}
@@ -620,7 +498,7 @@ export default function EditComplaintModal({
             <div>
               <label
                 htmlFor="administration"
-                className="block text-sm font-medium text-gray-700 mb-1">
+                className="block text-base font-medium text-gray-700 mb-1">
                 الإدارة المختصة
               </label>
               <select
@@ -639,7 +517,7 @@ export default function EditComplaintModal({
                 ))}
               </select>
               {formik.touched.administration && formik.errors.administration ? (
-                <div className="text-red-500 text-sm mt-1">
+                <div className="text-red-500 text-base mt-1">
                   {formik.errors.administration}
                 </div>
               ) : null}
@@ -649,7 +527,7 @@ export default function EditComplaintModal({
             <div>
               <label
                 htmlFor="description"
-                className="block text-sm font-medium text-gray-700 mb-1">
+                className="block text-base font-medium text-gray-700 mb-1">
                 وصف الشكوى
               </label>
               <textarea
@@ -661,7 +539,7 @@ export default function EditComplaintModal({
                 value={formik.values.description}
                 className="w-full bg-background px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"></textarea>
               {formik.touched.description && formik.errors.description ? (
-                <div className="text-red-500 text-sm mt-1">
+                <div className="text-red-500 text-base mt-1">
                   {formik.errors.description}
                 </div>
               ) : null}
@@ -669,7 +547,7 @@ export default function EditComplaintModal({
 
             {/* الصور */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-base font-medium text-gray-700 mb-1">
                 الصور المرفقة
               </label>
               <div className="flex flex-wrap gap-3 mb-3">
@@ -692,7 +570,7 @@ export default function EditComplaintModal({
               <label className="flex flex-col items-center justify-center w-full p-4 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-200">
                 <div className="flex flex-col items-center">
                   <FaUpload className="text-gray-400 mb-2 text-xl" />
-                  <p className="text-sm text-gray-500">اضغط لرفع الصور</p>
+                  <p className="text-xs text-gray-500">اضغط لرفع الصور</p>
                   <p className="text-xs text-gray-400 mt-1">
                     (JPEG, PNG بحد أقصى 2MB لكل صورة)
                   </p>
@@ -711,14 +589,13 @@ export default function EditComplaintModal({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 الفيديو المرفق
-                
               </label>
               {videoPreview || videoUrl ? (
                 <div className="relative group">
                   <video
                     controls
                     src={videoPreview || videoUrl}
-                    className="w-full h-48 object-cover rounded-lg bg-black"
+                    className="w-full h-80 object-contain rounded-lg bg-black"
                   />
                   <button
                     type="button"
@@ -728,7 +605,7 @@ export default function EditComplaintModal({
                   </button>
                 </div>
               ) : (
-                <label className="flex flex-col items-center justify-center w-full p-4 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-200">
+                <label className=" flex flex-col items-center justify-center w-full p-4 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-200">
                   <div className="flex flex-col items-center">
                     <FaUpload className="text-gray-400 mb-2 text-xl" />
                     <p className="text-sm text-gray-500">اضغط لرفع فيديو</p>
@@ -756,6 +633,7 @@ export default function EditComplaintModal({
               </label>
               <div className="h-64 rounded-lg overflow-hidden border border-gray-300 shadow-sm">
                 <MapContainer
+                  key={formik.values.governorate}
                   center={position || [30.0444, 31.2357]}
                   zoom={7}
                   style={{ height: "100%", width: "100%" }}>
@@ -771,6 +649,7 @@ export default function EditComplaintModal({
                         : null
                     }
                     initialPosition={position}
+                    currentLocation={formik.values.location}
                   />
                 </MapContainer>
               </div>
@@ -794,9 +673,7 @@ export default function EditComplaintModal({
                 disabled={formik.isSubmitting || isUploadingVideo}
                 className="bg-blue hover:bg-darkTeal text-white font-medium py-2 px-6 rounded-lg transition duration-200 flex items-center justify-center disabled:opacity-70">
                 {formik.isSubmitting || isUploadingVideo ? (
-                  <>
-                    جاري الحفظ...
-                  </>
+                  <>جاري الحفظ...</>
                 ) : (
                   "حفظ التغييرات"
                 )}

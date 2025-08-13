@@ -21,7 +21,6 @@ import {
   FaUpload,
   FaTimes,
 } from "react-icons/fa";
-
 import {
   MapContainer,
   TileLayer,
@@ -60,7 +59,156 @@ const governorateBounds = {
     minLng: 30.8,
     maxLng: 31.5,
   },
-  // ... (keep the rest of your governorate bounds)
+  الإسكندرية: {
+    minLat: 31.0,
+    maxLat: 31.4,
+    minLng: 29.8,
+    maxLng: 30.2,
+  },
+  الدقهلية: {
+    minLat: 30.9,
+    maxLat: 31.5,
+    minLng: 31.2,
+    maxLng: 31.8,
+  },
+  البحيرة: {
+    minLat: 30.5,
+    maxLat: 31.2,
+    minLng: 29.9,
+    maxLng: 30.7,
+  },
+  الفيوم: {
+    minLat: 29.0,
+    maxLat: 29.6,
+    minLng: 30.3,
+    maxLng: 31.0,
+  },
+  الغربية: {
+    minLat: 30.7,
+    maxLat: 31.2,
+    minLng: 30.9,
+    maxLng: 31.4,
+  },
+  الإسماعيلية: {
+    minLat: 30.5,
+    maxLat: 30.8,
+    minLng: 32.0,
+    maxLng: 32.5,
+  },
+  المنوفية: {
+    minLat: 30.3,
+    maxLat: 30.7,
+    minLng: 30.7,
+    maxLng: 31.2,
+  },
+  المنيا: {
+    minLat: 27.8,
+    maxLat: 28.6,
+    minLng: 30.4,
+    maxLng: 31.0,
+  },
+  القليوبية: {
+    minLat: 30.1,
+    maxLat: 30.5,
+    minLng: 31.0,
+    maxLng: 31.5,
+  },
+  "الوادي الجديد": {
+    minLat: 22.0,
+    maxLat: 26.0,
+    minLng: 27.0,
+    maxLng: 30.5,
+  },
+  السويس: {
+    minLat: 29.9,
+    maxLat: 30.1,
+    minLng: 32.4,
+    maxLng: 32.6,
+  },
+  أسوان: {
+    minLat: 23.5,
+    maxLat: 24.5,
+    minLng: 32.5,
+    maxLng: 33.0,
+  },
+  أسيوط: {
+    minLat: 26.8,
+    maxLat: 27.6,
+    minLng: 30.6,
+    maxLng: 31.4,
+  },
+  "بني سويف": {
+    minLat: 28.8,
+    maxLat: 29.4,
+    minLng: 30.6,
+    maxLng: 31.3,
+  },
+  بورسعيد: {
+    minLat: 31.2,
+    maxLat: 31.3,
+    minLng: 32.2,
+    maxLng: 32.4,
+  },
+  دمياط: {
+    minLat: 31.3,
+    maxLat: 31.6,
+    minLng: 31.6,
+    maxLng: 32.0,
+  },
+  "جنوب سيناء": {
+    minLat: 27.5,
+    maxLat: 29.5,
+    minLng: 33.0,
+    maxLng: 34.5,
+  },
+  "كفر الشيخ": {
+    minLat: 31.0,
+    maxLat: 31.5,
+    minLng: 30.5,
+    maxLng: 31.2,
+  },
+  مطروح: {
+    minLat: 29.0,
+    maxLat: 32.0,
+    minLng: 25.0,
+    maxLng: 29.5,
+  },
+  الأقصر: {
+    minLat: 25.5,
+    maxLat: 26.0,
+    minLng: 32.5,
+    maxLng: 33.0,
+  },
+  قنا: {
+    minLat: 25.7,
+    maxLat: 26.5,
+    minLng: 32.5,
+    maxLng: 33.0,
+  },
+  "شمال سيناء": {
+    minLat: 30.0,
+    maxLat: 31.5,
+    minLng: 32.5,
+    maxLng: 34.5,
+  },
+  سوهاج: {
+    minLat: 26.2,
+    maxLat: 27.0,
+    minLng: 31.5,
+    maxLng: 32.0,
+  },
+  "البحر الأحمر": {
+    minLat: 23.0,
+    maxLat: 27.5,
+    minLng: 33.0,
+    maxLng: 36.0,
+  },
+  الشرقية: {
+    minLat: 30.5,
+    maxLat: 31.0,
+    minLng: 31.3,
+    maxLng: 32.0,
+  },
 };
 
 function LocationPicker({ setFieldValue, governorateBounds }) {
@@ -238,6 +386,33 @@ function ComplaintForm() {
   const [videoUrl, setVideoUrl] = useState("");
   const [user, setUser] = useState(null);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [position, setPosition] = useState(null);
+  const [departments, setDepartments] = useState([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(false);
+
+  // قائمة الإدارات الثابتة كخيار احتياطي
+  const staticDepartments = [
+    "إدارة الكهرباء والطاقة",
+    "إدارة الغاز الطبيعي",
+    "إدارة الطرق والكباري",
+    "إدارة المرور",
+    "إدارة النقل والمواصلات العامة",
+    "مديرية الصحة",
+    "إدارة البيئة ومكافحة التلوث",
+    "مديرية التربية والتعليم",
+    "مديرية الإسكان والمرافق",
+    "إدارة التخطيط العمراني",
+    "إدارة الأراضي وأملاك الدولة",
+    "مديرية الأمن",
+    "إدارة الدفاع المدني والحريق",
+    "إدارة التموين والتجارة الداخلية",
+    "إدارة حماية المستهلك",
+    "إدارة الزراعة",
+    "إدارة الري والموارد المائية",
+    "إدارة الشباب والرياضة",
+    "إدارة الثقافة",
+    "إدارة السياحة والآثار",
+  ];
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -259,8 +434,52 @@ function ComplaintForm() {
         });
       }
     });
+
+    // تهيئة الإدارات بالقائمة الثابتة عند تحميل المكون
+    setDepartments(staticDepartments);
+
     return () => unsubscribe();
   }, []);
+
+  // دالة لجلب الإدارات حسب المحافظة
+  const fetchDepartmentsByGovernorate = async (governorate) => {
+    if (!governorate) {
+      setDepartments([]);
+      return;
+    }
+
+    try {
+      setLoadingDepartments(true);
+      const deptQuery = query(
+        collection(db, "departmentAccounts"),
+        where("accountType", "==", "department"),
+        where("governorate", "==", governorate)
+      );
+      const querySnapshot = await getDocs(deptQuery);
+
+      const deptList = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.department) {
+          deptList.push(data.department);
+        }
+      });
+
+      // إذا لم يتم العثور على إدارات في Firestore، استخدم القائمة الثابتة
+      if (deptList.length === 0) {
+        setDepartments(staticDepartments);
+      } else {
+        setDepartments(deptList);
+      }
+    } catch (error) {
+      console.error("Error fetching departments:", error);
+      // في حالة الخطأ، استخدم القائمة الثابتة
+      setDepartments(staticDepartments);
+      toast.error("حدث خطأ أثناء جلب الإدارات، سيتم عرض القائمة الافتراضية");
+    } finally {
+      setLoadingDepartments(false);
+    }
+  };
 
   const uploadVideoToCloudinary = async (file) => {
     setIsUploadingVideo(true);
@@ -363,7 +582,8 @@ function ComplaintForm() {
           governorate: values.governorate,
           administration: values.administration,
           description: values.description,
-          imagesBase64: values.imagesBase64.length > 0 ? values.imagesBase64 : null,
+          imagesBase64:
+            values.imagesBase64.length > 0 ? values.imagesBase64 : null,
           createdAt: new Date(),
           status: "قيد المعالجة",
           complaintId: complaintId,
@@ -522,6 +742,7 @@ function ComplaintForm() {
 
               {/* الصف الثاني: المحافظة والاداره */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* المحافظة*/}
                 <div>
                   <label
                     htmlFor="governorate"
@@ -531,7 +752,11 @@ function ComplaintForm() {
                   <select
                     id="governorate"
                     name="governorate"
-                    onChange={formik.handleChange}
+                    onChange={(e) => {
+                      formik.handleChange(e);
+                      fetchDepartmentsByGovernorate(e.target.value);
+                      formik.setFieldValue("administration", ""); // إعادة تعيين الإدارة
+                    }}
                     onBlur={formik.handleBlur}
                     value={formik.values.governorate}
                     className={`bg-background w-full px-4 py-3 rounded-lg border ${
@@ -540,17 +765,51 @@ function ComplaintForm() {
                         : "border-gray-300"
                     } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}>
                     <option value="">اختر المحافظة</option>
-                    {Object.keys(governorateBounds).map((gov) => (
+                    {[
+                      "القاهرة",
+                      "الجيزة",
+                      "الإسكندرية",
+                      "الدقهلية",
+                      "الشرقية",
+                      "القليوبية",
+                      "الغربية",
+                      "المنوفية",
+                      "البحيرة",
+                      "كفر الشيخ",
+                      "دمياط",
+                      "بورسعيد",
+                      "الإسماعيلية",
+                      "السويس",
+                      "شمال سيناء",
+                      "جنوب سيناء",
+                      "بني سويف",
+                      "الفيوم",
+                      "المنيا",
+                      "أسيوط",
+                      "سوهاج",
+                      "قنا",
+                      "الأقصر",
+                      "أسوان",
+                      "الوادي الجديد",
+                      "مطروح",
+                      "البحر الأحمر",
+                    ].map((gov) => (
                       <option key={gov} value={gov}>
                         {gov}
                       </option>
                     ))}
                   </select>
+                  {formik.touched.governorate && formik.errors.governorate && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {formik.errors.governorate}
+                    </p>
+                  )}
                 </div>
 
+                {/* الإدارة المختصة */}
                 <div>
                   <label className="block font-medium text-blue mb-1">
-                    اختر الإدارة المختصة
+                    اختر الإدارة المختصة <span className="text-red-500">*</span>
                   </label>
                   <select
                     id="administration"
@@ -558,35 +817,31 @@ function ComplaintForm() {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     value={formik.values.administration}
-                    className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue">
-                    <option disabled value="">
-                      اختر الإدارة المختصة
+                    disabled={loadingDepartments}
+                    className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue disabled:bg-gray-100 disabled:cursor-not-allowed">
+                    <option value="">
+                      {loadingDepartments
+                        ? "جاري تحميل الإدارات..."
+                        : "اختر الإدارة المختصة"}
                     </option>
-                    {[
-                      "إدارة الكهرباء والطاقة",
-                      "إدارة الغاز الطبيعي",
-                      "إدارة الطرق والكباري",
-                      "إدارة المرور",
-                      "إدارة النقل والمواصلات العامة",
-                      "مديرية الصحة",
-                      "إدارة البيئة ومكافحة التلوث",
-                      "مديرية التربية والتعليم",
-                      "مديرية الإسكان والمرافق",
-                      "إدارة التخطيط العمراني",
-                      "إدارة الأراضي وأملاك الدولة",
-                      "مديرية الأمن",
-                      "إدارة الدفاع المدني والحريق",
-                      "إدارة التموين والتجارة الداخلية",
-                      "إدارة حماية المستهلك",
-                      "إدارة الزراعة",
-                      "إدارة الري والموارد المائية",
-                      "إدارة الشباب والرياضة",
-                      "إدارة الثقافة",
-                      "إدارة السياحة والآثار",
-                    ].map((admin) => (
-                      <option key={admin}>{admin}</option>
+                    {departments.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
                     ))}
                   </select>
+                  {!formik.values.governorate && (
+                    <p className="mt-1 text-sm text-orange-600">
+                      ملاحظة: يرجى اختيار المحافظة أولاً لضمان عرض الإدارات
+                      المناسبة
+                    </p>
+                  )}
+                  {formik.touched.administration &&
+                    formik.errors.administration && (
+                      <div className="text-red-500 text-sm">
+                        {formik.errors.administration}
+                      </div>
+                    )}
                 </div>
               </div>
 
@@ -629,7 +884,6 @@ function ComplaintForm() {
                     zoom={7}
                     style={{ height: "300px", width: "100%" }}
                     className="z-0"
-                    maxBoundsViscosity={1.0} // تمنع الخروج من الحدود
                     maxBounds={
                       formik.values.governorate &&
                       governorateBounds[formik.values.governorate]
@@ -649,6 +903,7 @@ function ComplaintForm() {
                           ]
                         : undefined
                     }
+                    maxBoundsViscosity={1.0} // تمنع الخروج من الحدود
                   >
                     <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -692,7 +947,7 @@ function ComplaintForm() {
                     className="flex flex-col items-center justify-center w-full md:w-1/2 p-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-300">
                     <FaUpload className="text-gray-400 text-2xl mb-2" />
                     <p className="mb-2 text-sm text-gray-500">
-                      <span className="font-semibold">اضغط لرفع صورة</span> 
+                      <span className="font-semibold">اضغط لرفع صورة</span>
                     </p>
                     <p className="text-xs text-gray-500">
                       الصور فقط (بحد أقصى 2MB)
@@ -713,7 +968,7 @@ function ComplaintForm() {
                     className="flex flex-col items-center justify-center w-full md:w-1/2 p-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-300">
                     <FaUpload className="text-gray-400 text-2xl mb-2" />
                     <p className="mb-2 text-sm text-gray-500">
-                      <span className="font-semibold">اضغط لرفع فيديو</span> 
+                      <span className="font-semibold">اضغط لرفع فيديو</span>
                     </p>
                     <p className="text-xs text-gray-500">بحد أقصى 20MB</p>
                     <input
