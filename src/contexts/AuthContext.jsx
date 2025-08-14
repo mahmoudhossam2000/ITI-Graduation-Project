@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [preventNavigation, setPreventNavigation] = useState(false);
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const [adminCredentials, setAdminCredentials] = useState(null);
 
   useEffect(() => {
     console.log("Setting up auth state listener");
@@ -243,6 +244,16 @@ export const AuthProvider = ({ children }) => {
         password
       );
 
+      // Store admin credentials temporarily for re-authentication
+      // Only store if this is an admin user
+      const userRef = doc(db, "users", userCredential.user.uid);
+      const userSnap = await getDoc(userRef);
+      
+      if (userSnap.exists() && userSnap.data().role === "admin") {
+        setAdminCredentials({ email, password });
+        console.log("Stored admin credentials for re-authentication");
+      }
+
       console.log("Login successful, user:", userCredential.user.uid);
       console.log("User credential:", userCredential);
       console.log("=== LOGIN WITH EMAIL END ===");
@@ -307,12 +318,16 @@ export const AuthProvider = ({ children }) => {
       });
       console.log("Saved account data to Firestore");
 
-      // Sign out the newly created user immediately to return to admin session
-      await signOut(auth);
-      console.log("Signed out newly created user");
-
-      // Wait a moment for the signOut to complete
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Sign back in as admin if we have admin credentials
+      if (adminCredentials) {
+        console.log("Signing back in as admin");
+        await signInWithEmailAndPassword(
+          auth,
+          adminCredentials.email,
+          adminCredentials.password
+        );
+        console.log("Successfully signed back in as admin");
+      }
 
       // Reset the flag after account creation is complete
       setIsCreatingAccount(false);
@@ -372,12 +387,16 @@ export const AuthProvider = ({ children }) => {
       });
       console.log("Saved ministry account data to Firestore");
 
-      // Sign out the newly created user immediately to return to admin session
-      await signOut(auth);
-      console.log("Signed out newly created user");
-
-      // Wait a moment for the signOut to complete
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Sign back in as admin if we have admin credentials
+      if (adminCredentials) {
+        console.log("Signing back in as admin");
+        await signInWithEmailAndPassword(
+          auth,
+          adminCredentials.email,
+          adminCredentials.password
+        );
+        console.log("Successfully signed back in as admin");
+      }
 
       // Reset the flag after account creation is complete
       setIsCreatingAccount(false);
@@ -441,12 +460,16 @@ export const AuthProvider = ({ children }) => {
       });
       console.log("Saved governorate account data to Firestore");
 
-      // Sign out the newly created user immediately to return to admin session
-      await signOut(auth);
-      console.log("Signed out newly created user");
-
-      // Wait a moment for the signOut to complete
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Sign back in as admin if we have admin credentials
+      if (adminCredentials) {
+        console.log("Signing back in as admin");
+        await signInWithEmailAndPassword(
+          auth,
+          adminCredentials.email,
+          adminCredentials.password
+        );
+        console.log("Successfully signed back in as admin");
+      }
 
       // Reset the flag after account creation is complete
       setIsCreatingAccount(false);
@@ -604,7 +627,9 @@ export const AuthProvider = ({ children }) => {
     console.log("User signed out from Firebase");
     setCurrentUser(null);
     setUserData(null);
-    console.log("State cleared after logout");
+    // Clear admin credentials on logout
+    setAdminCredentials(null);
+    console.log("State cleared after logout and admin credentials cleared");
   };
 
   const value = {

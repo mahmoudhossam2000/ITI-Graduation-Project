@@ -8,6 +8,7 @@ import {
   doc,
   orderBy,
 } from "firebase/firestore";
+import { updateComplaintStatus as updateComplaintStatusService } from "../services/complaintsService";
 import { db } from "../../firebase/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import { toast } from "react-toastify";
@@ -33,6 +34,23 @@ import {
   FaArrowRight,
   FaCog,
 } from "react-icons/fa";
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Fix for default markers in react-leaflet
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
+
+const DefaultIcon = L.icon({
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+L.Marker.prototype.options.icon = DefaultIcon;
 
 const DepartmentDashboard = () => {
   const { userData } = useAuth();
@@ -187,23 +205,47 @@ const DepartmentDashboard = () => {
   const updateComplaintStatus = async (complaintId, status) => {
     try {
       setUpdatingStatus(true);
+
+      // Use the service that creates notifications
+      const result = await updateComplaintStatusService(complaintId, status);
+
+      if (!result.success) {
+        throw new Error(result.error || "فشل تحديث حالة الشكوى");
+      }
+
+      // Update additional local information
       const complaintRef = doc(db, "complaints", complaintId);
       await updateDoc(complaintRef, {
-        status,
-        updatedAt: new Date(),
         updatedBy: userData.email,
+        updatedAt: new Date(),
       });
 
-      toast.success("تم تحديث حالة الشكوى بنجاح");
-      fetchComplaints();
+      // Update the local state
+      setComplaints((prev) =>
+        prev.map((c) =>
+          c.id === complaintId ? { ...c, status, updatedAt: new Date() } : c
+        )
+      );
+
+      setFilteredComplaints((prev) =>
+        prev.map((c) =>
+          c.id === complaintId ? { ...c, status, updatedAt: new Date() } : c
+        )
+      );
 
       // Update the selected complaint if it's open
       if (selectedComplaint && selectedComplaint.id === complaintId) {
-        setSelectedComplaint((prev) => ({ ...prev, status }));
+        setSelectedComplaint((prev) => ({
+          ...prev,
+          status,
+          updatedAt: new Date(),
+        }));
       }
+
+      toast.success(`تم تحديث حالة الشكوى إلى: ${status}`);
     } catch (error) {
       console.error("Error updating complaint status:", error);
-      toast.error("حدث خطأ أثناء تحديث حالة الشكوى");
+      toast.error(`خطأ في تحديث حالة الشكوى: ${error.message}`);
     } finally {
       setUpdatingStatus(false);
     }
@@ -270,13 +312,11 @@ const DepartmentDashboard = () => {
     const pending = complaints.filter(
       (c) => c.status === "قيد المعالجة"
     ).length;
-    const resolved = complaints.filter(
-      (c) => c.status === "تمت المعالجة"
-    ).length;
+    const resolved = complaints.filter((c) => c.status === "تم الحل").length;
     const rejected = complaints.filter((c) => c.status === "مرفوضة").length;
-    const transferred = complaints.filter((c) => c.status === "محولة").length;
+    const runing = complaints.filter((c) => c.status === "جارى الحل").length;
 
-    return { total, pending, resolved, rejected, transferred };
+    return { total, pending, resolved, rejected, runing };
   };
 
   const stats = getStatistics();
@@ -317,6 +357,18 @@ const DepartmentDashboard = () => {
         </div>
       </div>
 
+      <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-400">
+        <div className="flex items-center">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <FaExchangeAlt className="h-6 w-6 text-blue-600" />
+          </div>
+          <div className="mr-4">
+            <p className="text-sm font-medium text-gray-600">جاري الحل</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.runing}</p>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
         <div className="flex items-center">
           <div className="p-2 bg-green-100 rounded-lg">
@@ -337,20 +389,6 @@ const DepartmentDashboard = () => {
           <div className="mr-4">
             <p className="text-sm font-medium text-gray-600">مرفوضة</p>
             <p className="text-2xl font-bold text-gray-900">{stats.rejected}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-400">
-        <div className="flex items-center">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <FaExchangeAlt className="h-6 w-6 text-blue-600" />
-          </div>
-          <div className="mr-4">
-            <p className="text-sm font-medium text-gray-600">محولة</p>
-            <p className="text-2xl font-bold text-gray-900">
-              {stats.transferred}
-            </p>
           </div>
         </div>
       </div>
@@ -694,32 +732,57 @@ const DepartmentDashboard = () => {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
+                {/* Location Section - Full Width */}
+                <div className="bg-gray-50 rounded-lg p-4 lg:col-span-2">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <FaMapMarkedAlt className="ml-2 text-purple-600" />
+                    <FaMapMarkerAlt className="ml-2 text-red-600" />
                     الموقع
                   </h3>
                   {selectedComplaint.location ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <span className="font-medium text-gray-700 ml-2">
-                          الإحداثيات:
-                        </span>
-                        <span className="text-gray-900 font-mono text-sm">
-                          {selectedComplaint.location}
-                        </span>
-                      </div>
-                      <div className="bg-gray-200 rounded-lg p-3 text-center">
+                    <div className="w-full h-80 rounded-lg overflow-hidden border border-gray-300 shadow-md">
+                      {(() => {
+                        const [lat, lng] = selectedComplaint.location
+                          .split(",")
+                          .map((coord) => parseFloat(coord.trim()));
+                        if (!isNaN(lat) && !isNaN(lng)) {
+                          return (
+                            <MapContainer
+                              center={[lat, lng]}
+                              zoom={16}
+                              style={{ height: "100%", width: "100%" }}
+                              scrollWheelZoom={true}
+                              zoomControl={true}
+                            >
+                              <TileLayer
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                              />
+                              <Marker position={[lat, lng]} />
+                            </MapContainer>
+                          );
+                        } else {
+                          return (
+                            <div className="bg-gray-200 rounded-lg p-3 text-center h-full flex items-center justify-center">
+                              <div>
+                                <FaMapMarkerAlt className="text-2xl text-gray-600 mx-auto mb-2" />
+                                <p className="text-sm text-gray-600">
+                                  إحداثيات غير صالحة
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        }
+                      })()}
+                    </div>
+                  ) : (
+                    <div className="bg-gray-200 rounded-lg p-3 text-center h-32 flex items-center justify-center">
+                      <div>
                         <FaMapMarkerAlt className="text-2xl text-gray-600 mx-auto mb-2" />
                         <p className="text-sm text-gray-600">
-                          تم تحديد الموقع على الخريطة
+                          لم يتم تحديد موقع
                         </p>
                       </div>
                     </div>
-                  ) : (
-                    <p className="text-gray-500 text-center">
-                      لم يتم تحديد موقع
-                    </p>
                   )}
                 </div>
               </div>

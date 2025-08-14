@@ -1,16 +1,33 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useState } from "react";
 import { updateComplaintStatus } from "../../services/complaintsService";
+import { toast } from "react-toastify";
 
 const ComplainAction = forwardRef(({ complaint, onStatusChange }, ref) => {
+  const [isUpdating, setIsUpdating] = useState(false);
+
   if (!complaint) return null;
 
   const handleStatusChange = async (newStatus) => {
+    if (isUpdating) return;
+
+    setIsUpdating(true);
     try {
-      await updateComplaintStatus(complaint.id, newStatus);
-      onStatusChange(complaint.id, newStatus); // تحديث الـ state في الجدول
-      ref.current.close();
+      console.log(`Updating status to: ${newStatus}`);
+      const result = await updateComplaintStatus(complaint.id, newStatus);
+      console.log("Update result:", result);
+
+      if (result.success) {
+        toast.success(`تم تحديث حالة الشكوى إلى: ${newStatus}`);
+        onStatusChange(complaint.id, newStatus);
+        ref.current.close();
+      } else {
+        throw new Error(result.error || "فشل تحديث حالة الشكوى");
+      }
     } catch (err) {
       console.error("Failed to update status:", err);
+      toast.error(`خطأ في تحديث الحالة: ${err.message}`);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -52,10 +69,9 @@ const ComplainAction = forwardRef(({ complaint, onStatusChange }, ref) => {
           </li>
         </ul>
 
-        {/* ✅ أزرار التحكم */}
         <div className="flex flex-wrap justify-center gap-2">
           <button
-            onClick={() => handleStatusChange("قيد المراجعة")}
+            onClick={() => handleStatusChange("قيد المعالجة")}
             className="btn btn-sm"
           >
             قيد المعالجة

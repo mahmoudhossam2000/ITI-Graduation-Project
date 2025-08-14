@@ -5,6 +5,7 @@ import {
   getDocs,
   doc,
   updateDoc,
+  getDoc,
 } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 
@@ -16,7 +17,7 @@ export async function getComplaintsByDepartment(ministry, governorate = null) {
   if (ministry && governorate) {
     // فلترة حسب الإدارة والمحافظة معاً
     q = query(
-      complaintsRef, 
+      complaintsRef,
       where("administration", "==", ministry),
       where("governorate", "==", governorate)
     );
@@ -43,14 +44,46 @@ export async function getComplaintsByGovernorate(governorate) {
 }
 
 // دالة جديدة لجلب الشكاوى حسب الإدارة والمحافظة
-export async function getComplaintsByDepartmentAndGovernorate(department, governorate) {
+export async function getComplaintsByDepartmentAndGovernorate(
+  department,
+  governorate
+) {
   return getComplaintsByDepartment(department, governorate);
 }
 
 export async function updateComplaintStatus(id, newStatus) {
-  const complaintRef = doc(db, "complaints", id);
-  await updateDoc(complaintRef, {
-    status: newStatus,
-    updatedAt: new Date(),
-  });
+  try {
+    console.log(`Updating complaint ${id} status to:`, newStatus);
+    const complaintRef = doc(db, "complaints", id);
+
+    // Get complaint data to verify it exists
+    const complaintDoc = await getDoc(complaintRef);
+    if (!complaintDoc.exists()) {
+      console.error("Complaint not found:", id);
+      throw new Error("Complaint not found");
+    }
+
+    // Update complaint status
+    await updateDoc(complaintRef, {
+      status: newStatus,
+      updatedAt: new Date(),
+    });
+    
+    console.log("Complaint status updated successfully");
+    
+    return { 
+      success: true, 
+      complaintId: id, 
+      newStatus
+    };
+    
+  } catch (error) {
+    console.error("Error in updateComplaintStatus:", error);
+    return { 
+      success: false, 
+      error: error.message,
+      complaintId: id,
+      newStatus
+    };
+  }
 }
