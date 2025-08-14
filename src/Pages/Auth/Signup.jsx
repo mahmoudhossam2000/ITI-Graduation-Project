@@ -1,12 +1,18 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signOut,
+  updateProfile,
+} from "firebase/auth";
 import { setDoc, doc, getDocs, collection } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import { FcGoogle } from "react-icons/fc";
-import Navbar from "../../Components/Navbar";
 import { toast } from "react-toastify";
+import Navbar from "../../Components/Navbar";
+import { BiShowAlt } from "react-icons/bi";
+import { BiSolidHide } from "react-icons/bi";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -20,6 +26,8 @@ const Signup = () => {
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { signInWithGoogle } = useAuth();
 
   const handleGoogleSignUp = async () => {
@@ -32,6 +40,7 @@ const Signup = () => {
         phone: "",
         complaintCount: 0,
         banned: false,
+        role: "user",
         createdAt: new Date(),
       });
 
@@ -111,28 +120,33 @@ const Signup = () => {
 
       const user = userCredential.user;
 
-      // احضار عدد الشكاوى لهذا اليوزر (لو فيه)
+      // update displayName in Firebase Auth
+      await updateProfile(user, {
+        displayName: formData.name,
+      });
+
+      // fetch all complaints related user
       const complaintsSnap = await getDocs(collection(db, "complaints"));
       const userComplaints = complaintsSnap.docs.filter(
         (doc) => doc.data().userId === user.uid
       );
       const complaintCount = userComplaints.length;
 
+      // store userData in Firestore
       await setDoc(doc(db, "users", user.uid), {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
         complaintCount,
         banned: false,
+        role: "user",
         createdAt: new Date(),
       });
 
       toast.success("تم إنشاء الحساب بنجاح 🎉");
 
-      // تسجيل خروج المستخدم بعد التسجيل
+      // logout after signup(علشان اجبره يوديني للوجن الاول)
       await signOut(auth);
-
-      // إعادة توجيه المستخدم لصفحة تسجيل الدخول
       navigate("/login");
     } catch (err) {
       console.error("Signup error:", err);
@@ -143,6 +157,7 @@ const Signup = () => {
 
   return (
     <>
+      <Navbar />
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 pt-28">
         <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
           <h2 className="text-center text-3xl font-extrabold text-darkTeal">
@@ -156,52 +171,150 @@ const Signup = () => {
           )}
 
           <form className="mt-8 space-y-4" onSubmit={handleSignup}>
-            {[
-              { name: "name", label: "الاسم الكامل", type: "text" },
-              {
-                name: "phone",
-                label: "رقم الهاتف",
-                type: "text",
-                maxLength: 11,
-              },
-              { name: "email", label: "البريد الإلكتروني", type: "email" },
-              { name: "password", label: "كلمة المرور", type: "password" },
-              {
-                name: "confirmPassword",
-                label: "تأكيد كلمة المرور",
-                type: "password",
-              },
-            ].map((field) => (
-              <div key={field.name}>
-                <label
-                  className="block text-sm font-medium text-gray-700 mb-1 text-right"
-                  htmlFor={field.name}
-                >
-                  {field.label}
-                </label>
-                <input
-                  id={field.name}
-                  name={field.name}
-                  type={field.type}
-                  maxLength={field.maxLength}
-                  value={formData[field.name]}
-                  onChange={handleChange}
-                  className={`appearance-none relative block w-full px-3 py-2 border ${
-                    errors[field.name] ? "border-red-300" : "border-gray-300"
-                  } bg-white text-gray-900 placeholder-gray-500 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
-                />
-                {errors[field.name] && (
-                  <p className="mt-1 text-sm text-red-600 text-right">
-                    {errors[field.name]}
-                  </p>
-                )}
-              </div>
-            ))}
+            {/* Name */}
+            <div>
+              <label
+                className="block text-sm font-medium text-gray-700 mb-1 text-right"
+                htmlFor="name">
+                الاسم الكامل
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                placeholder=" ادخل الاسم بالكامل"
+                value={formData.name}
+                onChange={handleChange}
+                className={`appearance-none relative block w-full px-3 py-2 border ${
+                  errors.name ? "border-red-300" : "border-gray-300"
+                } bg-white text-gray-900 placeholder-gray-500 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+              />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600 text-right">
+                  {errors.name}
+                </p>
+              )}
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label
+                className="block text-sm font-medium text-gray-700 mb-1 text-right"
+                htmlFor="phone">
+                رقم الهاتف
+              </label>
+              <input
+                id="phone"
+                name="phone"
+                type="text"
+                placeholder="ادخل رقم الهاتف"
+                maxLength={11}
+                value={formData.phone}
+                onChange={handleChange}
+                className={`appearance-none relative block w-full px-3 py-2 border ${
+                  errors.phone ? "border-red-300" : "border-gray-300"
+                } bg-white text-gray-900 placeholder-gray-500 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+              />
+              {errors.phone && (
+                <p className="mt-1 text-sm text-red-600 text-right">
+                  {errors.phone}
+                </p>
+              )}
+            </div>
+
+            {/* Email */}
+            <div>
+              <label
+                className="block text-sm font-medium text-gray-700 mb-1 text-right"
+                htmlFor="email">
+                البريد الإلكتروني
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="ادخل بريدك الالكتروني"
+                value={formData.email}
+                onChange={handleChange}
+                className={`appearance-none relative block w-full px-3 py-2 border ${
+                  errors.email ? "border-red-300" : "border-gray-300"
+                } bg-white text-gray-900 placeholder-gray-500 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600 text-right">
+                  {errors.email}
+                </p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div className="relative">
+              <label
+                className="block text-sm font-medium text-gray-700 mb-1 text-right"
+                htmlFor="password">
+                كلمة المرور
+              </label>
+              <input
+                id="password"
+                name="password"
+                placeholder="أدخل كلمة المرور (6 أحرف على الأقل)"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={handleChange}
+                className={`appearance-none relative block w-full pl-10 pr-3 py-2 border ${
+                  errors.password ? "border-red-300" : "border-gray-300"
+                } bg-white text-gray-900 placeholder-gray-500 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((show) => !show)}
+                className="absolute left-3 top-1/2 transform  text-gray-400 hover:text-gray-600"
+                tabIndex={-1}>
+                {showPassword ? <BiShowAlt size={20}/> : <BiSolidHide size={20}/>}
+              </button>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600 text-right">
+                  {errors.password}
+                </p>
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <div className="relative">
+              <label
+                className="block text-sm font-medium text-gray-700 mb-1 text-right"
+                htmlFor="confirmPassword">
+                تأكيد كلمة المرور
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                placeholder="أعد إدخال كلمة المرور"
+                type={showConfirmPassword ? "text" : "password"}
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={`appearance-none relative block w-full pl-10 pr-3 py-2 border ${
+                  errors.confirmPassword ? "border-red-300" : "border-gray-300"
+                } bg-white text-gray-900 placeholder-gray-500 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((show) => !show)}
+                className="absolute left-3 top-1/2 transform text-gray-400 hover:text-gray-600"
+                tabIndex={-1}>
+                {showConfirmPassword ? <BiShowAlt size={20}/> : <BiSolidHide size={20}/>}
+
+              </button>
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600 text-right">
+                  {errors.confirmPassword}
+                </p>
+              )}
+            </div>
 
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               إنشاء حساب
             </button>
 
@@ -217,8 +330,7 @@ const Signup = () => {
             <button
               onClick={handleGoogleSignUp}
               type="button"
-              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
+              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
               <FcGoogle className="w-5 h-5 ml-2" />
               التسجيل باستخدام جوجل
             </button>
@@ -228,8 +340,7 @@ const Signup = () => {
             <span className="text-gray-700 text-md">لديك حساب بالفعل؟ </span>
             <Link
               to="/login"
-              className="inline-block ml-2 ms-1 text-blue font-semibold hover:underline"
-            >
+              className="inline-block ml-2 ms-1 text-blue font-semibold hover:underline">
               تسجيل الدخول
             </Link>
           </div>
