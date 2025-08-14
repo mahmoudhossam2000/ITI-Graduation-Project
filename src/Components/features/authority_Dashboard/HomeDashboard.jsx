@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
-import { getComplaintsByDepartment } from "../../services/complaintsService";
+import {
+  getComplaintsByDepartment,
+  getComplaintsForMinistry,
+} from "../../services/complaintsService";
 import { useAuth } from "../../../contexts/AuthContext";
+import DashboardTabs from "../../ui/comman/DashboardTabs/DashboardTabs";
 
 export default function HomeDashboard() {
   const [data, setData] = useState([]);
@@ -36,21 +40,9 @@ export default function HomeDashboard() {
           setError("فشل تحميل البيانات");
           setLoading(false);
         });
-    } else if (userData?.role === "ministry") {
-      // For ministry users, get all complaints (or filter by ministry if needed)
-      getComplaintsByDepartment(null, null)
-        .then((complaints) => {
-          setData(complaints);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error(err);
-          setError("فشل تحميل البيانات");
-          setLoading(false);
-        });
     } else {
       // Fallback for other users (regular users, admin, etc.)
-      getComplaintsByDepartment(null, null)
+      getComplaintsForMinistry(userData.ministry)
         .then((complaints) => {
           setData(complaints);
           setLoading(false);
@@ -122,7 +114,8 @@ export default function HomeDashboard() {
   };
 
   // 📌 Column Chart حسب الوزارة
-  const ministries = [...new Set(data.map((c) => c.ministry))];
+  const ministries = [...new Set(data.map((c) => c.administration))];
+
   const ministryCounts = ministries.map(
     (m) => data.filter((c) => c.ministry === m).length
   );
@@ -175,28 +168,15 @@ export default function HomeDashboard() {
         </p>
       </div>
 
-      {/* Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="card bg-primary text-white p-4 rounded-xl shadow">
-          <p className="text-lg">إجمالي الشكاوى</p>
-          <h2 className="text-3xl font-bold">{total}</h2>
-        </div>
-        <div className="card bg-yellow-500 text-white p-4 rounded-xl shadow">
-          <p className="text-lg">قيد الحل</p>
-          <h2 className="text-3xl font-bold">{inProgress}</h2>
-        </div>
-        <div className="card bg-green-500 text-white p-4 rounded-xl shadow">
-          <p className="text-lg">تم الحل</p>
-          <h2 className="text-3xl font-bold">{solved}</h2>
-        </div>
-        <div className="card bg-red-500 text-white p-4 rounded-xl shadow">
-          <p className="text-lg">مرفوضة</p>
-          <h2 className="text-2xl font-bold">{rejected}</h2>
-        </div>
-      </div>
+      <DashboardTabs
+        lineChart={lineChart}
+        columnChart={columnChart}
+        data={data}
+        ministries={ministries}
+      />
 
       {/* Line Chart */}
-      <div className="bg-white dark:bg-black p-4 rounded-xl shadow">
+      {/* <div className="bg-white dark:bg-black p-4 rounded-xl shadow">
         <h3 className="mb-3 text-lg font-bold">عدد الشكاوى عبر الشهور</h3>
         {data.length > 0 ? (
           <ReactApexChart
@@ -213,10 +193,10 @@ export default function HomeDashboard() {
             </div>
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* Column Chart */}
-      <div className="bg-white dark:bg-black p-4 rounded-xl shadow">
+      {/* <div className="bg-white dark:bg-black p-4 rounded-xl shadow">
         <h3 className="mb-3 text-lg font-bold">توزيع الشكاوى حسب الوزارة</h3>
         {data.length > 0 && ministries.length > 0 ? (
           <ReactApexChart
@@ -233,43 +213,9 @@ export default function HomeDashboard() {
             </div>
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* آخر 5 شكاوى */}
-      <div className="bg-white dark:bg-black p-4 rounded-xl shadow">
-        <h3 className="mb-3 text-lg font-bold">آخر 5 شكاوى</h3>
-        {data.length > 0 ? (
-          <table className="table w-full text-center">
-            <thead>
-              <tr>
-                <th>المواطن</th>
-                <th>الوزارة</th>
-                <th>التاريخ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {latestComplaints.map((c, i) => (
-                <tr key={i}>
-                  <td>{c.name}</td>
-                  <td>{c.ministry}</td>
-                  <td>
-                    {c.createdAt?.toDate
-                      ? c.createdAt.toDate().toLocaleDateString("ar-EG")
-                      : ""}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <div className="flex items-center justify-center h-32 text-gray-500">
-            <div className="text-center">
-              <div className="text-3xl mb-2">📋</div>
-              <p>لا توجد شكاوى متاحة لعرضها</p>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

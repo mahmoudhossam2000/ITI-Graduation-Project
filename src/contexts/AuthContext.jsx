@@ -113,22 +113,22 @@ export const AuthProvider = ({ children }) => {
 
             if (!ministrySnapshot.empty) {
               const accountData = ministrySnapshot.docs[0].data();
-              console.log("User found in ministry accounts:", accountData);
-              console.log("Ministry account fields:", Object.keys(accountData));
-              console.log("Ministry account role field:", accountData.role);
-              console.log(
-                "Ministry account accountType field:",
-                accountData.accountType
-              );
+              // console.log("User found in ministry accounts:", accountData);
+              // console.log("Ministry account fields:", Object.keys(accountData));
+              // console.log("Ministry account role field:", accountData.role);
+              // console.log(
+              //   "Ministry account accountType field:",
+              //   accountData.accountType
+              // );
 
               const userDataToSet = {
                 ...accountData,
                 role: accountData.role || accountData.accountType, // Support both old and new field names
               };
-              console.log(
-                "Setting userData for ministry account:",
-                userDataToSet
-              );
+              // console.log(
+              //   "Setting userData for ministry account:",
+              //   userDataToSet
+              // );
               setUserData(userDataToSet);
             } else {
               // Check if it's a governorate account
@@ -609,6 +609,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     currentUser,
+    setCurrentUser,
     userData,
     signInWithGoogle,
     loginWithEmail,
@@ -632,17 +633,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Debug logging for role checks
-  console.log("AuthContext role debug:", {
-    userDataRole: userData?.role,
-    userDataExists: !!userData,
-    isAdmin: userData?.role === "admin",
-    isDepartment: userData?.role === "department",
-    isGovernorate: userData?.role === "governorate",
-    isMinistry: userData?.role === "ministry",
-    isModerator: userData?.role === "moderator",
-    currentUser: currentUser?.uid,
-    loading,
-  });
+  // console.log("AuthContext role debug:", {
+  //   userDataRole: userData?.role,
+  //   userDataExists: !!userData,
+  //   isAdmin: userData?.role === "admin",
+  //   isDepartment: userData?.role === "department",
+  //   isGovernorate: userData?.role === "governorate",
+  //   isMinistry: userData?.role === "ministry",
+  //   isModerator: userData?.role === "moderator",
+  //   currentUser: currentUser?.uid,
+  //   loading,
+  // });
 
   return (
     <AuthContext.Provider value={value}>

@@ -268,11 +268,9 @@ const DepartmentDashboard = () => {
   const getStatistics = () => {
     const total = complaints.length;
     const pending = complaints.filter(
-      (c) => c.status === "قيد المعالجة"
+      (c) => c.status === "قيد المراجعة"
     ).length;
-    const resolved = complaints.filter(
-      (c) => c.status === "تمت المعالجة"
-    ).length;
+    const resolved = complaints.filter((c) => c.status === "تم الحل").length;
     const rejected = complaints.filter((c) => c.status === "مرفوضة").length;
     const transferred = complaints.filter((c) => c.status === "محولة").length;
 

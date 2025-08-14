@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
-import { getComplaintsByDepartment } from "../../services/complaintsService";
+import {
+  getComplaintsByDepartment,
+  getComplaintsForMinistry,
+} from "../../services/complaintsService";
 import { useAuth } from "../../../contexts/AuthContext";
+import { FaCheck, FaEye, FaSpinner, FaTimes } from "react-icons/fa";
 
 export default function Reports() {
   const { userData } = useAuth();
@@ -38,7 +42,7 @@ export default function Reports() {
         });
     } else {
       // Fallback للخدمة القديمة
-      getComplaintsByDepartment(ministry)
+      getComplaintsForMinistry(userData.ministry)
         .then((complaints) => {
           setData(complaints);
           setLoading(false);
@@ -49,7 +53,7 @@ export default function Reports() {
           setLoading(false);
         });
     }
-  }, [ministry, userData]);
+  }, [userData]);
 
   if (loading) {
     return (
@@ -83,8 +87,9 @@ export default function Reports() {
   // إحصائيات
   const total = filteredData.length;
   const inProgress = filteredData.filter(
-    (c) => c.status === "جارى الحل"
+    (c) => c.status === "قيد المراجعة"
   ).length;
+  const running = filteredData.filter((c) => c.status === "جارى الحل").length;
   const solved = filteredData.filter((c) => c.status === "تم الحل").length;
   const rejected = filteredData.filter((c) => c.status === "مرفوضة").length;
 
@@ -127,21 +132,51 @@ export default function Reports() {
 
       {/* Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="card bg-primary text-white p-4 rounded-xl shadow">
-          <p className="text-lg">إجمالي الشكاوى</p>
-          <h2 className="text-3xl font-bold">{total}</h2>
+        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+          <div className="flex items-center">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <FaEye className="h-6 w-6 text-yellow-600" />
+            </div>
+            <div className="mr-4">
+              <p className="text-sm font-medium text-gray-600">قيد المعالجة</p>
+              <p className="text-2xl font-bold text-gray-900">{inProgress}</p>
+            </div>
+          </div>
         </div>
-        <div className="card bg-yellow-500 text-white p-4 rounded-xl shadow">
-          <p className="text-lg">قيد الحل</p>
-          <h2 className="text-3xl font-bold">{inProgress}</h2>
+        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+          <div className="flex items-center">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <FaSpinner className="h-6 w-6 text-yellow-600 animate-spin" />
+            </div>
+            <div className="mr-4">
+              <p className="text-sm font-medium text-gray-600">جارى المعالجة</p>
+              <p className="text-2xl font-bold text-gray-900">{running}</p>
+            </div>
+          </div>
         </div>
-        <div className="card bg-green-500 text-white p-4 rounded-xl shadow">
-          <p className="text-lg">تم الحل</p>
-          <h2 className="text-3xl font-bold">{solved}</h2>
+
+        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+          <div className="flex items-center">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <FaCheck className="h-6 w-6 text-green-600" />
+            </div>
+            <div className="mr-4">
+              <p className="text-sm font-medium text-gray-600">تمت المعالجة</p>
+              <p className="text-2xl font-bold text-gray-900">{solved}</p>
+            </div>
+          </div>
         </div>
-        <div className="card bg-red-500 text-white p-4 rounded-xl shadow">
-          <p className="text-lg">مرفوضة</p>
-          <h2 className="text-3xl font-bold">{rejected}</h2>
+
+        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
+          <div className="flex items-center">
+            <div className="p-2 bg-red-100 rounded-lg">
+              <FaTimes className="h-6 w-6 text-red-600" />
+            </div>
+            <div className="mr-4">
+              <p className="text-sm font-medium text-gray-600">مرفوضة</p>
+              <p className="text-2xl font-bold text-gray-900">{rejected}</p>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -55,7 +55,7 @@ const ComplainAction = forwardRef(({ complaint, onStatusChange }, ref) => {
         {/* ✅ أزرار التحكم */}
         <div className="flex flex-wrap justify-center gap-2">
           <button
-            onClick={() => handleStatusChange("قيد المراجعة")}
+            onClick={() => handleStatusChange("قيد المعالجة")}
             className="btn btn-sm"
           >
             قيد المعالجة

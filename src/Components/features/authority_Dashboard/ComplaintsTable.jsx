@@ -217,12 +217,12 @@ export default function ComplaintsTable({ complaints, onDetails, onAction }) {
                   التفاصيل
                 </button>
 
-                <button
+                {/* <button
                   onClick={() => onAction(complaint)}
                   className="btn px-2 py-1 text-xs rounded bg-green-600 text-white hover:bg-green-700"
                 >
                   إجراء
-                </button>
+                </button> */}
               </td>
               <td className="py-3 px-2"></td>
             </tr>

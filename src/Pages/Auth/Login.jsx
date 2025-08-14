@@ -16,7 +16,13 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false);
   const navigate = useNavigate();
-  const { signInWithGoogle, loginWithEmail, userData, currentUser } = useAuth();
+  const {
+    signInWithGoogle,
+    loginWithEmail,
+    userData,
+    currentUser,
+    setCurrentUser,
+  } = useAuth();
 
   // Watch for userData changes after login attempt
   useEffect(() => {
@@ -66,6 +72,7 @@ const Login = () => {
     setError("");
     setIsLoading(true);
     setHasAttemptedLogin(true);
+    // setCurrentUser(null);
 
     try {
       // Use the AuthContext's loginWithEmail function

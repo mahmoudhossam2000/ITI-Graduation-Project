@@ -46,16 +46,16 @@ const PrivateRoute = ({ children, allowedRoles = null }) => {
   } = useAuth();
   const location = useLocation();
 
-  console.log("PrivateRoute Debug:", {
-    currentUser: currentUser?.uid,
-    userData,
-    allowedRoles,
-    isAdmin,
-    isDepartment,
-    isGovernorate,
-    isMinistry,
-    preventNavigation,
-  });
+  // console.log("PrivateRoute Debug:", {
+  //   currentUser: currentUser?.uid,
+  //   userData,
+  //   allowedRoles,
+  //   isAdmin,
+  //   isDepartment,
+  //   isGovernorate,
+  //   isMinistry,
+  //   preventNavigation,
+  // });
 
   // If not logged in, redirect to login
   if (!currentUser) {
@@ -271,7 +271,9 @@ function AppContent() {
         <Route
           path="/dashboard"
           element={
-            <PrivateRoute allowedRoles={["department", "moderator", "ministry"]}>
+            <PrivateRoute
+              allowedRoles={["department", "moderator", "ministry"]}
+            >
               <Layout />
             </PrivateRoute>
           }

@@ -1,7 +1,10 @@
 import React, { useRef } from "react";
 import ComplaintsTable from "../Components/features/authority_Dashboard/ComplaintsTable";
 import { useEffect, useState } from "react";
-import { getComplaintsByDepartment } from "../Components/services/complaintsService";
+import {
+  getComplaintsByDepartment,
+  getComplaintsForMinistry,
+} from "../Components/services/complaintsService";
 import ComplainAction from "../Components/features/authority_Dashboard/ComplaintAction";
 import ComplaintDetails from "../Components/features/authority_Dashboard/ComplaintDetails";
 import { useAuth } from "../contexts/AuthContext";
@@ -18,6 +21,10 @@ function Complaints() {
 
   useEffect(() => {
     setLoading(true);
+
+    // getComplaintsForMinistry(userData.ministry);
+
+    console.log("sssssssssssssssssssssssssssssssssssssss", userData);
 
     // استخدام بيانات المستخدم لجلب الشكاوى المناسبة
     if (userData?.role === "department" && userData?.governorate) {
@@ -44,8 +51,10 @@ function Complaints() {
         });
     } else {
       // Fallback للخدمة القديمة
-      getComplaintsByDepartment(ministry)
+      getComplaintsForMinistry(userData.ministry)
         .then((complaints) => {
+          console.log(complaints);
+
           setData(complaints);
           setLoading(false);
         })
@@ -55,7 +64,7 @@ function Complaints() {
         })
         .finally(() => setLoading(false));
     }
-  }, [ministry, userData]);
+  }, [userData]);
 
   // handlers to set details complaint and show modal
   const handleDetails = (complaint) => {
