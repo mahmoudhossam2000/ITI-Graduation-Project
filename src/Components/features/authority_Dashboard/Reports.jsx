@@ -30,7 +30,7 @@ export default function Reports() {
           setLoading(false);
         });
     } else if (userData?.role === "governorate") {
-      getComplaintsByDepartment(null, userData.governorate)
+      getComplaintsByDepartment(null, userData?.governorate)
         .then((complaints) => {
           setData(complaints);
           setLoading(false);
@@ -42,7 +42,7 @@ export default function Reports() {
         });
     } else {
       // Fallback للخدمة القديمة
-      getComplaintsForMinistry(userData.ministry)
+      getComplaintsForMinistry(userData?.ministry)
         .then((complaints) => {
           setData(complaints);
           setLoading(false);
@@ -87,7 +87,7 @@ export default function Reports() {
   // إحصائيات
   const total = filteredData.length;
   const inProgress = filteredData.filter(
-    (c) => c.status === "قيد المراجعة"
+    (c) => c.status === "قيد المعالجة"
   ).length;
   const running = filteredData.filter((c) => c.status === "جارى الحل").length;
   const solved = filteredData.filter((c) => c.status === "تم الحل").length;

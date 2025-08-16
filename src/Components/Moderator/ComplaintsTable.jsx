@@ -47,6 +47,7 @@ const ComplaintsTable = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [complaintToDelete, setComplaintToDelete] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const itemsPerPage = 4;
 
@@ -612,9 +613,10 @@ const ComplaintsTable = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
                 <h4 className="text-sm font-medium text-gray-500 mb-2">
-                  الجهة المقدمة لها
+                  الإدارة المخصصه
+                   
                 </h4>
-                <p className="text-gray-800">{selectedComplaint.ministry}</p>
+                <p className="text-gray-800">{selectedComplaint.administration}</p>
               </div>
 
               <div>
@@ -696,18 +698,102 @@ const ComplaintsTable = () => {
               </div>
             </div>
 
-            {selectedComplaint.imageBase64 && (
-              <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-500 mb-2">
-                  الصورة المرفقة
-                </h4>
-                <img
-                  src={selectedComplaint.imageBase64}
-                  alt="صورة الشكوى"
-                  className="max-w-full h-auto rounded-lg border border-gray-200"
-                />
-              </div>
-            )}
+            {selectedComplaint.imagesBase64 &&
+              selectedComplaint.imagesBase64.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-gray-500 mb-2">
+                    الصور المرفقة
+                  </h4>
+                  <div className="relative flex items-center justify-center">
+                    {/* زر السابق */}
+                    <button
+                      onClick={() =>
+                        setCurrentImageIndex((prev) =>
+                          prev === 0
+                            ? selectedComplaint.imagesBase64.length - 1
+                            : prev - 1
+                        )
+                      }
+                      className="absolute left-0 bg-darkTeal px-3 py-2 rounded-full shadow hover:bg-blue text-white">
+                      ◀
+                    </button>
+
+                    {/* عرض الصورة */}
+                    <img
+                      src={selectedComplaint.imagesBase64[currentImageIndex]}
+                      alt={`صورة الشكوى ${currentImageIndex + 1}`}
+                      className="max-h-[400px] object-contain border border-gray-200 rounded-lg"
+                    />
+
+                    {/* زر التالي */}
+                    <button
+                      onClick={() =>
+                        setCurrentImageIndex((prev) =>
+                          prev === selectedComplaint.imagesBase64.length - 1
+                            ? 0
+                            : prev + 1
+                        )
+                      }
+                      className="absolute right-0 bg-darkTeal px-3 py-2 rounded-full shadow hover:bg-blue text-white">
+                      ▶
+                    </button>
+                  </div>
+
+                  {/* عداد الصور */}
+                  <p className="text-center text-gray-500 text-sm mt-2">
+                    {currentImageIndex + 1} /{" "}
+                    {selectedComplaint.imagesBase64.length}
+                  </p>
+                </div>
+              )}
+            {selectedComplaint.imagesBase64 &&
+              selectedComplaint.imagesBase64.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-gray-500 mb-2">
+                    الصور المرفقة
+                  </h4>
+                  <div className="relative flex items-center justify-center">
+                    {/* زر السابق */}
+                    <button
+                      onClick={() =>
+                        setCurrentImageIndex((prev) =>
+                          prev === 0
+                            ? selectedComplaint.imagesBase64.length - 1
+                            : prev - 1
+                        )
+                      }
+                      className="absolute left-0 bg-darkTeal px-3 py-2 rounded-full shadow hover:bg-blue text-white">
+                      ◀
+                    </button>
+
+                    {/* عرض الصورة */}
+                    <img
+                      src={selectedComplaint.imagesBase64[currentImageIndex]}
+                      alt={`صورة الشكوى ${currentImageIndex + 1}`}
+                      className="max-h-[400px] object-contain border border-gray-200 rounded-lg"
+                    />
+
+                    {/* زر التالي */}
+                    <button
+                      onClick={() =>
+                        setCurrentImageIndex((prev) =>
+                          prev === selectedComplaint.imagesBase64.length - 1
+                            ? 0
+                            : prev + 1
+                        )
+                      }
+                      className="absolute right-0 bg-darkTeal px-3 py-2 rounded-full shadow hover:bg-blue text-white">
+                      ▶
+                    </button>
+                  </div>
+
+                  {/* عداد الصور */}
+                  <p className="text-center text-gray-500 text-sm mt-2">
+                    {currentImageIndex + 1} /{" "}
+                    {selectedComplaint.imagesBase64.length}
+                  </p>
+                </div>
+              )}
 
             {/* Video Attachment Section */}
             {selectedComplaint.videoUrl && (
@@ -813,3 +899,4 @@ const ComplaintsTable = () => {
 };
 
 export default ComplaintsTable;
+

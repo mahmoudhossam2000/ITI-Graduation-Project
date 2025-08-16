@@ -21,7 +21,13 @@ import {
   FaUpload,
   FaTimes,
 } from "react-icons/fa";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMapEvents,
+  useMap,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
 // map
@@ -38,6 +44,216 @@ const DefaultIcon = L.icon({
   shadowSize: [41, 41],
 });
 L.Marker.prototype.options.icon = DefaultIcon;
+
+// حدود المحافظات المصرية (إحداثيات تقريبية)
+const governorateBounds = {
+  القاهرة: {
+    minLat: 29.8,
+    maxLat: 30.2,
+    minLng: 31.0,
+    maxLng: 31.5,
+  },
+  الجيزة: {
+    minLat: 29.5,
+    maxLat: 30.2,
+    minLng: 30.8,
+    maxLng: 31.5,
+  },
+  الإسكندرية: {
+    minLat: 31.0,
+    maxLat: 31.4,
+    minLng: 29.8,
+    maxLng: 30.2,
+  },
+  الدقهلية: {
+    minLat: 30.9,
+    maxLat: 31.5,
+    minLng: 31.2,
+    maxLng: 31.8,
+  },
+  البحيرة: {
+    minLat: 30.5,
+    maxLat: 31.2,
+    minLng: 29.9,
+    maxLng: 30.7,
+  },
+  الفيوم: {
+    minLat: 29.0,
+    maxLat: 29.6,
+    minLng: 30.3,
+    maxLng: 31.0,
+  },
+  الغربية: {
+    minLat: 30.7,
+    maxLat: 31.2,
+    minLng: 30.9,
+    maxLng: 31.4,
+  },
+  الإسماعيلية: {
+    minLat: 30.5,
+    maxLat: 30.8,
+    minLng: 32.0,
+    maxLng: 32.5,
+  },
+  المنوفية: {
+    minLat: 30.3,
+    maxLat: 30.7,
+    minLng: 30.7,
+    maxLng: 31.2,
+  },
+  المنيا: {
+    minLat: 27.8,
+    maxLat: 28.6,
+    minLng: 30.4,
+    maxLng: 31.0,
+  },
+  القليوبية: {
+    minLat: 30.1,
+    maxLat: 30.5,
+    minLng: 31.0,
+    maxLng: 31.5,
+  },
+  "الوادي الجديد": {
+    minLat: 22.0,
+    maxLat: 26.0,
+    minLng: 27.0,
+    maxLng: 30.5,
+  },
+  السويس: {
+    minLat: 29.9,
+    maxLat: 30.1,
+    minLng: 32.4,
+    maxLng: 32.6,
+  },
+  أسوان: {
+    minLat: 23.5,
+    maxLat: 24.5,
+    minLng: 32.5,
+    maxLng: 33.0,
+  },
+  أسيوط: {
+    minLat: 26.8,
+    maxLat: 27.6,
+    minLng: 30.6,
+    maxLng: 31.4,
+  },
+  "بني سويف": {
+    minLat: 28.8,
+    maxLat: 29.4,
+    minLng: 30.6,
+    maxLng: 31.3,
+  },
+  بورسعيد: {
+    minLat: 31.2,
+    maxLat: 31.3,
+    minLng: 32.2,
+    maxLng: 32.4,
+  },
+  دمياط: {
+    minLat: 31.3,
+    maxLat: 31.6,
+    minLng: 31.6,
+    maxLng: 32.0,
+  },
+  "جنوب سيناء": {
+    minLat: 27.5,
+    maxLat: 29.5,
+    minLng: 33.0,
+    maxLng: 34.5,
+  },
+  "كفر الشيخ": {
+    minLat: 31.0,
+    maxLat: 31.5,
+    minLng: 30.5,
+    maxLng: 31.2,
+  },
+  مطروح: {
+    minLat: 29.0,
+    maxLat: 32.0,
+    minLng: 25.0,
+    maxLng: 29.5,
+  },
+  الأقصر: {
+    minLat: 25.5,
+    maxLat: 26.0,
+    minLng: 32.5,
+    maxLng: 33.0,
+  },
+  قنا: {
+    minLat: 25.7,
+    maxLat: 26.5,
+    minLng: 32.5,
+    maxLng: 33.0,
+  },
+  "شمال سيناء": {
+    minLat: 30.0,
+    maxLat: 31.5,
+    minLng: 32.5,
+    maxLng: 34.5,
+  },
+  سوهاج: {
+    minLat: 26.2,
+    maxLat: 27.0,
+    minLng: 31.5,
+    maxLng: 32.0,
+  },
+  "البحر الأحمر": {
+    minLat: 23.0,
+    maxLat: 27.5,
+    minLng: 33.0,
+    maxLng: 36.0,
+  },
+  الشرقية: {
+    minLat: 30.5,
+    maxLat: 31.0,
+    minLng: 31.3,
+    maxLng: 32.0,
+  },
+};
+
+function LocationPicker({ setFieldValue, governorateBounds }) {
+  const [position, setPosition] = useState(null);
+  const map = useMap();
+
+  useEffect(() => {
+    if (governorateBounds) {
+      map.fitBounds(
+        [
+          [governorateBounds.minLat, governorateBounds.minLng],
+          [governorateBounds.maxLat, governorateBounds.maxLng],
+        ],
+        { padding: [50, 50] }
+      );
+    } else {
+      map.setView([30.0444, 31.2357], 7); // عرض مصر بالكامل إذا لم يتم تحديد محافظة
+    }
+  }, [governorateBounds, map]);
+
+  useMapEvents({
+    click(e) {
+      if (governorateBounds) {
+        const { lat, lng } = e.latlng;
+        // التحقق مما إذا كان النقاط داخل حدود المحافظة
+        if (
+          lat >= governorateBounds.minLat &&
+          lat <= governorateBounds.maxLat &&
+          lng >= governorateBounds.minLng &&
+          lng <= governorateBounds.maxLng
+        ) {
+          setPosition(e.latlng);
+          setFieldValue("location", `${lat},${lng}`);
+        } else {
+          toast.error("الموقع خارج حدود المحافظة المحددة");
+        }
+      } else {
+        setPosition(e.latlng);
+        setFieldValue("location", `${e.latlng.lat},${e.latlng.lng}`);
+      }
+    },
+  });
+
+  return position === null ? null : <Marker position={position}></Marker>;
+}
 
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
@@ -161,27 +377,14 @@ async function logUserIp(userId) {
   }
 }
 
-function LocationPicker({ setFieldValue }) {
-  const [position, setPosition] = useState(null);
-
-  useMapEvents({
-    click(e) {
-      setPosition(e.latlng);
-      setFieldValue("location", `${e.latlng.lat},${e.latlng.lng}`);
-    },
-  });
-
-  return position === null ? null : <Marker position={position}></Marker>;
-}
-
-const ComplaintForm = () => {
-  const [user, setUser] = useState(null);
-  const [isBanned, setIsBanned] = useState(false);
+function ComplaintForm() {
+  const [newComplaintId, setNewComplaintId] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [newComplaintId, setNewComplaintId] = useState("");
+  const [isBanned, setIsBanned] = useState(false);
   const [videoFile, setVideoFile] = useState(null);
   const [videoPreview, setVideoPreview] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
+  const [user, setUser] = useState(null);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [position, setPosition] = useState(null);
   const [departments, setDepartments] = useState([]);
@@ -216,6 +419,9 @@ const ComplaintForm = () => {
       if (currentUser) {
         setUser(currentUser);
         logUserIp(currentUser.uid);
+
+        formik.setFieldValue("name", currentUser.displayName || "");
+        formik.setFieldValue("email", currentUser.email || "");
 
         const usersRef = collection(db, "users");
         const q = query(usersRef, where("email", "==", currentUser.email));
@@ -329,7 +535,7 @@ const ComplaintForm = () => {
       governorate: "",
       administration: "",
       description: "",
-      imageBase64: "",
+      imagesBase64: [],
       location: "",
     },
     validationSchema,
@@ -376,7 +582,8 @@ const ComplaintForm = () => {
           governorate: values.governorate,
           administration: values.administration,
           description: values.description,
-          imageBase64: values.imageBase64 || null,
+          imagesBase64:
+            values.imagesBase64.length > 0 ? values.imagesBase64 : null,
           createdAt: new Date(),
           status: "قيد المعالجة",
           complaintId: complaintId,
@@ -404,22 +611,37 @@ const ComplaintForm = () => {
   });
 
   const handleImageChange = async (event) => {
-    const file = event.currentTarget.files[0];
-    if (file && file.size > 2 * 1024 * 1024) {
-      toast.error("حجم الصورة يجب أن يكون أقل من 2MB");
-      return;
-    }
+    const files = Array.from(event.currentTarget.files);
+    const validFiles = [];
 
-    if (file) {
+    for (let file of files) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error(`الصورة ${file.name} أكبر من 2MB`);
+        continue;
+      }
       try {
         const base64String = await fileToBase64(file);
-        formik.setFieldValue("imageBase64", base64String);
+        validFiles.push(base64String);
       } catch (error) {
         console.error("Error converting file to Base64:", error);
-        toast.error("حدث خطأ أثناء تحميل الصورة");
+        toast.error(`حدث خطأ أثناء تحميل ${file.name}`);
       }
     }
+
+    formik.setFieldValue("imagesBase64", [
+      ...formik.values.imagesBase64,
+      ...validFiles,
+    ]);
   };
+
+  useEffect(() => {
+    if (
+      formik.values.governorate &&
+      governorateBounds[formik.values.governorate]
+    ) {
+      formik.setFieldValue("location", ""); // مسح الموقع عند تغيير المحافظة
+    }
+  }, [formik.values.governorate]);
 
   if (isBanned) {
     return (
@@ -432,8 +654,7 @@ const ComplaintForm = () => {
           </p>
           <Link
             to="/"
-            className="text-blue hover:text-blue-800 font-medium transition duration-300 underline"
-          >
+            className="text-blue hover:text-blue-800 font-medium transition duration-300 underline">
             العودة إلى الصفحة الرئيسية
           </Link>
         </div>
@@ -465,14 +686,14 @@ const ComplaintForm = () => {
                 <div>
                   <label
                     htmlFor="name"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                    className="block text-sm font-medium text-gray-700 mb-1">
                     الاسم الكامل <span className="text-red-500">*</span>
                   </label>
                   <input
                     id="name"
                     name="name"
                     type="text"
+                    readOnly={!!user}
                     placeholder="أدخل اسمك بالكامل"
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -493,14 +714,14 @@ const ComplaintForm = () => {
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                    className="block text-sm font-medium text-gray-700 mb-1">
                     البريد الإلكتروني <span className="text-red-500">*</span>
                   </label>
                   <input
                     id="email"
                     name="email"
                     type="email"
+                    readOnly={!!user}
                     placeholder="example@domain.com"
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -519,13 +740,13 @@ const ComplaintForm = () => {
                 </div>
               </div>
 
-              {/* الصف الثاني: المحافظة والوزارة */}
+              {/* الصف الثاني: المحافظة والاداره */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* المحافظة*/}
                 <div>
                   <label
                     htmlFor="governorate"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                    className="block text-sm font-medium text-gray-700 mb-1">
                     المحافظة <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -542,8 +763,7 @@ const ComplaintForm = () => {
                       formik.touched.governorate && formik.errors.governorate
                         ? "border-red-500"
                         : "border-gray-300"
-                    } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}
-                  >
+                    } focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent`}>
                     <option value="">اختر المحافظة</option>
                     {[
                       "القاهرة",
@@ -585,52 +805,51 @@ const ComplaintForm = () => {
                     </p>
                   )}
                 </div>
-              </div>
-              {/* الإدارة المختصة */}
-              <div>
-                <label className="block font-medium text-blue mb-1">
-                  اختر الإدارة المختصة <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="administration"
-                  name="administration"
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  value={formik.values.administration}
-                  disabled={loadingDepartments}
-                  className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue disabled:bg-gray-100 disabled:cursor-not-allowed"
-                >
-                  <option value="">
-                    {loadingDepartments
-                      ? "جاري تحميل الإدارات..."
-                      : "اختر الإدارة المختصة"}
-                  </option>
-                  {departments.map((dept) => (
-                    <option key={dept} value={dept}>
-                      {dept}
+
+                {/* الإدارة المختصة */}
+                <div>
+                  <label className="block font-medium text-blue mb-1">
+                    اختر الإدارة المختصة <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="administration"
+                    name="administration"
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.values.administration}
+                    disabled={loadingDepartments}
+                    className="w-full p-3 rounded-lg bg-background border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue disabled:bg-gray-100 disabled:cursor-not-allowed">
+                    <option value="">
+                      {loadingDepartments
+                        ? "جاري تحميل الإدارات..."
+                        : "اختر الإدارة المختصة"}
                     </option>
-                  ))}
-                </select>
-                {!formik.values.governorate && (
-                  <p className="mt-1 text-sm text-orange-600">
-                    ملاحظة: يرجى اختيار المحافظة أولاً لضمان عرض الإدارات
-                    المناسبة
-                  </p>
-                )}
-                {formik.touched.administration &&
-                  formik.errors.administration && (
-                    <div className="text-red-500 text-sm">
-                      {formik.errors.administration}
-                    </div>
+                    {departments.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
+                    ))}
+                  </select>
+                  {!formik.values.governorate && (
+                    <p className="mt-1 text-sm text-orange-600">
+                      ملاحظة: يرجى اختيار المحافظة أولاً لضمان عرض الإدارات
+                      المناسبة
+                    </p>
                   )}
+                  {formik.touched.administration &&
+                    formik.errors.administration && (
+                      <div className="text-red-500 text-sm">
+                        {formik.errors.administration}
+                      </div>
+                    )}
+                </div>
               </div>
 
               {/* وصف الشكوى */}
               <div>
                 <label
                   htmlFor="description"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
+                  className="block text-sm font-medium text-gray-700 mb-1">
                   تفاصيل الشكوى <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -662,15 +881,40 @@ const ComplaintForm = () => {
                 <div className="rounded-lg overflow-hidden border border-gray-300">
                   <MapContainer
                     center={[30.0444, 31.2357]}
-                    zoom={10}
+                    zoom={7}
                     style={{ height: "300px", width: "100%" }}
                     className="z-0"
+                    maxBounds={
+                      formik.values.governorate &&
+                      governorateBounds[formik.values.governorate]
+                        ? [
+                            [
+                              governorateBounds[formik.values.governorate]
+                                .minLat,
+                              governorateBounds[formik.values.governorate]
+                                .minLng,
+                            ],
+                            [
+                              governorateBounds[formik.values.governorate]
+                                .maxLat,
+                              governorateBounds[formik.values.governorate]
+                                .maxLng,
+                            ],
+                          ]
+                        : undefined
+                    }
+                    maxBoundsViscosity={1.0} // تمنع الخروج من الحدود
                   >
                     <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    <LocationPicker setFieldValue={formik.setFieldValue} />
+                    <LocationPicker
+                      setFieldValue={formik.setFieldValue}
+                      governorateBounds={
+                        governorateBounds[formik.values.governorate]
+                      }
+                    />
                   </MapContainer>
                 </div>
                 <div className="mt-2 flex items-center text-sm text-gray-500">
@@ -688,29 +932,26 @@ const ComplaintForm = () => {
                 )}
               </div>
 
-              {/* رفع الصورة */}
+              {/* رفع الصور والفيديو */}
               <div>
                 <label
-                  htmlFor="image"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  إرفاق صورة (اختياري)
+                  htmlFor="media"
+                  className="block text-sm font-medium text-gray-700 mb-1">
+                  إرفاق صورة أو فيديو (اختياري)
                 </label>
-                <div className="mt-1 flex items-center">
+
+                {/* زر رفع صورة */}
+                <div className="mt-1 flex flex-col md:flex-row gap-4">
                   <label
                     htmlFor="image"
-                    className="flex flex-col items-center justify-center w-full p-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-300"
-                  >
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <FaUpload className="text-gray-400 text-2xl mb-2" />
-                      <p className="mb-2 text-sm text-gray-500">
-                        <span className="font-semibold">اضغط لرفع ملف</span> أو
-                        اسحبه هنا
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        الصور فقط (بحد أقصى 2MB)
-                      </p>
-                    </div>
+                    className="flex flex-col items-center justify-center w-full md:w-1/2 p-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-300">
+                    <FaUpload className="text-gray-400 text-2xl mb-2" />
+                    <p className="mb-2 text-sm text-gray-500">
+                      <span className="font-semibold">اضغط لرفع صورة</span>
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      الصور فقط (بحد أقصى 2MB)
+                    </p>
                     <input
                       id="image"
                       name="image"
@@ -720,53 +961,68 @@ const ComplaintForm = () => {
                       className="hidden"
                     />
                   </label>
-                </div>
-                {formik.values.imageBase64 && (
-                  <div className="mt-2 flex items-center text-sm text-green-600">
-                    <FaRegCheckCircle className="ml-1" />
-                    <span>تم تحميل الصورة بنجاح</span>
-                  </div>
-                )}
-              </div>
 
-              {/* رفع الفيديو */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  إرفاق فيديو (اختياري)
-                </label>
-                <div className="flex items-center gap-4">
-                  <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition">
-                    <span>اختر ملف فيديو</span>
+                  {/* زر رفع فيديو */}
+                  <label
+                    htmlFor="video"
+                    className="flex flex-col items-center justify-center w-full md:w-1/2 p-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-300">
+                    <FaUpload className="text-gray-400 text-2xl mb-2" />
+                    <p className="mb-2 text-sm text-gray-500">
+                      <span className="font-semibold">اضغط لرفع فيديو</span>
+                    </p>
+                    <p className="text-xs text-gray-500">بحد أقصى 20MB</p>
                     <input
+                      id="video"
+                      name="video"
                       type="file"
                       accept="video/*"
                       onChange={handleVideoChange}
                       className="hidden"
                     />
                   </label>
-                  {isUploadingVideo && (
-                    <div className="text-blue-600">جاري رفع الفيديو...</div>
+                </div>
+
+                {/* عرض الصور والفيديو بنفس التصميم */}
+                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {/* الصور */}
+                  {formik.values.imagesBase64.map((img, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={img}
+                        alt={`uploaded-${index}`}
+                        className="rounded-lg border w-full h-40 object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = formik.values.imagesBase64.filter(
+                            (_, i) => i !== index
+                          );
+                          formik.setFieldValue("imagesBase64", updated);
+                        }}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1">
+                        <FaTimes />
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* الفيديو */}
+                  {videoPreview && (
+                    <div className="relative">
+                      <video
+                        src={videoPreview}
+                        controls
+                        className="rounded-lg border w-full h-40 object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={removeVideo}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1">
+                        <FaTimes />
+                      </button>
+                    </div>
                   )}
                 </div>
-                {videoPreview && (
-                  <div className="mt-2 relative">
-                    <video
-                      src={videoPreview}
-                      controls
-                      className="max-h-40 rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={removeVideo}
-                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-                    >
-                      <FaTimes />
-                    </button>
-                  </div>
-                )}
-                <p className="mt-1 text-xs text-gray-500">
-                  الحد الأقصى لحجم الفيديو: 20MB
-                </p>
               </div>
 
               {/* زر الإرسال */}
@@ -774,8 +1030,7 @@ const ComplaintForm = () => {
                 <button
                   type="submit"
                   disabled={formik.isSubmitting || isUploadingVideo}
-                  className="bg-blue w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center"
-                >
+                  className="bg-blue w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center">
                   {formik.isSubmitting || isUploadingVideo ? (
                     <>جاري الإرسال...</>
                   ) : (
@@ -793,8 +1048,7 @@ const ComplaintForm = () => {
             لديك شكوى مسبقاً؟{" "}
             <Link
               to="/traceComplaint"
-              className="text-blue hover:text-blue-800 font-semibold transition duration-300 text-base"
-            >
+              className="text-blue hover:text-blue-800 font-semibold transition duration-300 text-base">
               اضغط هنا لمتابعة الشكوى
             </Link>
           </p>
@@ -824,8 +1078,7 @@ const ComplaintForm = () => {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm transition duration-300 bg-blue"
-                >
+                  className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm transition duration-300 bg-blue">
                   اغلاق
                 </button>
               </div>
@@ -835,6 +1088,6 @@ const ComplaintForm = () => {
       )}
     </div>
   );
-};
+}
 
 export default ComplaintForm;

@@ -4,8 +4,6 @@ import OverviewSection from "../OverviewSection/OverviewSection";
 import LastComplaintsSection from "../LastComplaintsSection/LastComplaintsSection";
 import { useAuth } from "../../../../contexts/AuthContext";
 import ChartsSection from "../ChartsSection/ChartsSection";
-import GovernoratesMap from "../GovernoratesMap/GovernoratesMap";
-import UrgentAlertsSection from "../prioriity/Priority";
 
 export default function DashboardTabs({
   lineChart,
@@ -34,7 +32,7 @@ export default function DashboardTabs({
       if (activeTab === "overview") {
         const total = data.length;
         const inProgress = data.filter(
-          (c) => c.status === "قيد المراجعة"
+          (c) => c.status === "قيد المعالجة"
         ).length;
         const running = data.filter((c) => c.status === "جارى الحل").length;
         const solved = data.filter((c) => c.status === "تم الحل").length;

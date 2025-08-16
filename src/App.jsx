@@ -97,11 +97,11 @@ const PrivateRoute = ({ children, allowedRoles = null }) => {
       return <Navigate to="/admin" replace />;
     }
 
-    if (isDepartment || isGovernorate) {
+    if (isDepartment || isGovernorate || isMinistry) {
       console.log(
-        "User is department/governorate, redirecting to department dashboard"
+        "User is department/governorate/ministry, redirecting to dashboard"
       );
-      return <Navigate to="/department/dashboard" replace />;
+      return <Navigate to="/dashboard" replace />;
     }
   }
 
@@ -116,6 +116,7 @@ const RoleRedirect = ({ children }) => {
     userData,
     isAdmin,
     isDepartment,
+    isMinistry,
     isGovernorate,
     preventNavigation,
   } = useAuth();
@@ -137,6 +138,10 @@ const RoleRedirect = ({ children }) => {
 
   if (isAdmin) {
     return <Navigate to="/admin" replace />;
+  }
+
+  if (isDepartment || isGovernorate || isMinistry) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   // Don't redirect department/governorate/ministry users - let them access the landing page

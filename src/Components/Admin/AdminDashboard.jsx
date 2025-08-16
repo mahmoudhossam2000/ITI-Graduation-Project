@@ -54,10 +54,23 @@ const AdminDashboard = () => {
   const [updatePassword, setUpdatePassword] = useState("");
   const [updateConfirmPassword, setUpdateConfirmPassword] = useState("");
   const [showUpdatePassword, setShowUpdatePassword] = useState(false);
-  const [showUpdateConfirmPassword, setShowUpdateConfirmPassword] = useState(false);
+  const [showUpdateConfirmPassword, setShowUpdateConfirmPassword] =
+    useState(false);
   const [deletedAccounts, setDeletedAccounts] = useState([]);
 
-  const { currentUser, userData, createDepartmentAccount, createMinistryAccount, createGovernorateAccount, updateDepartmentAccount, updateMinistryAccount, updateGovernorateAccount, updateDepartmentAccountPassword, updateMinistryAccountPassword, updateGovernorateAccountPassword } = useAuth();
+  const {
+    currentUser,
+    userData,
+    createDepartmentAccount,
+    createMinistryAccount,
+    createGovernorateAccount,
+    updateDepartmentAccount,
+    updateMinistryAccount,
+    updateGovernorateAccount,
+    updateDepartmentAccountPassword,
+    updateMinistryAccountPassword,
+    updateGovernorateAccountPassword,
+  } = useAuth();
 
   const departments = [
     "إدارة الكهرباء والطاقة",
@@ -156,9 +169,9 @@ const AdminDashboard = () => {
         orderBy("deletedAt", "desc")
       );
       const deletedSnapshot = await getDocs(deletedQuery);
-      const deletedAccountsData = deletedSnapshot.docs.map(doc => ({
+      const deletedAccountsData = deletedSnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
       setDeletedAccounts(deletedAccountsData);
     } catch (error) {
@@ -199,7 +212,7 @@ const AdminDashboard = () => {
         orderBy("createdAt", "desc")
       );
       const deptSnapshot = await getDocs(deptQuery);
-      const deptAccounts = deptSnapshot.docs.map(doc => ({
+      const deptAccounts = deptSnapshot.docs.map((doc) => ({
         id: doc.id,
         collection: "departmentAccounts",
         ...doc.data(),
@@ -211,7 +224,7 @@ const AdminDashboard = () => {
         orderBy("createdAt", "desc")
       );
       const governorateSnapshot = await getDocs(governorateQuery);
-      const governorateAccounts = governorateSnapshot.docs.map(doc => ({
+      const governorateAccounts = governorateSnapshot.docs.map((doc) => ({
         id: doc.id,
         collection: "governorateAccounts",
         ...doc.data(),
@@ -223,16 +236,24 @@ const AdminDashboard = () => {
         orderBy("createdAt", "desc")
       );
       const ministrySnapshot = await getDocs(ministryQuery);
-      const ministryAccounts = ministrySnapshot.docs.map(doc => ({
+      const ministryAccounts = ministrySnapshot.docs.map((doc) => ({
         id: doc.id,
         collection: "ministryAccounts",
         ...doc.data(),
       }));
 
       // Combine and sort all accounts
-      const allAccounts = [...deptAccounts, ...governorateAccounts, ...ministryAccounts].sort((a, b) => {
-        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+      const allAccounts = [
+        ...deptAccounts,
+        ...governorateAccounts,
+        ...ministryAccounts,
+      ].sort((a, b) => {
+        const dateA = a.createdAt?.toDate
+          ? a.createdAt.toDate()
+          : new Date(a.createdAt);
+        const dateB = b.createdAt?.toDate
+          ? b.createdAt.toDate()
+          : new Date(b.createdAt);
         return dateB - dateA;
       });
 
@@ -389,7 +410,7 @@ const AdminDashboard = () => {
       fetchAccounts();
     } catch (error) {
       console.error("Error creating account:", error);
-      if (error.code === 'auth/email-already-in-use') {
+      if (error.code === "auth/email-already-in-use") {
         toast.error("البريد الإلكتروني مستخدم بالفعل في حساب آخر");
       } else {
         toast.error(error.message || "حدث خطأ أثناء إنشاء الحساب");
@@ -425,7 +446,7 @@ const AdminDashboard = () => {
         originalCollection: collectionName,
         deletedAt: serverTimestamp(),
         deletedBy: currentUser.uid,
-        accountType: accountData.role || accountData.accountType
+        accountType: accountData.role || accountData.accountType,
       });
 
       toast.success("تم حذف الحساب بنجاح");
@@ -559,11 +580,20 @@ const AdminDashboard = () => {
       // Update password if provided
       if (updatePassword) {
         if (editingAccount.collection === "ministryAccounts") {
-          await updateMinistryAccountPassword(editingAccount.uid, updatePassword);
+          await updateMinistryAccountPassword(
+            editingAccount.uid,
+            updatePassword
+          );
         } else if (editingAccount.collection === "governorateAccounts") {
-          await updateGovernorateAccountPassword(editingAccount.uid, updatePassword);
+          await updateGovernorateAccountPassword(
+            editingAccount.uid,
+            updatePassword
+          );
         } else {
-          await updateDepartmentAccountPassword(editingAccount.uid, updatePassword);
+          await updateDepartmentAccountPassword(
+            editingAccount.uid,
+            updatePassword
+          );
         }
         toast.success("تم تحديث الحساب وكلمة المرور بنجاح");
       } else {
@@ -583,14 +613,14 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("create");
 
   // Separate accounts by type
-  const departmentAccounts = accounts.filter(account =>
-    account.collection === "departmentAccounts"
+  const departmentAccounts = accounts.filter(
+    (account) => account.collection === "departmentAccounts"
   );
-  const governorateAccounts = accounts.filter(account =>
-    account.collection === "governorateAccounts"
+  const governorateAccounts = accounts.filter(
+    (account) => account.collection === "governorateAccounts"
   );
-  const ministryAccounts = accounts.filter(account =>
-    account.collection === "ministryAccounts"
+  const ministryAccounts = accounts.filter(
+    (account) => account.collection === "ministryAccounts"
   );
 
   const CreateAccountForm = (
@@ -893,8 +923,8 @@ const AdminDashboard = () => {
                     <div className="text-xs text-gray-500">
                       {account.createdAt?.toDate
                         ? new Date(
-                          account.createdAt.toDate()
-                        ).toLocaleDateString("ar-EG")
+                            account.createdAt.toDate()
+                          ).toLocaleDateString("ar-EG")
                         : "غير معروف"}
                     </div>
                   </td>
@@ -943,16 +973,23 @@ const AdminDashboard = () => {
                             account.collection
                           )
                         }
-                        className={`p-2 rounded-md ${account.banned
-                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
-                          } transition-colors`}
+                        className={`p-2 rounded-md ${
+                          account.banned
+                            ? "bg-green-100 text-green-700 hover:bg-green-200"
+                            : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                        } transition-colors`}
                         title={account.banned ? "فك الحظر" : "حظر"}
                       >
                         {account.banned ? <FaCheck /> : <FaBan />}
                       </button>
                       <button
-                        onClick={() => handleDelete(account.id, account.uid, account.collection)}
+                        onClick={() =>
+                          handleDelete(
+                            account.id,
+                            account.uid,
+                            account.collection
+                          )
+                        }
                         className="p-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
                         title="حذف"
                       >
@@ -983,7 +1020,13 @@ const AdminDashboard = () => {
               </button>
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); handleUpdate(); }} className="space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleUpdate();
+              }}
+              className="space-y-4"
+            >
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   البريد الإلكتروني
@@ -1038,7 +1081,9 @@ const AdminDashboard = () => {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowUpdateConfirmPassword(!showUpdateConfirmPassword)}
+                    onClick={() =>
+                      setShowUpdateConfirmPassword(!showUpdateConfirmPassword)
+                    }
                     className="absolute inset-y-0 right-0 top-6 flex items-center pr-3"
                   >
                     {showUpdateConfirmPassword ? (
@@ -1166,7 +1211,13 @@ const AdminDashboard = () => {
               </button>
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); handleUpdate(); }} className="space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleUpdate();
+              }}
+              className="space-y-4"
+            >
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   البريد الإلكتروني
@@ -1221,7 +1272,9 @@ const AdminDashboard = () => {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowUpdateConfirmPassword(!showUpdateConfirmPassword)}
+                    onClick={() =>
+                      setShowUpdateConfirmPassword(!showUpdateConfirmPassword)
+                    }
                     className="absolute inset-y-0 right-0 top-6 flex items-center pr-3"
                   >
                     {showUpdateConfirmPassword ? (
@@ -1409,8 +1462,8 @@ const AdminDashboard = () => {
                     <div className="text-xs text-gray-500">
                       {account.createdAt?.toDate
                         ? new Date(
-                          account.createdAt.toDate()
-                        ).toLocaleDateString("ar-EG")
+                            account.createdAt.toDate()
+                          ).toLocaleDateString("ar-EG")
                         : "غير معروف"}
                     </div>
                   </td>
@@ -1454,16 +1507,23 @@ const AdminDashboard = () => {
                             account.collection
                           )
                         }
-                        className={`p-2 rounded-md ${account.banned
-                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
-                          } transition-colors`}
+                        className={`p-2 rounded-md ${
+                          account.banned
+                            ? "bg-green-100 text-green-700 hover:bg-green-200"
+                            : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                        } transition-colors`}
                         title={account.banned ? "فك الحظر" : "حظر"}
                       >
                         {account.banned ? <FaCheck /> : <FaBan />}
                       </button>
                       <button
-                        onClick={() => handleDelete(account.id, account.uid, account.collection)}
+                        onClick={() =>
+                          handleDelete(
+                            account.id,
+                            account.uid,
+                            account.collection
+                          )
+                        }
                         className="p-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
                         title="حذف"
                       >
@@ -1494,7 +1554,13 @@ const AdminDashboard = () => {
               </button>
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); handleUpdate(); }} className="space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleUpdate();
+              }}
+              className="space-y-4"
+            >
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   البريد الإلكتروني
@@ -1549,7 +1615,9 @@ const AdminDashboard = () => {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowUpdateConfirmPassword(!showUpdateConfirmPassword)}
+                    onClick={() =>
+                      setShowUpdateConfirmPassword(!showUpdateConfirmPassword)
+                    }
                     className="absolute inset-y-0 right-0 top-6 flex items-center pr-3"
                   >
                     {showUpdateConfirmPassword ? (
@@ -1737,8 +1805,8 @@ const AdminDashboard = () => {
                     <div className="text-xs text-gray-500">
                       {account.createdAt?.toDate
                         ? new Date(
-                          account.createdAt.toDate()
-                        ).toLocaleDateString("ar-EG")
+                            account.createdAt.toDate()
+                          ).toLocaleDateString("ar-EG")
                         : "غير معروف"}
                     </div>
                   </td>
@@ -1782,16 +1850,23 @@ const AdminDashboard = () => {
                             account.collection
                           )
                         }
-                        className={`p-2 rounded-md ${account.banned
-                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
-                          } transition-colors`}
+                        className={`p-2 rounded-md ${
+                          account.banned
+                            ? "bg-green-100 text-green-700 hover:bg-green-200"
+                            : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                        } transition-colors`}
                         title={account.banned ? "فك الحظر" : "حظر"}
                       >
                         {account.banned ? <FaCheck /> : <FaBan />}
                       </button>
                       <button
-                        onClick={() => handleDelete(account.id, account.uid, account.collection)}
+                        onClick={() =>
+                          handleDelete(
+                            account.id,
+                            account.uid,
+                            account.collection
+                          )
+                        }
                         className="p-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
                         title="حذف"
                       >
@@ -1822,7 +1897,13 @@ const AdminDashboard = () => {
               </button>
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); handleUpdate(); }} className="space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleUpdate();
+              }}
+              className="space-y-4"
+            >
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   البريد الإلكتروني
@@ -1877,7 +1958,9 @@ const AdminDashboard = () => {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowUpdateConfirmPassword(!showUpdateConfirmPassword)}
+                    onClick={() =>
+                      setShowUpdateConfirmPassword(!showUpdateConfirmPassword)
+                    }
                     className="absolute inset-y-0 right-0 top-6 flex items-center pr-3"
                   >
                     {showUpdateConfirmPassword ? (
@@ -1991,8 +2074,6 @@ const AdminDashboard = () => {
     </div>
   );
 
-
-
   // Deleted Accounts List Component
   const DeletedAccountsList = (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -2045,7 +2126,9 @@ const AdminDashboard = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-900 border-b">
-                    {account.deletedAt?.toDate ? account.deletedAt.toDate().toLocaleDateString('ar-EG') : 'غير محدد'}
+                    {account.deletedAt?.toDate
+                      ? account.deletedAt.toDate().toLocaleDateString("ar-EG")
+                      : "غير محدد"}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-900 border-b">
                     <button

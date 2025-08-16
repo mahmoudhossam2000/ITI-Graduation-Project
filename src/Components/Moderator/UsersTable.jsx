@@ -42,8 +42,8 @@ const UsersTable = () => {
         for (const userDoc of usersSnapshot.docs) {
           const user = { id: userDoc.id, ...userDoc.data() };
 
-          // استثناء المستخدمين اللي رولهم department
-          if (user.role === "department") continue;
+          // display users (role:users)
+          if (user.role !== "user") continue;
 
           // منع التكرار بناءً على الإيميل
           if (!user.email || seenEmails.has(user.email.toLowerCase())) continue;
