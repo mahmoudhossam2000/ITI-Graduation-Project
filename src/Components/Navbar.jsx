@@ -104,7 +104,7 @@ export default function Navbar() {
                   </MenuItems>
                 </Menu>
 
-                <div className="relative">
+                {/* <div className="relative">
                   <button
                     onClick={() => setShowNotifications((prev) => !prev)}
                     className={`relative p-2 rounded-full hover:bg-gray-100 transition-all ${
@@ -184,7 +184,7 @@ export default function Navbar() {
                       </div>
                     </div>
                   )}
-                </div>
+                </div> */}
               </>
             ) : (
               <Link

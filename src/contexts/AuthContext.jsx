@@ -28,7 +28,6 @@ export const AuthProvider = ({ children }) => {
 
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [preventNavigation, setPreventNavigation] = useState(false);
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const [adminCredentials, setAdminCredentials] = useState(null);
@@ -39,35 +38,85 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(user);
 
       if (user) {
-        // Check if user is admin or department/governorate account
+        console.log("User logged in:", user.uid);
+        
+        // First check specialized account collections before checking users collection
+        // Check if it's a department account
+        const deptQuery = query(
+          collection(db, "departmentAccounts"),
+          where("uid", "==", user.uid)
+        );
+        const deptSnapshot = await getDocs(deptQuery);
+
+        if (!deptSnapshot.empty) {
+          const accountData = deptSnapshot.docs[0].data();
+          console.log("User found in departmentAccounts:", accountData);
+          console.log("Account type from data:", accountData.accountType);
+          setUserData({
+            ...accountData,
+            role: "department", // Always set as department for departmentAccounts collection
+          });
+          setLoading(false);
+          return;
+        }
+        
+        // Check if it's a ministry account
+        const ministryQuery = query(
+          collection(db, "ministryAccounts"),
+          where("uid", "==", user.uid)
+        );
+        const ministrySnapshot = await getDocs(ministryQuery);
+        
+        if (!ministrySnapshot.empty) {
+          const accountData = ministrySnapshot.docs[0].data();
+          console.log("User found in ministryAccounts:", accountData);
+          setUserData({
+            ...accountData,
+            role: "ministry",
+          });
+          setLoading(false);
+          return;
+        }
+        
+        // Check if it's a governorate account in the governorateAccounts collection
+        const governorateQuery = query(
+          collection(db, "governorateAccounts"),
+          where("uid", "==", user.uid)
+        );
+        const governorateSnapshot = await getDocs(governorateQuery);
+        
+        if (!governorateSnapshot.empty) {
+          const accountData = governorateSnapshot.docs[0].data();
+          console.log("User found in governorateAccounts:", accountData);
+          setUserData({
+            ...accountData,
+            role: "governorate",
+          });
+          setLoading(false);
+          return;
+        }
+        
+        // Check if user is in the general users collection
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
 
         if (userSnap.exists()) {
-          setUserData(userSnap.data());
-          setUserData(userSnap.data());
+          const userData = userSnap.data();
+          console.log("User found in users collection:", userData);
+          setUserData({
+            ...userData,
+            role: userData.role || "citizen"
+          });
         } else {
-          // Check if it's a department or governorate account
-          const deptQuery = query(
-            collection(db, "departmentAccounts"),
-            where("uid", "==", user.uid)
-          );
-          const querySnapshot = await getDocs(deptQuery);
-
-          if (!querySnapshot.empty) {
-            const accountData = querySnapshot.docs[0].data();
-            setUserData({
-              ...accountData,
-              role: accountData.accountType, // 'department' or 'governorate'
-            });
-          } else {
-            // Default user role
-            setUserData({ role: "user" });
-          }
+          console.log("User not found in any account collection, setting default citizen role");
+          // Default citizen role for regular users
+          setUserData({ role: "citizen" });
         }
       } else {
         setUserData(null);
       }
+      
+      console.log("Final user data set:", userData);
 
       setLoading(false);
     });
@@ -138,16 +187,25 @@ export const AuthProvider = ({ children }) => {
       const userRef = doc(db, "users", userCredential.user.uid);
       const userSnap = await getDoc(userRef);
 
-      if (userSnap.exists() && userSnap.data().role === "admin") {
-        setAdminCredentials({ email, password });
-        console.log("Stored admin credentials for re-authentication");
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        
+        if (userData.role === "admin") {
+          setAdminCredentials({ email, password });
+          console.log("Stored admin credentials for re-authentication");
+        }
+        
+        // Don't override userData here - let onAuthStateChanged handle it
+        console.log("Found user in users collection, letting onAuthStateChanged handle userData");
+      } else {
+        // Don't set userData here - let onAuthStateChanged handle it
+        console.log("User not found in users collection, letting onAuthStateChanged handle userData");
       }
 
       console.log("Login successful, user:", userCredential.user.uid);
       console.log("User credential:", userCredential);
       console.log("=== LOGIN WITH EMAIL END ===");
 
-      // The user data will be handled by the onAuthStateChanged listener
       return userCredential.user;
     } catch (error) {
       console.error("Error signing in with email", error);
@@ -501,8 +559,9 @@ export const AuthProvider = ({ children }) => {
     logout,
     createDepartmentAccount,
     isAdmin: userData?.role === "admin",
-    isDepartment: userData?.accountType === "department",
-    isGovernorate: userData?.accountType === "governorate",
+    isDepartment: userData?.role === "department",
+    isGovernorate: userData?.role === "governorate",
+    isMinistry: userData?.role === "ministry",
   };
 
   return (

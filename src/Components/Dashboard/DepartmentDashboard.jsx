@@ -153,10 +153,16 @@ const DepartmentDashboard = () => {
         setComplaints([]);
         return;
       }
+      
       let q;
 
       if (userData.role === "department") {
         // للإدارة: عرض الشكاوى حسب الإدارة والمحافظة معاً
+        if (!userData.department || !userData.governorate) {
+          console.error("Department user missing required fields:", userData);
+          setComplaints([]);
+          return;
+        }
         q = query(
           collection(db, "complaints"),
           where("administration", "==", userData.department),
@@ -164,10 +170,24 @@ const DepartmentDashboard = () => {
         );
       } else if (userData.role === "governorate") {
         // للمحافظة: عرض جميع الشكاوى في المحافظة
+        if (!userData.governorate) {
+          console.error("Governorate user missing governorate field:", userData);
+          setComplaints([]);
+          return;
+        }
         q = query(
           collection(db, "complaints"),
           where("governorate", "==", userData.governorate)
         );
+      } else {
+        console.error("Invalid user role for dashboard:", userData.role);
+        setComplaints([]);
+        return;
+      }
+
+      if (!q) {
+        setComplaints([]);
+        return;
       }
 
       const querySnapshot = await getDocs(q);
