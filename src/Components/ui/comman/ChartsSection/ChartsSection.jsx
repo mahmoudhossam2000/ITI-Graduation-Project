@@ -34,7 +34,7 @@ export default function ChartsSection({
       </div>
 
       {/* Column Chart */}
-      <div className="bg-white dark:bg-black p-4 rounded-xl shadow">
+      {/* <div className="bg-white dark:bg-black p-4 rounded-xl shadow">
         <h3 className="mb-3 text-lg font-bold">📈 توزيع الشكاوى حسب الإدارة</h3>
         {hasData ? (
           <ReactApexChart
@@ -46,7 +46,7 @@ export default function ChartsSection({
         ) : (
           <NoData message="لا توجد بيانات متاحة لعرض الرسم البياني" />
         )}
-      </div>
+      </div> */}
     </div>
   );
 }

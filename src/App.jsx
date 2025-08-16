@@ -77,16 +77,12 @@ const PrivateRoute = ({ children, allowedRoles = null }) => {
 
   // If specific roles are required, check if user has access
   if (allowedRoles && !allowedRoles.includes(userData.role)) {
-    console.log("=== ROLE CHECK FAILED ===");
-    console.log("Allowed roles:", allowedRoles);
-    console.log("User role:", userData.role);
-    console.log("User data:", userData);
-    console.log("Role check result:", !allowedRoles.includes(userData.role));
-    console.log("isMinistry boolean:", isMinistry);
-    console.log("isDepartment boolean:", isDepartment);
-    console.log("isGovernorate boolean:", isGovernorate);
-    console.log("isAdmin boolean:", isAdmin);
-    console.log("Redirecting to unauthorized");
+    console.log(
+      "Unauthorized access attempt. User role:",
+      userData.role,
+      "Allowed roles:",
+      allowedRoles
+    );
     return <Navigate to="/unauthorized" replace />;
   }
 
@@ -116,39 +112,44 @@ const RoleRedirect = ({ children }) => {
     userData,
     isAdmin,
     isDepartment,
-    isMinistry,
     isGovernorate,
-    preventNavigation,
+    isMinistry,
   } = useAuth();
 
-  // If not logged in, show the public page
-  if (!currentUser) {
-    return children;
-  }
+  if (!currentUser) return children;
+  if (!userData) return null;
 
-  // Wait until userData resolves
-  if (!userData) {
-    return null; // or a loading spinner
-  }
+  console.log("RoleRedirect check - User data:", userData);
+  console.log("RoleRedirect check - isAdmin:", isAdmin);
+  console.log("RoleRedirect check - isDepartment:", isDepartment);
+  console.log("RoleRedirect check - isGovernorate:", isGovernorate);
+  console.log("RoleRedirect check - isMinistry:", isMinistry);
 
-  // If navigation is prevented (e.g., during account creation), don't redirect
-  if (preventNavigation) {
-    return children;
-  }
-
+  // Redirect based on user role
   if (isAdmin) {
+    console.log("Redirecting admin to /admin");
     return <Navigate to="/admin" replace />;
   }
 
-  if (isDepartment || isGovernorate || isMinistry) {
+  // Redirect department and governorate users to their specific dashboard
+  if (isDepartment || isGovernorate) {
+    console.log("Redirecting department/governorate to /department/dashboard");
+    return <Navigate to="/department/dashboard" replace />;
+  }
+
+  // Redirect ministry users to their dashboard in features folder
+  if (isMinistry) {
+    console.log("Redirecting ministry to /dashboard");
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Don't redirect department/governorate/ministry users - let them access the landing page
-  // They can navigate to their dashboard when needed
-  console.log(
-    "User is department/governorate/ministry, allowing access to landing page"
-  );
+  // Redirect moderator users to their dashboard
+  if (userData.role === "moderator") {
+    console.log("Redirecting moderator to /moderator");
+    return <Navigate to="/moderator" replace />;
+  }
+
+  console.log("No redirect needed, showing children");
   return children;
 };
 
@@ -178,20 +179,19 @@ const DepartmentRoute = ({ children }) => {
   const { currentUser, isDepartment, isGovernorate, isMinistry, userData } =
     useAuth();
 
-  console.log("DepartmentRoute Debug:", {
-    currentUser: currentUser?.uid,
-    userData: userData?.role,
-    isDepartment,
-    isGovernorate,
-    isMinistry,
-    hasAccess: currentUser && (isDepartment || isGovernorate || isMinistry),
-  });
+  console.log("DepartmentRoute check - currentUser:", !!currentUser);
+  console.log("DepartmentRoute check - userData:", userData);
+  console.log("DepartmentRoute check - isDepartment:", isDepartment);
+  console.log("DepartmentRoute check - isGovernorate:", isGovernorate);
+  console.log("DepartmentRoute check - isMinistry:", isMinistry);
 
-  return currentUser && (isDepartment || isGovernorate || isMinistry) ? (
-    children
-  ) : (
-    <Navigate to="/login" replace />
-  );
+  if (!currentUser) return <Navigate to="/login" replace />;
+  if (!userData) return null;
+
+  const hasAccess = isDepartment || isGovernorate || isMinistry;
+  console.log("DepartmentRoute - hasAccess:", hasAccess);
+
+  return hasAccess ? children : <Navigate to="/unauthorized" replace />;
 };
 
 function AppContent() {
