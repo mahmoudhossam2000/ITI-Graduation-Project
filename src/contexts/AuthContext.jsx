@@ -16,6 +16,8 @@ import {
   where,
   getDocs,
   addDoc,
+  updateDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { auth, db } from "../firebase/firebase";
 
@@ -35,6 +37,13 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+
+      // If we're in the middle of creating an account, don't update userData
+      // This prevents auth state changes from affecting the admin session
+      if (isCreatingAccount) {
+        console.log("Account creation in progress, skipping userData update");
+        return;
+      }
 
       if (user) {
         console.log("User logged in:", user.uid);
@@ -123,7 +132,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     return unsubscribe;
-  }, []);
+  }, [isCreatingAccount]);
 
   // تسجيل الدخول بـ Google
   const signInWithGoogle = async () => {
@@ -223,9 +232,25 @@ export const AuthProvider = ({ children }) => {
     password,
     accountType,
     department = null,
-    governorate = null
+    governorate = null,
+    ministry = null
   ) => {
     try {
+      console.log("Starting department account creation for:", department, email);
+
+      // Set flags to prevent navigation and auth state changes during account creation
+      setIsCreatingAccount(true);
+      setPreventNavigation(true);
+      console.log("Set isCreatingAccount and preventNavigation to true");
+
+      // Store the current admin user's credentials
+      const currentAdminUser = currentUser;
+      if (!currentAdminUser) {
+        throw new Error("Admin user not authenticated");
+      }
+
+      console.log("Current admin user:", currentAdminUser.uid);
+
       // Create auth user
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -233,17 +258,20 @@ export const AuthProvider = ({ children }) => {
         password
       );
       const user = userCredential.user;
+      console.log("Created new Firebase Auth user:", user.uid);
 
       // Save additional user data to Firestore
       await addDoc(collection(db, "departmentAccounts"), {
         uid: user.uid,
         email,
+        role: "department",
         accountType,
-        department: accountType === "department" ? department : null,
-        governorate: accountType === "governorate" ? governorate : null,
+        department: department,
+        governorate: governorate,
+        ministry: ministry,
         createdAt: new Date(),
       });
-      console.log("Saved account data to Firestore");
+      console.log("Saved department account data to Firestore");
 
       // Sign back in as admin if we have admin credentials
       if (adminCredentials) {
@@ -256,15 +284,17 @@ export const AuthProvider = ({ children }) => {
         console.log("Successfully signed back in as admin");
       }
 
-      // Reset the flag after account creation is complete
+      // Reset the flags after account creation is complete
       setIsCreatingAccount(false);
-      console.log("Account creation completed successfully");
+      setPreventNavigation(false);
+      console.log("Department account creation completed successfully");
 
       return user;
     } catch (error) {
       console.error("Error creating department account:", error);
-      // Reset the flag in case of error
+      // Reset the flags in case of error
       setIsCreatingAccount(false);
+      setPreventNavigation(false);
 
       // Provide better error messages
       if (error.code === "auth/email-already-in-use") {
@@ -283,9 +313,10 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log("Starting ministry account creation for:", ministry, email);
 
-      // Set flag to prevent auth state changes during account creation
+      // Set flags to prevent navigation and auth state changes during account creation
       setIsCreatingAccount(true);
-      console.log("Set isCreatingAccount to true");
+      setPreventNavigation(true);
+      console.log("Set isCreatingAccount and preventNavigation to true");
 
       // Store the current admin user's credentials
       const currentAdminUser = currentUser; // Use currentUser from state instead of auth.currentUser
@@ -325,15 +356,17 @@ export const AuthProvider = ({ children }) => {
         console.log("Successfully signed back in as admin");
       }
 
-      // Reset the flag after account creation is complete
+      // Reset the flags after account creation is complete
       setIsCreatingAccount(false);
+      setPreventNavigation(false);
       console.log("Ministry account creation completed successfully");
 
       return user;
     } catch (error) {
       console.error("Error creating ministry account:", error);
-      // Reset the flag in case of error
+      // Reset the flags in case of error
       setIsCreatingAccount(false);
+      setPreventNavigation(false);
 
       // Provide better error messages
       if (error.code === "auth/email-already-in-use") {
@@ -356,9 +389,10 @@ export const AuthProvider = ({ children }) => {
         email
       );
 
-      // Set flag to prevent auth state changes during account creation
+      // Set flags to prevent navigation and auth state changes during account creation
       setIsCreatingAccount(true);
-      console.log("Set isCreatingAccount to true");
+      setPreventNavigation(true);
+      console.log("Set isCreatingAccount and preventNavigation to true");
 
       // Store the current admin user's credentials
       const currentAdminUser = currentUser; // Use currentUser from state instead of auth.currentUser
@@ -398,15 +432,17 @@ export const AuthProvider = ({ children }) => {
         console.log("Successfully signed back in as admin");
       }
 
-      // Reset the flag after account creation is complete
+      // Reset the flags after account creation is complete
       setIsCreatingAccount(false);
+      setPreventNavigation(false);
       console.log("Governorate account creation completed successfully");
 
       return user;
     } catch (error) {
       console.error("Error creating governorate account:", error);
-      // Reset the flag in case of error
+      // Reset the flags in case of error
       setIsCreatingAccount(false);
+      setPreventNavigation(false);
 
       // Provide better error messages
       if (error.code === "auth/email-already-in-use") {
@@ -564,6 +600,15 @@ export const AuthProvider = ({ children }) => {
     loginWithEmail,
     logout,
     createDepartmentAccount,
+    createMinistryAccount,
+    createGovernorateAccount,
+    updateDepartmentAccount,
+    updateMinistryAccount,
+    updateGovernorateAccount,
+    updateDepartmentAccountPassword,
+    updateMinistryAccountPassword,
+    updateGovernorateAccountPassword,
+    preventNavigation,
     isAdmin: userData?.role === "admin",
     isDepartment: userData?.role === "department",
     isGovernorate: userData?.role === "governorate",

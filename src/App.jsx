@@ -114,10 +114,17 @@ const RoleRedirect = ({ children }) => {
     isDepartment,
     isGovernorate,
     isMinistry,
+    preventNavigation,
   } = useAuth();
 
   if (!currentUser) return children;
   if (!userData) return null;
+
+  // If navigation is prevented (e.g., during account creation), don't redirect
+  if (preventNavigation) {
+    console.log("Navigation prevented in RoleRedirect, showing children");
+    return children;
+  }
 
   console.log("RoleRedirect check - User data:", userData);
   console.log("RoleRedirect check - isAdmin:", isAdmin);
