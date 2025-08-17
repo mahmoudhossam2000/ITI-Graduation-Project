@@ -134,7 +134,7 @@ const RoleRedirect = ({ children }) => {
   // Redirect department and governorate users to their specific dashboard
   if (isDepartment || isGovernorate) {
     console.log("Redirecting department/governorate to /department/dashboard");
-    return <Navigate to="/department/dashboard" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   // Redirect ministry users to their dashboard in features folder
@@ -277,7 +277,12 @@ function AppContent() {
           path="/dashboard"
           element={
             <PrivateRoute
-              allowedRoles={["department", "moderator", "ministry"]}
+              allowedRoles={[
+                "department",
+                "moderator",
+                "ministry",
+                "governorate",
+              ]}
             >
               <Layout />
             </PrivateRoute>
