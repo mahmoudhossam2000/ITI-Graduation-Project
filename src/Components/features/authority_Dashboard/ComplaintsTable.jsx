@@ -1,5 +1,7 @@
 import { useState } from "react";
 import IconArrow from "../../ui/icons/icon-arrow";
+import { useAuth } from "../../../contexts/AuthContext";
+import { FaCog, FaEye } from "react-icons/fa";
 
 // createdAt
 // July 5, 2025 at 6:10:18 PM UTC+3
@@ -72,6 +74,8 @@ export default function ComplaintsTable({ complaints, onDetails, onAction }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
 
+  const { userData } = useAuth();
+
   // count pages in pagination
   const totalPages = Math.ceil(complaints.length / PAGE_SIZE);
 
@@ -118,7 +122,7 @@ export default function ComplaintsTable({ complaints, onDetails, onAction }) {
 
   return (
     <div className="overflow-x-auto m-5 p-4 shadow-md space-y-4">
-      <div className="flex justify-end items-center mb-4">
+      <div className="flex justify-start items-center mb-4">
         <input
           type="text"
           placeholder=" ابحث برقم الشكوى"
@@ -212,17 +216,21 @@ export default function ComplaintsTable({ complaints, onDetails, onAction }) {
               <td className="flex gap-2 justify-center">
                 <button
                   onClick={() => onDetails(complaint)}
-                  className="btn px-2 py-1 text-xs rounded bg-blue text-white hover:bg-blue-700"
+                  className="text-blue-600 hover:text-blue-900 bg-blue-100 px-3 py-1 rounded text-xs flex items-center"
                 >
-                  التفاصيل
+                  <FaEye className="ml-1" />
+                  عرض
                 </button>
 
-                <button
-                  onClick={() => onAction(complaint)}
-                  className="btn px-2 py-1 text-xs rounded bg-green-600 text-white hover:bg-green-700"
-                >
-                  إجراء
-                </button>
+                {userData.role === "department" && (
+                  <button
+                    onClick={() => onAction(complaint)}
+                    className="text-orange-600 hover:text-orange-900 bg-orange-100 px-3 py-1 rounded text-xs flex items-center"
+                  >
+                    <FaCog className="ml-1" />
+                    إجراء
+                  </button>
+                )}
               </td>
               <td className="py-3 px-2"></td>
             </tr>

@@ -1,15 +1,19 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useState } from "react";
 import {
   FaBuilding,
   FaEye,
   FaImage,
+  FaImages,
   FaMapMarkerAlt,
+  FaTimes,
   FaUser,
   FaVideo,
 } from "react-icons/fa";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
 
 const ComplaintDetails = forwardRef(({ complaint }, ref) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
   const formatDateTime = (dateValue) => {
     if (!dateValue) return "-";
     const dateObj = dateValue?.toDate ? dateValue.toDate() : dateValue;
@@ -40,8 +44,22 @@ const ComplaintDetails = forwardRef(({ complaint }, ref) => {
   };
 
   return (
-    <dialog ref={ref} className="modal md:modal-middle w-6xl ">
-      <div className="modal-box">
+    <dialog
+      ref={ref}
+      className="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-auto overscroll-contain"
+    >
+      <div className="modal-box bg-white p-6 rounded-lg shadow-lg max-w-4xl w-3/4 sm:max-w-5xl md:max-w-6xl lg:max-w-7xl max-h-[90vh] overflow-y-auto">
+        {/* Fixed Close Button */}
+        <button
+          onClick={() => {
+            const dialog = document.querySelector("dialog");
+            if (dialog) dialog.close();
+          }}
+          className="fixed top-4 left-4 bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-red-600 transition-colors z-10"
+          aria-label="إغلاق"
+        >
+          <FaTimes size={20} />
+        </button>
         {complaint ? (
           <>
             {/* Header */}
@@ -209,6 +227,95 @@ const ComplaintDetails = forwardRef(({ complaint }, ref) => {
                   </div>
                 )}
 
+                {/* ////////////////////////////////////// */}
+                {complaint?.imagesBase64?.length > 0 && (
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <h4 className="text-lg font-semibold text-darkTeal mb-4 flex items-center">
+                      <FaImages className="me-2" />
+                      الصور المرفقة ({currentImageIndex + 1}/
+                      {complaint.imagesBase64.length})
+                    </h4>
+                    <div className="relative">
+                      <div className="overflow-hidden rounded-md border-2 border-gray-200">
+                        <img
+                          src={complaint.imagesBase64[currentImageIndex]}
+                          alt={`صورة الشكوى ${currentImageIndex + 1}`}
+                          className="w-full h-72 object-cover"
+                        />
+                      </div>
+
+                      {complaint.imagesBase64.length > 1 && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCurrentImageIndex((prev) =>
+                                prev === 0
+                                  ? complaint.imagesBase64.length - 1
+                                  : prev - 1
+                              );
+                            }}
+                            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 rounded-full p-2 shadow-md hover:bg-white transition-all duration-300"
+                          >
+                            <svg
+                              className="h-5 w-5 text-darkTeal"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 19l-7-7 7-7"
+                              />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCurrentImageIndex((prev) =>
+                                prev === complaint.imagesBase64.length - 1
+                                  ? 0
+                                  : prev + 1
+                              );
+                            }}
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 rounded-full p-2 shadow-md hover:bg-white transition-all duration-300"
+                          >
+                            <svg
+                              className="h-5 w-5 text-darkTeal"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
+                            </svg>
+                          </button>
+                        </>
+                      )}
+
+                      <div className="flex justify-center mt-4 space-x-2">
+                        {complaint.imagesBase64.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentImageIndex(index)}
+                            className={`rounded-full transition-all duration-300 ${
+                              currentImageIndex === index
+                                ? "bg-blue w-3 h-3 mx-1"
+                                : "bg-darkTeal w-2 h-2 hover:bg-gray-400 mx-1"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Video */}
                 {complaint.videoUrl && (
                   <div className="bg-gray-50 rounded-lg p-4">
@@ -231,7 +338,7 @@ const ComplaintDetails = forwardRef(({ complaint }, ref) => {
         ) : (
           <p>جاري تحميل البيانات...</p>
         )}
-        <form method="dialog" className="modal-action">
+        <form method="dialog" className="modal-action ">
           <button className="btn">إغلاق</button>
         </form>
       </div>

@@ -241,7 +241,11 @@ export const AuthProvider = ({ children }) => {
     ministry = null
   ) => {
     try {
-      console.log("Starting department account creation for:", department, email);
+      console.log(
+        "Starting department account creation for:",
+        department,
+        email
+      );
 
       // Set flags to prevent navigation and auth state changes during account creation
       setIsCreatingAccount(true);

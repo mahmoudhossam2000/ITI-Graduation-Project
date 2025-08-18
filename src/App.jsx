@@ -198,8 +198,14 @@ const AdminRoute = ({ children }) => {
 };
 
 const DepartmentRoute = ({ children }) => {
-  const { currentUser, isDepartment, isGovernorate, isMinistry, userData, loading } =
-    useAuth();
+  const {
+    currentUser,
+    isDepartment,
+    isGovernorate,
+    isMinistry,
+    userData,
+    loading,
+  } = useAuth();
 
   console.log("DepartmentRoute check - currentUser:", !!currentUser);
   console.log("DepartmentRoute check - userData:", userData);
