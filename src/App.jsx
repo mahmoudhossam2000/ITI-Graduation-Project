@@ -43,6 +43,7 @@ const PrivateRoute = ({ children, allowedRoles = null }) => {
     isMinistry,
     userData,
     preventNavigation,
+    loading,
   } = useAuth();
   const location = useLocation();
 
@@ -55,7 +56,14 @@ const PrivateRoute = ({ children, allowedRoles = null }) => {
   //   isGovernorate,
   //   isMinistry,
   //   preventNavigation,
+  //   loading,
   // });
+
+  // If still loading authentication state, show loading
+  if (loading) {
+    console.log("Auth state loading, showing loading");
+    return null; // or a loading spinner
+  }
 
   // If not logged in, redirect to login
   if (!currentUser) {
@@ -115,8 +123,10 @@ const RoleRedirect = ({ children }) => {
     isGovernorate,
     isMinistry,
     preventNavigation,
+    loading,
   } = useAuth();
 
+  if (loading) return null;
   if (!currentUser) return children;
   if (!userData) return null;
 
@@ -161,7 +171,12 @@ const RoleRedirect = ({ children }) => {
 };
 
 const AdminRoute = ({ children }) => {
-  const { currentUser, isAdmin, userData } = useAuth();
+  const { currentUser, isAdmin, userData, loading } = useAuth();
+
+  // If still loading authentication state, show loading
+  if (loading) {
+    return null; // or a loading spinner
+  }
 
   // If not logged in, redirect to login
   if (!currentUser) {
@@ -183,7 +198,7 @@ const AdminRoute = ({ children }) => {
 };
 
 const DepartmentRoute = ({ children }) => {
-  const { currentUser, isDepartment, isGovernorate, isMinistry, userData } =
+  const { currentUser, isDepartment, isGovernorate, isMinistry, userData, loading } =
     useAuth();
 
   console.log("DepartmentRoute check - currentUser:", !!currentUser);
@@ -191,6 +206,11 @@ const DepartmentRoute = ({ children }) => {
   console.log("DepartmentRoute check - isDepartment:", isDepartment);
   console.log("DepartmentRoute check - isGovernorate:", isGovernorate);
   console.log("DepartmentRoute check - isMinistry:", isMinistry);
+
+  // If still loading authentication state, show loading
+  if (loading) {
+    return null; // or a loading spinner
+  }
 
   if (!currentUser) return <Navigate to="/login" replace />;
   if (!userData) return null;
