@@ -43,6 +43,7 @@ const PrivateRoute = ({ children, allowedRoles = null }) => {
     isMinistry,
     userData,
     preventNavigation,
+    loading,
   } = useAuth();
   const location = useLocation();
 
@@ -55,7 +56,14 @@ const PrivateRoute = ({ children, allowedRoles = null }) => {
   //   isGovernorate,
   //   isMinistry,
   //   preventNavigation,
+  //   loading,
   // });
+
+  // If still loading authentication state, show loading
+  if (loading) {
+    console.log("Auth state loading, showing loading");
+    return null; // or a loading spinner
+  }
 
   // If not logged in, redirect to login
   if (!currentUser) {
@@ -115,8 +123,10 @@ const RoleRedirect = ({ children }) => {
     isGovernorate,
     isMinistry,
     preventNavigation,
+    loading,
   } = useAuth();
 
+  if (loading) return null;
   if (!currentUser) return children;
   if (!userData) return null;
 
@@ -141,7 +151,7 @@ const RoleRedirect = ({ children }) => {
   // Redirect department and governorate users to their specific dashboard
   if (isDepartment || isGovernorate) {
     console.log("Redirecting department/governorate to /department/dashboard");
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/department/dashboard" replace />;
   }
 
   // Redirect ministry users to their dashboard in features folder
@@ -161,7 +171,12 @@ const RoleRedirect = ({ children }) => {
 };
 
 const AdminRoute = ({ children }) => {
-  const { currentUser, isAdmin, userData } = useAuth();
+  const { currentUser, isAdmin, userData, loading } = useAuth();
+
+  // If still loading authentication state, show loading
+  if (loading) {
+    return null; // or a loading spinner
+  }
 
   // If not logged in, redirect to login
   if (!currentUser) {
@@ -183,14 +198,25 @@ const AdminRoute = ({ children }) => {
 };
 
 const DepartmentRoute = ({ children }) => {
-  const { currentUser, isDepartment, isGovernorate, isMinistry, userData } =
-    useAuth();
+  const {
+    currentUser,
+    isDepartment,
+    isGovernorate,
+    isMinistry,
+    userData,
+    loading,
+  } = useAuth();
 
   console.log("DepartmentRoute check - currentUser:", !!currentUser);
   console.log("DepartmentRoute check - userData:", userData);
   console.log("DepartmentRoute check - isDepartment:", isDepartment);
   console.log("DepartmentRoute check - isGovernorate:", isGovernorate);
   console.log("DepartmentRoute check - isMinistry:", isMinistry);
+
+  // If still loading authentication state, show loading
+  if (loading) {
+    return null; // or a loading spinner
+  }
 
   if (!currentUser) return <Navigate to="/login" replace />;
   if (!userData) return null;
@@ -284,12 +310,7 @@ function AppContent() {
           path="/dashboard"
           element={
             <PrivateRoute
-              allowedRoles={[
-                "department",
-                "moderator",
-                "ministry",
-                "governorate",
-              ]}
+              allowedRoles={["department", "moderator", "ministry"]}
             >
               <Layout />
             </PrivateRoute>
