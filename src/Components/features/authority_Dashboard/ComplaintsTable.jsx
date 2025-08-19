@@ -2,87 +2,45 @@ import { useState } from "react";
 import IconArrow from "../../ui/icons/icon-arrow";
 import { useAuth } from "../../../contexts/AuthContext";
 import { FaCog, FaEye } from "react-icons/fa";
-
-// createdAt
-// July 5, 2025 at 6:10:18 PM UTC+3
-// description
-// "مكتبه مصر العامه بيقفلوا بدرى جدا"
-
-// governorate
-// "القاهرة"
-// image
-// null
-// ministry
-// "وزارة الثقافة"
-// name
-// "محمود"
-// nationalId
-// 29802091300042
-
-const initialData = [
-  {
-    id: 1,
-    citizen: "أحمد محمد",
-    title: "مستشفى الأحرار التعليمي",
-    describtion: "مشكلة في المستشفى",
-    status: "قيد المراجعة",
-    priority: "عادية",
-    date: "2025-06-29 12:34",
-  },
-  {
-    id: 2,
-    citizen: "محمد علي",
-    title: "جامعة الزقازيق",
-    describtion: "انقطاع الكهرباء",
-    status: "تم الحل",
-    priority: "عالية",
-    date: "2025-06-28 09:12",
-  },
-  {
-    id: 3,
-    citizen: "سارة حسن",
-    title: "معاشات الزقازيق ",
-    describtion: "تأخير صرف المعاش",
-    status: "مرفوضة",
-    priority: "عادية",
-    date: "2025-06-27 11:45",
-  },
-];
-
-// const statusColors = {
-//   "قيد المراجعة": "text-blue-600 bg-blue-100 px-2 py-1 rounded",
-//   "جارى الحل": "text-yellow-600 bg-yellow-100 px-2 py-1 rounded",
-//   "تم الحل": "text-green-600 bg-green-100 px-2 py-1 rounded",
-//   مرفوضة: "text-red-600 bg-red-100 px-2 py-1 rounded",
-// };
-
-const statusColors = {
-  "قيد المراجعة":
-    "badge bg-gradient-to-r from-slate-300 to-slate-400 text-white px-5 py-1 rounded shadow",
-  "جارى الحل":
-    "badge bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-3 py-1 rounded shadow",
-  "تم الحل":
-    "badge bg-gradient-to-r from-green-400 to-green-600 text-white px-3 py-1 rounded shadow",
-  مرفوضة:
-    "badge bg-gradient-to-r from-red-400 to-red-600 text-white px-3 py-1 rounded shadow",
-};
-
-const PAGE_SIZE = 5;
+import { PAGE_SIZE, statusColors } from "../../constant/Constant";
 
 export default function ComplaintsTable({ complaints, onDetails, onAction }) {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   const { userData } = useAuth();
 
-  // count pages in pagination
-  const totalPages = Math.ceil(complaints.length / PAGE_SIZE);
+  //  Added: extract unique administrations from complaints
+  const uniqueDepartment = [
+    ...new Set(complaints.map((c) => c.administration)),
+  ];
 
-  // filter will coming soon
-  const filteredData = complaints.filter((c) =>
-    c.complaintId?.toString().includes(searchTerm.trim())
-  );
+  // add dropdown based on status
+  const uniqueStatus = [...new Set(complaints.map((c) => c.status))];
+
+  // count pages in pagination
+
+  //  Modified: filtering logic now checks both search term and selected admin
+
+  const filteredData = complaints.filter((c) => {
+    const matchesSearch = c.complaintId?.toString().includes(searchTerm.trim());
+    const matchesDepartment = selectedDepartment
+      ? c.administration === selectedDepartment
+      : true;
+    const matchesStatus = selectedStatus ? c.status === selectedStatus : true;
+    return matchesSearch && matchesDepartment && matchesStatus;
+  });
+
+  const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+
+  // console.log(filteredData.length, "filtered complaints length");
+
+  // const filteredData = complaints.filter((c) =>
+  //   c.complaintId?.toString().includes(searchTerm.trim())
+  // );
 
   // sorting table
   const sortedData = [...filteredData].sort((a, b) => {
@@ -122,7 +80,7 @@ export default function ComplaintsTable({ complaints, onDetails, onAction }) {
 
   return (
     <div className="overflow-x-auto m-5 p-4 shadow-md space-y-4">
-      <div className="flex justify-start items-center mb-4">
+      <div className="flex justify-between items-center mb-4">
         <input
           type="text"
           placeholder=" ابحث برقم الشكوى"
@@ -133,6 +91,38 @@ export default function ComplaintsTable({ complaints, onDetails, onAction }) {
           }}
           className="input input-bordered input-sm w-64"
         />
+        <select
+          value={selectedStatus}
+          onChange={(e) => {
+            setPage(1);
+            setSelectedStatus(e.target.value);
+          }}
+          className="select select-bordered select-sm"
+        >
+          <option value="">كل الحالات</option>
+          {uniqueStatus.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
+        {userData.role === "governorate" && (
+          <select
+            value={selectedDepartment}
+            onChange={(e) => {
+              setPage(1);
+              setSelectedDepartment(e.target.value);
+            }}
+            className="select select-bordered select-sm"
+          >
+            <option value="">كل الإدارات</option>
+            {uniqueDepartment.map((admin) => (
+              <option key={admin} value={admin}>
+                {admin}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
       <table className="table table-pin-rows table-pin-cols min-w-full text-base text-center">
         <thead>
@@ -156,12 +146,12 @@ export default function ComplaintsTable({ complaints, onDetails, onAction }) {
               </button>
             </th>
             <th>
-              <button
+              {/* <button
                 className="flex gap-1 items-center"
                 onClick={() => handleSort("status")}
               >
-                الحالة <IconArrow sortConfig={sortConfig} columnKey="status" />
-              </button>
+              </button> */}
+              الحالة
             </th>
             <th>
               <button

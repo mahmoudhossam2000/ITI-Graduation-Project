@@ -107,6 +107,7 @@ export async function getComplaintsForMinistry(ministry) {
 // }
 
 // دالة جديدة لجلب الشكاوى حسب المحافظة
+
 export async function getComplaintsByGovernorate(governorate) {
   return getComplaintsByDepartment(null, governorate);
 }

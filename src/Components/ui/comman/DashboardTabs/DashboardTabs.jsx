@@ -71,46 +71,6 @@ export default function DashboardTabs({
     "ديسمبر",
   ];
 
-  //   const monthlyCounts = Array(12).fill(0);
-  //   data.forEach((c) => {
-  //     if (c.createdAt?.toDate) {
-  //       const month = c.createdAt.toDate().getMonth();
-  //       monthlyCounts[month]++;
-  //     }
-  //   });
-
-  //   const lineChart = {
-  //     series: [{ name: "عدد الشكاوى", data: monthlyCounts }],
-  //     options: {
-  //       chart: { type: "line", height: 300, toolbar: { show: false } },
-  //       xaxis: { categories: months },
-  //       stroke: { curve: "smooth", width: 3 },
-  //       colors: ["#4361EE"],
-  //     },
-  //   };
-
-  // 📌 Column Chart حسب الوزارة
-  //   const ministries = [...new Set(data.map((c) => c.ministry))];
-  //   console.log(ministries);
-
-  //   const ministryCounts = ministries.map(
-  //     (m) => data.filter((c) => c.ministry === m).length
-  //   );
-
-  //   const columnChart = {
-  //     series: [{ name: "عدد الشكاوى", data: ministryCounts }],
-  //     options: {
-  //       chart: { type: "bar", height: 300, toolbar: { show: false } },
-  //       xaxis: { categories: ministries },
-  //       colors: ["#00BFA6"],
-  //     },
-  //   };
-
-  // 📌 آخر 5 شكاوى
-  //   const latestComplaints = [...data]
-  //     .sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds)
-  //     .slice(0, 5);
-
   return (
     <div className="space-y-6">
       {/* Tabs Navigation */}
@@ -133,8 +93,8 @@ export default function DashboardTabs({
       {/* Tab Content */}
       <div>
         {loading ? (
-          <div className="text-center py-10 text-gray-500">
-            ⏳ جاري التحميل...
+          <div className="flex justify-center items-center min-h-40">
+            <span className="loading loading-spinner loading-lg text-blue"></span>
           </div>
         ) : (
           <>
