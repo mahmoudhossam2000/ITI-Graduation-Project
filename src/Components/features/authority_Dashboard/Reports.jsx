@@ -86,19 +86,21 @@ export default function Reports() {
 
   // إحصائيات
   const total = filteredData.length;
-  const inProgress = filteredData.filter(
+  const pending = filteredData.filter(
     (c) => c.status === "قيد المعالجة"
   ).length;
-  const running = filteredData.filter((c) => c.status === "جارى الحل").length;
+  const inProgress = filteredData.filter(
+    (c) => c.status === "جارى الحل"
+  ).length;
   const solved = filteredData.filter((c) => c.status === "تم الحل").length;
   const rejected = filteredData.filter((c) => c.status === "مرفوضة").length;
 
   // Pie Chart لحالات الشكاوى
   const pieChart = {
-    series: [inProgress, solved, rejected],
+    series: [pending, inProgress, solved, rejected],
     options: {
-      labels: ["جارى الحل", "تم الحل", "مرفوضة"],
-      colors: ["#FACC15", "#22C55E", "#EF4444"],
+      labels: ["قيد المعالجة", "جارى الحل", "تم الحل", "مرفوضة"],
+      colors: ["#94a3b8", "#FACC15", "#22C55E", "#EF4444"],
       chart: { type: "pie" },
     },
   };
@@ -139,18 +141,18 @@ export default function Reports() {
             </div>
             <div className="mr-4">
               <p className="text-sm font-medium text-gray-600">قيد المعالجة</p>
-              <p className="text-2xl font-bold text-gray-900">{inProgress}</p>
+              <p className="text-2xl font-bold text-gray-900">{pending}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+        <div className="bg-white rounded-lg shadow p-6 border-l-4 ">
           <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <FaSpinner className="h-6 w-6 text-yellow-600 animate-spin" />
+            <div className="p-2 bg-blue rounded-lg">
+              <FaSpinner className="h-6 w-6 text-white animate-spin" />
             </div>
             <div className="mr-4">
               <p className="text-sm font-medium text-gray-600">جارى المعالجة</p>
-              <p className="text-2xl font-bold text-gray-900">{running}</p>
+              <p className="text-2xl font-bold text-gray-900">{inProgress}</p>
             </div>
           </div>
         </div>

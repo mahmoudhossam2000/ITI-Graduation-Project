@@ -1,6 +1,6 @@
 // components/dashboard/OverviewSection.jsx
 import React from "react";
-import { FaChartBar, FaCheck, FaEye, FaTimes } from "react-icons/fa";
+import { FaChartBar, FaCheck, FaEye, FaSpinner, FaTimes } from "react-icons/fa";
 
 export default function OverviewSection({
   total,
@@ -41,8 +41,8 @@ export default function OverviewSection({
         </div>
         <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
           <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <FaEye className="h-6 w-6 text-yellow-600" />
+            <div className="p-2 bg-blue rounded-lg">
+              <FaSpinner className="h-6 w-6 text-white animate-spin" />
             </div>
             <div className="mr-4">
               <p className="text-sm font-medium text-gray-600">جارى المعالجة</p>

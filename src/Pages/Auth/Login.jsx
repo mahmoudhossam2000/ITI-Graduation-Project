@@ -50,7 +50,9 @@ const Login = () => {
       navigate("/");
     } catch (err) {
       toast.error("البريد الإلكتروني أو كلمة المرور غير صحيحة ❌");
-      setError("فشل تسجيل الدخول. يرجى التحقق من البريد الإلكتروني وكلمة المرور.");
+      setError(
+        "فشل تسجيل الدخول. يرجى التحقق من البريد الإلكتروني وكلمة المرور."
+      );
       console.error("Login error:", err);
     } finally {
       setIsLoading(false);
@@ -59,11 +61,13 @@ const Login = () => {
 
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 pt-24">
         <div className="max-w-md w-full space-y-6 bg-white p-8 rounded-lg shadow-md">
           <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-darkTeal">تسجيل الدخول</h2>
+            <h2 className="text-3xl font-extrabold text-darkTeal">
+              تسجيل الدخول
+            </h2>
           </div>
 
           {error && (
@@ -119,7 +123,11 @@ const Login = () => {
                     className="absolute left-3 top-1/4 transform text-gray-400 hover:text-gray-600"
                     tabIndex={-1}
                   >
-                    {showPassword ? <BiShowAlt size={20} /> : <BiSolidHide size={20} />}
+                    {showPassword ? (
+                      <BiShowAlt size={20} />
+                    ) : (
+                      <BiSolidHide size={20} />
+                    )}
                   </button>
                 </div>
               </div>

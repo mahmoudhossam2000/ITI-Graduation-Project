@@ -13,8 +13,11 @@ export default function Sidebar() {
   return (
     <aside className="h-screen w-full bg-blue text-white shadow-lg border-r">
       <div className="p-4 text-center text-xl font-bold ">
-        {" "}
-        {userData.department}{" "}
+        <span className="text-white text-lg">
+          {userData?.role === "ministry" && userData.ministry}
+          {userData?.role === "governorate" && userData.governorate}
+          {userData?.role === "department" && userData.department}
+        </span>
       </div>
       <nav className="flex flex-col p-4 space-y-2">
         {sidebarItems.map((item) => (

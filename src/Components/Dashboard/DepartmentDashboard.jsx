@@ -554,7 +554,9 @@ const DepartmentDashboard = () => {
                   <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
                     <div className="truncate">{complaint.description}</div>
                     <div className="flex items-center mt-1 text-xs text-gray-500">
-                      {(complaint.imageBase64 || (complaint.imagesBase64 && complaint.imagesBase64.length > 0)) && (
+                      {(complaint.imageBase64 ||
+                        (complaint.imagesBase64 &&
+                          complaint.imagesBase64.length > 0)) && (
                         <FaImage className="ml-1 text-blue-500" />
                       )}
                       {complaint.videoUrl && (
@@ -822,11 +824,16 @@ const DepartmentDashboard = () => {
                 </div>
 
                 {/* Images */}
-                {(selectedComplaint.imageBase64 || (selectedComplaint.imagesBase64 && selectedComplaint.imagesBase64.length > 0)) && (
+                {(selectedComplaint.imageBase64 ||
+                  (selectedComplaint.imagesBase64 &&
+                    selectedComplaint.imagesBase64.length > 0)) && (
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                       <FaImage className="ml-2 text-blue-600" />
-                      {selectedComplaint.imagesBase64 && selectedComplaint.imagesBase64.length > 1 ? 'الصور المرفقة' : 'الصورة المرفقة'}
+                      {selectedComplaint.imagesBase64 &&
+                      selectedComplaint.imagesBase64.length > 1
+                        ? "الصور المرفقة"
+                        : "الصورة المرفقة"}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Handle single image (legacy) */}
@@ -840,15 +847,16 @@ const DepartmentDashboard = () => {
                         </div>
                       )}
                       {/* Handle multiple images (new format) */}
-                      {selectedComplaint.imagesBase64 && selectedComplaint.imagesBase64.map((image, index) => (
-                        <div key={index} className="flex justify-center">
-                          <img
-                            src={image}
-                            alt={`صورة الشكوى ${index + 1}`}
-                            className="max-w-full h-auto rounded-lg shadow-md max-h-64 object-cover"
-                          />
-                        </div>
-                      ))}
+                      {selectedComplaint.imagesBase64 &&
+                        selectedComplaint.imagesBase64.map((image, index) => (
+                          <div key={index} className="flex justify-center">
+                            <img
+                              src={image}
+                              alt={`صورة الشكوى ${index + 1}`}
+                              className="max-w-full h-auto rounded-lg shadow-md max-h-64 object-cover"
+                            />
+                          </div>
+                        ))}
                     </div>
                   </div>
                 )}
@@ -941,8 +949,6 @@ const DepartmentDashboard = () => {
                 إغلاق
               </button>
             </div>
-
-            
           </div>
         </div>
       </div>

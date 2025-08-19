@@ -22,10 +22,6 @@ function Complaints() {
   useEffect(() => {
     setLoading(true);
 
-    // getComplaintsForMinistry(userData.ministry);
-
-    console.log("sssssssssssssssssssssssssssssssssssssss", userData);
-
     // استخدام بيانات المستخدم لجلب الشكاوى المناسبة
     if (userData?.role === "department" && userData?.governorate) {
       getComplaintsByDepartment(userData.department, userData.governorate)
@@ -79,8 +75,6 @@ function Complaints() {
   // handle to change actions for complaints
   const handleAction = (complaint) => {
     setSelectedComplaint(complaint);
-    console.log(complaint);
-
     setTimeout(() => {
       if (actionRef.current) {
         actionRef.current?.showModal();
@@ -98,7 +92,7 @@ function Complaints() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-40">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
+        <span className="loading loading-spinner loading-lg text-blue"></span>
       </div>
     );
   }
